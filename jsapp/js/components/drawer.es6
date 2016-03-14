@@ -88,29 +88,29 @@ var Drawer = React.createClass({
             </span>
             <nav className='mdl-navigation'>
               <div className='drawer-separator'></div>
-              <span className='mdl-navigation__heading'>{t('drafts in progress')}</span>
+              <span className='mdl-navigation__heading'>{gettext('drafts in progress')}</span>
 
-              <DrawerLink label={t('forms')} linkto='forms' fa-icon='files-o' />
-              <DrawerLink label={t('library')} linkto='library' fa-icon='book' />
+              <DrawerLink label={gettext('forms')} linkto='forms' fa-icon='files-o' />
+              <DrawerLink label={gettext('library')} linkto='library' fa-icon='book' />
 
               <div className='drawer-separator'></div>
-              <span className='mdl-navigation__heading'>{t('deployed projects')}</span>
+              <span className='mdl-navigation__heading'>{gettext('deployed projects')}</span>
               { stores.session.currentAccount ?
-                  <DrawerLink label={t('projects')} active='true' href={stores.session.currentAccount.projects_url} fa-icon='globe' />
+                  <DrawerLink label={gettext('projects')} active='true' href={stores.session.currentAccount.projects_url} fa-icon='globe' />
               : null }
 
               <div className='drawer-separator'></div>
-              <span className='mdl-navigation__heading'>{t('account actions')}</span>
+              <span className='mdl-navigation__heading'>{gettext('account actions')}</span>
               { this.state.isLoggedIn ?
                 <div>
-                  <DrawerLink label={t('settings')} href={stores.session.currentAccount.projects_url + 'settings'} fa-icon='user' />
+                  <DrawerLink label={gettext('settings')} href={stores.session.currentAccount.projects_url + 'settings'} fa-icon='user' />
                   {leaveBetaUrl ?
-                    <DrawerLink label={t('leave beta')} href={leaveBetaUrl} fa-icon='circle-o' />
+                    <DrawerLink label={gettext('leave beta')} href={leaveBetaUrl} fa-icon='circle-o' />
                   :null}
-                  <DrawerLink label={t('logout')} onClick={this.logout} fa-icon='sign-out' />
+                  <DrawerLink label={gettext('logout')} onClick={this.logout} fa-icon='sign-out' />
                 </div>
               :
-                <DrawerLink label={t('login')} href='/api-auth/login/?next=/' fa-icon='sign-in' />
+                <DrawerLink label={gettext('login')} href='/api-auth/login/?next=/' fa-icon='sign-in' />
               }
             </nav>
 

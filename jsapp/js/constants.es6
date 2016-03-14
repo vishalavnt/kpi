@@ -9,10 +9,10 @@ const update_states = {
 };
 
 const AVAILABLE_FORM_STYLES = [
-  {value: '', label: t('Default - single page')},
-  {value: 'theme-grid', label: t('Grid theme')},
-  {value: 'pages', label: t('Multiple pages')},
-  {value: 'theme-grid pages', label: t('Grid theme + Multiple pages')},
+  {value: '', label: gettext('Default - single page')},
+  {value: 'theme-grid', label: gettext('Grid theme')},
+  {value: 'pages', label: gettext('Multiple pages')},
+  {value: 'theme-grid pages', label: gettext('Grid theme + Multiple pages')},
 ];
 
 export default {

@@ -60,7 +60,7 @@ var SearchCollectionList = React.createClass({
               if (s.searchState === 'loading') {
                 return (
                   <bem.CollectionAssetList__message m={'loading'}>
-                    {t('loading...')}
+                    {gettext('loading...')}
                   </bem.CollectionAssetList__message>
                 );
               } else if (s.searchState === 'done') {
@@ -70,7 +70,7 @@ var SearchCollectionList = React.createClass({
               if (s.defaultQueryState === 'loading') {
                 return (
                   <bem.CollectionAssetList__message m={'loading'}>
-                    {t('loading...')}
+                    {gettext('loading...')}
                   </bem.CollectionAssetList__message>
                 );
               } else if (s.defaultQueryState === 'done') {
@@ -80,7 +80,7 @@ var SearchCollectionList = React.createClass({
             // it shouldn't get to this point
             return (
               <bem.CollectionAssetList__message m={'error'}>
-                {t('error')}
+                {gettext('error')}
               </bem.CollectionAssetList__message>
             );
           })()

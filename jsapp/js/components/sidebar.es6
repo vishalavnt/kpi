@@ -187,13 +187,13 @@ var Sidebar = React.createClass({
             <bem.AccountBox__image>
               <img src={gravatar} />
             </bem.AccountBox__image>
-            <bem.AccountBox__logout href="#" onClick={this.logout}>{t('logout')}</bem.AccountBox__logout>
+            <bem.AccountBox__logout href="#" onClick={this.logout}>{gettext('logout')}</bem.AccountBox__logout>
           </bem.AccountBox>
         );
     }
     return (
         <div>
-          <SidebarTitle label={t('logged out')} />
+          <SidebarTitle label={gettext('logged out')} />
         </div>
         );
 
@@ -210,26 +210,26 @@ var Sidebar = React.createClass({
             <SidebarMain onClick={this.props.toggleIntentOpen} label={title} />
             {this.renderAccountBar()}
             <hr />
-            <SidebarTitle label={t('drafts in progress')} />
-            <SidebarLink label={t('forms')} linkto='forms' fa-icon="files-o" />
-            <SidebarLink label={t('library')} linkto='library' fa-icon="book" />
-            <SidebarLink label={t('collections')} linkto='collections' fa-icon="folder-o" />
+            <SidebarTitle label={gettext('drafts in progress')} />
+            <SidebarLink label={gettext('forms')} linkto='forms' fa-icon="files-o" />
+            <SidebarLink label={gettext('library')} linkto='library' fa-icon="book" />
+            <SidebarLink label={gettext('collections')} linkto='collections' fa-icon="folder-o" />
             {/* this.state.showRecent && this.state.sidebarIsOpen ?
               <div>
-                <SidebarLink label={t('recent')} onClick={this.toggleRecent} fa-icon="clock-o" />
+                <SidebarLink label={gettext('recent')} onClick={this.toggleRecent} fa-icon="clock-o" />
                 <RecentHistory />
               </div>
             : null
             */}
-            <SidebarTitle label={t('deployed projects')} />
+            <SidebarTitle label={gettext('deployed projects')} />
             { stores.session.currentAccount ?
-                <SidebarLink label={t('projects')} active='true' href={stores.session.currentAccount.projects_url} fa-icon="globe" />
+                <SidebarLink label={gettext('projects')} active='true' href={stores.session.currentAccount.projects_url} fa-icon="globe" />
             :null }
-            <SidebarTitle label={t('account actions')} />
+            <SidebarTitle label={gettext('account actions')} />
             { this.state.isLoggedIn ?
-              <SidebarLink label={t('logout')} onClick={this.logout} fa-icon="sign-out" />
+              <SidebarLink label={gettext('logout')} onClick={this.logout} fa-icon="sign-out" />
             :
-              <SidebarLink label={t('login')} href='/api-auth/login/?next=/' fa-icon="sign-in" />
+              <SidebarLink label={gettext('login')} href='/api-auth/login/?next=/' fa-icon="sign-in" />
             }
           </ul>
           <div className="sidebar-footer">

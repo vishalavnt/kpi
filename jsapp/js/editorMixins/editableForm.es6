@@ -150,14 +150,14 @@ var FormSettingsBox = React.createClass({
     }).join(', ');
 
     if (metaData === '') {
-      metaData = t('none (0 metadata specified)');
+      metaData = gettext('none (0 metadata specified)');
     }
 
     var metaContent;
     if (!this.state.formSettingsExpanded) {
       metaContent = (
           <bem.FormMeta__button m={'metasummary'} onClick={this.toggleSettingsEdit}>
-            {t('metadata:')}
+            {gettext('metadata:')}
             {metaData}
           </bem.FormMeta__button>
         );
@@ -201,13 +201,13 @@ export default {
     }
     let bcData = [
       {
-        'label': isLibrary ? t('library') : t('forms'),
+        'label': isLibrary ? gettext('library') : gettext('forms'),
         'to': isLibrary ? 'library' : 'forms',
       }
     ];
     if (this.editorState === 'new') {
       bcData.push({
-        label: t('new'),
+        label: gettext('new'),
         to: isLibrary ? 'add-to-library' : 'new-form',
       });
     } else {
@@ -269,7 +269,7 @@ export default {
   }, 75),
   preventClosingTab () {
     $(window).on('beforeunload.noclosetab', function(){
-      return t('you have unsaved changes');
+      return gettext('you have unsaved changes');
     });
   },
   unpreventClosingTab () {
@@ -328,7 +328,7 @@ export default {
       });
       stores.pageState.setAssetNavPresent(false);
     }).fail((/* jqxhr */) => {
-      notify(t('failed to generate preview. please report this to support@kobotoolbox.org'));
+      notify(gettext('failed to generate preview. please report this to support@kobotoolbox.org'));
     });
   },
   saveForm (evt) {
@@ -408,9 +408,9 @@ export default {
       ooo.styleValue = this.state.settings__style;
     }
     if (this.editorState === 'new') {
-      ooo.saveButtonText = t('create');
+      ooo.saveButtonText = gettext('create');
     } else {
-      ooo.saveButtonText = t('save');
+      ooo.saveButtonText = gettext('save');
     }
     return ooo;
   },
@@ -433,7 +433,7 @@ export default {
               ref='form-name'
               value={name}
               onChange={this.nameChange}
-              placeholder={t('form name')}
+              placeholder={gettext('form name')}
             />
           <FormHeader__row m={allButtonsDisabled ? 'disabled' : null}>
             <bem.FormHeader__button m={['save', {
@@ -448,21 +448,21 @@ export default {
                   'close-warning': this.needsSave(),
                 }]} onClick={this.navigateBack}>
               <i />
-              {t('close')}
+              {gettext('close')}
             </bem.FormHeader__button>
             <bem.FormHeader__button m={['preview', {
                   previewdisabled: previewDisabled
                 }]} onClick={this.previewForm}
                 disabled={previewDisabled}>
               <i />
-              {t('preview')}
+              {gettext('preview')}
             </bem.FormHeader__button>
             { showAllAvailable ?
               <bem.FormHeader__button m={['show-all', {
                     open: showAllOpen,
                   }]} onClick={this.showAll}>
                 <i />
-                {t('show all responses')}
+                {gettext('show all responses')}
               </bem.FormHeader__button>
             : null }
             { groupable ?
@@ -471,7 +471,7 @@ export default {
                   }]} onClick={this.groupQuestions}
                   disabled={!groupable}>
                 <i />
-                {t('group questions')}
+                {gettext('group questions')}
               </bem.FormHeader__button>
             : null }
             { hasSettings ?
@@ -479,25 +479,25 @@ export default {
                 formstyle: true,
                 formstyleactive: this.state.formStylePanelDisplayed,
               }} onClick={this.openFormStylePanel}>
-                {t('form-style')}
+                {gettext('form-style')}
               </bem.FormHeader__button>
             : null }
           </FormHeader__row>
           { this.state.formStylePanelDisplayed ?
             <FormHeader__panel m='formstyle'>
               <FormHeader__panelheader>
-                {t('form style')}
+                {gettext('form style')}
               </FormHeader__panelheader>
               <FormHeader__paneltext>
-                {t('select the form style that you would like to use.')}
-                {t('for more info, see: ')}
+                {gettext('select the form style that you would like to use.')}
+                {gettext('for more info, see: ')}
               </FormHeader__paneltext>
               <Select
                 name="webform-style"
                 ref="webformStyle"
                 value={styleValue}
                 onChange={this.onStyleChange}
-                addLabelText={t('custom form style: "{label}"')}
+                addLabelText={gettext('custom form style: "{label}"')}
                 allowCreate={true}
                 placeholder={AVAILABLE_FORM_STYLES[0].label}
                 options={AVAILABLE_FORM_STYLES}
@@ -512,7 +512,7 @@ export default {
         <bem.AssetView__content>
           <bem.AssetView__message m={'loading'}>
             <i />
-            {t('loading...')}
+            {gettext('loading...')}
           </bem.AssetView__message>
         </bem.AssetView__content>
       );
@@ -562,7 +562,7 @@ export default {
                   style={{height: this.state.formHeaderFixedHeight}} />
           );
     return (
-        <DocumentTitle title={this.state.name || t('Untitled')}>
+        <DocumentTitle title={this.state.name || gettext('Untitled')}>
           <bem.AssetView>
             <ui.Panel>
               <bem.AssetView__content>
@@ -590,7 +590,7 @@ export default {
               </bem.AssetView__content>
             </ui.Panel>
             { this.state.enketopreviewOverlay ?
-              <ui.Modal open onClose={this.hidePreview} title={t('Form Preview')}>
+              <ui.Modal open onClose={this.hidePreview} title={gettext('Form Preview')}>
                 <ui.Modal.Body>
                   <iframe src={this.state.enketopreviewOverlay} />
                 </ui.Modal.Body>

@@ -381,7 +381,7 @@ var allAssetsStore = Reflux.createStore({
     this.trigger(this.data);
   },
   onListAssetsFailed: function (/*err*/) {
-    notify(t('failed to list assets'));
+    notify(gettext('failed to list assets'));
   },
   onDeleteAssetCompleted (asset) {
     this.byUid[asset.uid].deleted = 'true';

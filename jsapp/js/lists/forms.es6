@@ -33,7 +33,7 @@ var FormsSearchableList = React.createClass({
 
       var headerBreadcrumb = [
         {
-          'label': t('Forms'),
+          'label': gettext('Forms'),
         }
       ];
       stores.pageState.setHeaderBreadcrumb(headerBreadcrumb);
@@ -71,15 +71,15 @@ var FormsSearchableList = React.createClass({
         <bem.CollectionNav>
           <bem.CollectionNav__search>
             <ListSearch
-                placeholder={t('search forms')}
+                placeholder={gettext('search forms')}
                 searchContext={this.state.searchContext}
               />
             <ListTagFilter
                 searchContext={this.state.searchContext}
               />
             <ListSearchSummary
-                assetDescriptor={t('form')}
-                assetDescriptorPlural={t('forms')}
+                assetDescriptor={gettext('form')}
+                assetDescriptorPlural={gettext('forms')}
                 searchContext={this.state.searchContext}
               />
           </bem.CollectionNav__search>
@@ -95,12 +95,12 @@ var FormsSearchableList = React.createClass({
               <bem.CollectionNav__link className="mdl-menu__item" m={['new', 'new-block']}
                   href={this.makeHref('new-form')}>
                 <i />
-                {t('new form')}
+                {gettext('new form')}
               </bem.CollectionNav__link>
               <Dropzone onDropFiles={this.dropFiles} params={{destination: false}} fileInput>
                 <bem.CollectionNav__button m={['upload', 'upload-block']} className="mdl-menu__item">
                   <i className='fa fa-icon fa-cloud fa-fw' />
-                  {t('upload')}
+                  {gettext('upload')}
                 </bem.CollectionNav__button>
               </Dropzone>
             </div>

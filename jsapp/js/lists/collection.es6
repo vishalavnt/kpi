@@ -31,7 +31,7 @@ var CollectionList = React.createClass({
     willTransitionTo: function(transition, params, idk, callback) {
       var headerBreadcrumb = [
         {
-          'label': t('Collections'),
+          'label': gettext('Collections'),
           'href': '/collections',
         }
       ];
@@ -72,8 +72,8 @@ var CollectionList = React.createClass({
           {/*
           <bem.CollectionNav__search>
             <ListSearchSummary
-                assetDescriptor={t('collection')}
-                assetDescriptorPlural={t('collections')}
+                assetDescriptor={gettext('collection')}
+                assetDescriptorPlural={gettext('collections')}
                 searchContext={this.state.searchContext}
               />
           </bem.CollectionNav__search>
@@ -91,7 +91,7 @@ var CollectionList = React.createClass({
                 <bem.CollectionNav__button m={['new', 'new-collection']} className="mdl-menu__item"
                     onClick={this.createCollection}>
                   <i />
-                  {t('new collection')}
+                  {gettext('new collection')}
                 </bem.CollectionNav__button>
               </li>
               <li>
@@ -99,7 +99,7 @@ var CollectionList = React.createClass({
                   <bem.CollectionNav__button m={['upload', 'upload-block']} className="mdl-menu__item">
                     <i className='fa fa-icon fa-cloud fa-fw' />
                     &nbsp;&nbsp;
-                    {t('upload')}
+                    {gettext('upload')}
                   </bem.CollectionNav__button>
                 </Dropzone>
               </li>
@@ -130,7 +130,7 @@ var CollectionList = React.createClass({
       return (
         <bem.CollectionAssetList>
           <bem.CollectionAssetList__message m={'loading'}>
-            {t('loading...')}
+            {gettext('loading...')}
           </bem.CollectionAssetList__message>
         </bem.CollectionAssetList>
       );

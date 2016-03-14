@@ -148,13 +148,13 @@ ui.AssetName = React.createClass({
       name = summary.labels ? summary.labels[0] : false;
       if (!name) {
         isEmpty = true;
-        name = t('no name');
+        name = gettext('no name');
       }
       if (row_count) {
         if (row_count === 2) {
-          extra = <small>{t('and one other question')}</small>;
+          extra = <small>{gettext('and one other question')}</small>;
         } else if (row_count > 2) {
-          extra = <small>{t('and ## other questions').replace('##', row_count - 1)}</small>;
+          extra = <small>{gettext('and ## other questions').replace('##', row_count - 1)}</small>;
         }
       }
     }

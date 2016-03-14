@@ -36,7 +36,7 @@ var LibrarySearchableList = React.createClass({
     willTransitionTo: function(transition, params, idk, callback) {
 
       var headerBreadcrumb = [
-        {'label': t('Library'), 'href': '', }
+        {'label': gettext('Library'), 'href': '', }
       ];
       stores.pageState.setHeaderBreadcrumb(headerBreadcrumb);
 
@@ -121,7 +121,7 @@ var LibrarySearchableList = React.createClass({
         <bem.CollectionNav>
           <bem.CollectionNav__search>
             <ListSearch
-                placeholder={t('search library')}
+                placeholder={gettext('search library')}
                 searchContext={this.state.searchContext}
               />
             <ListTagFilter
@@ -140,19 +140,19 @@ var LibrarySearchableList = React.createClass({
               <bem.CollectionNav__link key={'new-asset'} m={['new', 'new-block']} className="mdl-menu__item"
                   href={this.makeHref('add-to-library')}>
                 <i />
-                {t('add to library')}
+                {gettext('add to library')}
               </bem.CollectionNav__link>
               <bem.CollectionNav__button key={'new-collection'} m={['new', 'new-collection']} className="mdl-menu__item"
                   onClick={this.createCollection}>
                 <i />
-                {t('new collection')}
+                {gettext('new collection')}
               </bem.CollectionNav__button>
               <Dropzone onDropFiles={this.dropFiles} className="mdl-menu__item"
                   params={{destination: false}} fileInput>
                 <bem.CollectionNav__button m={['upload', 'upload-block']} className="mdl-menu__item">
                   <i className='fa fa-icon fa-cloud fa-fw' />
                   &nbsp;&nbsp;
-                  {t('upload')}
+                  {gettext('upload')}
                 </bem.CollectionNav__button>
               </Dropzone>
             </ul>
@@ -168,14 +168,14 @@ var LibrarySearchableList = React.createClass({
                   selected: !this.state.filteredCollectionUid,
                 }} onClick={this.clickFilterByCollection}>
               <i />
-              {t('all items (no filter)')}
+              {gettext('all items (no filter)')}
             </CollectionSidebar__item>
             {/*
             <CollectionSidebar__item
               key='info'
               m='info'
             >
-              {t('filter by collection')}
+              {gettext('filter by collection')}
             </CollectionSidebar__item>
             */}
             {this.state.sidebarCollections.map((collection)=>{  
@@ -196,13 +196,13 @@ var LibrarySearchableList = React.createClass({
                     <CollectionSidebar__itemlink href={'#'}
                       onClick={this.deleteCollection}
                       data-collection-uid={collection.uid}>
-                      {t('delete')}
+                      {gettext('delete')}
                     </CollectionSidebar__itemlink>
                     <CollectionSidebar__itemlink href={sharingLink}>
-                      {t('sharing')}
+                      {gettext('sharing')}
                     </CollectionSidebar__itemlink>
                     <CollectionSidebar__itemlink href={editLink}>
-                      {t('edit')}
+                      {gettext('edit')}
                     </CollectionSidebar__itemlink>
                   </CollectionSidebar__item>
                 );
@@ -211,14 +211,14 @@ var LibrarySearchableList = React.createClass({
           :
           <CollectionSidebar>
             <CollectionSidebar__item m={'loading'}>
-              {t('loading')}
+              {gettext('loading')}
               <i />
             </CollectionSidebar__item>
           </CollectionSidebar>
         }
         <ListSearchSummary
-            assetDescriptor={t('library item')}
-            assetDescriptorPlural={t('library items')}
+            assetDescriptor={gettext('library item')}
+            assetDescriptorPlural={gettext('library items')}
             searchContext={this.state.searchContext}
           />
 

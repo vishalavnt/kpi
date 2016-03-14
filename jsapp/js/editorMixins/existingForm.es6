@@ -33,7 +33,7 @@ export default {
     if (!this.needsSave()) {
       this.transitionTo('form-landing', {assetid: this.props.params.assetid});
     } else {
-      customConfirmAsync(t('you have unsaved changes. would you like to save?'))
+      customConfirmAsync(gettext('you have unsaved changes. would you like to save?'))
         .done(() => {
           this.saveForm();
         });

@@ -266,13 +266,13 @@ actions.resources.createImport.listen(function(contents){
 actions.resources.createImport.completed.listen(function(contents){
   if (contents.status) {
     if(contents.status === 'processing') {
-      notify(t('successfully uploaded file; processing may take a few minutes'));
+      notify(gettext('successfully uploaded file; processing may take a few minutes'));
       log('processing import ' + contents.uid, contents);
     } else {
       notify(`unexpected import status ${contents.status}`, 'error');
     }
   } else {
-    notify(t('Error: import.status not available'));
+    notify(gettext('Error: import.status not available'));
   }
 });
 
@@ -330,7 +330,7 @@ actions.resources.deployAsset.completed.listen(function(data, dialog){
     dialog.destroy();
   }
   // notify and redirect
-  notify(t('deployed form'));
+  notify(gettext('deployed form'));
   window.setTimeout(function(){
     redirectTo(data.xform_url);
   }, 1000);
@@ -338,11 +338,11 @@ actions.resources.deployAsset.completed.listen(function(data, dialog){
 
 actions.resources.deployAsset.failed.listen(function(data, dialog){
   let dialogSettings = {
-    title: t('unable to deploy'),
+    title: gettext('unable to deploy'),
   };
   let dialogContent = false;
 
-  let ok_button_text = t('ok');
+  let ok_button_text = gettext('ok');
   let ok_button_remove = false;
 
   if(!data.responseJSON || (!data.responseJSON.xform_id_string &&
@@ -350,19 +350,19 @@ actions.resources.deployAsset.failed.listen(function(data, dialog){
     // failed to retrieve a valid response from the server
     // setContent() removes the input box, but the value is retained
     dialogContent = `
-      <p>${t('please check your connection and try again.')}</p>
-      <p>${t('if this problem persists, contact support@kobotoolbox.org')}</p>
+      <p>${gettext('please check your connection and try again.')}</p>
+      <p>${gettext('if this problem persists, contact support@kobotoolbox.org')}</p>
     `;
-    ok_button_text = t('retry');
+    ok_button_text = gettext('retry');
   } else if(!!data.responseJSON.xform_id_string){
     dialogSettings.message = `
-      <p>${t('your form id was not valid:')}</p>
+      <p>${gettext('your form id was not valid:')}</p>
       <p><code>${data.responseJSON.xform_id_string}</code></p>
-      <p>${t('please specify a different form id:')}</p>
+      <p>${gettext('please specify a different form id:')}</p>
     `;
   } else if(!!data.responseJSON.detail) {
     dialogContent = `
-      <p>${t('your form cannot be deployed because it contains errors:')}</p>
+      <p>${gettext('your form cannot be deployed because it contains errors:')}</p>
       <p><code>${data.responseJSON.detail}</code></p>
     `;
     ok_button_remove = true;

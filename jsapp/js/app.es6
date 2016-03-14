@@ -124,13 +124,13 @@ class UserDropdown extends React.Component {
             <li className="link">
               <Link to="user-profile"
                   params={{username: username}}>
-                {{username}} {t('profile')}
+                {{username}} {gettext('profile')}
               </Link>
             </li>
             <li className="divider"></li>
             <li className="link">
               <a href="#" onClick={ this.logout.bind(this) }>
-                {t('logout')}
+                {gettext('logout')}
               </a>
             </li>
           </ul>
@@ -183,7 +183,7 @@ class ItemDropdownItem extends React.Component {
               <i className={classNames('fa', 'fa-sm', this.props.faIcon)} />
               &nbsp;
               &nbsp;
-              {this.props.name || t('no name')}
+              {this.props.name || gettext('no name')}
             </Link>
           </li>
       );
@@ -228,7 +228,7 @@ var LoginForm = React.createClass({
           <div className="form-group">
             <input type="text" ref="username" placeholder="username" className="form-control input-sm" />
             <input type="password" ref="password" placeholder="password" className="form-control input-sm" />
-            <button type="submit" className="btn btn-default btn-sm">{t('log in')}</button>
+            <button type="submit" className="btn btn-default btn-sm">{gettext('log in')}</button>
           </div>
         </form>
       </div>
@@ -311,7 +311,7 @@ var AssetNavigatorListView = React.createClass({
       return (
           <bem.LibList m={'empty'}>
             <bem.LibList__item m={'message'}>
-              {t('loading')}
+              {gettext('loading')}
             </bem.LibList__item>
           </bem.LibList>
         );
@@ -319,7 +319,7 @@ var AssetNavigatorListView = React.createClass({
       return (
           <bem.LibList m={'empty'}>
             <bem.LibList__item m={'message'}>
-              {t('no search results found')}
+              {gettext('no search results found')}
             </bem.LibList__item>
           </bem.LibList>
         );
@@ -342,7 +342,7 @@ var AssetNavigatorListView = React.createClass({
                       </bem.LibList__label>
                       { item.asset_type === 'block' ?
                         <bem.LibList__qtype>
-                          {t('block of ___ questions').replace('___', summ.row_count)}
+                          {gettext('block of ___ questions').replace('___', summ.row_count)}
                         </bem.LibList__qtype>
                       : null }
                       { (stores.pageState.state.assetNavExpanded && item.asset_type === 'block') ?
@@ -457,7 +457,7 @@ var AssetNavigator = React.createClass({
               <bem.LibList m={'loading'}>
                 <bem.LibList__item m={'message'}>
                   <i />
-                  {t('loading library assets')}
+                  {gettext('loading library assets')}
                 </bem.LibList__item>
               </bem.LibList>
               );
@@ -493,7 +493,7 @@ var AssetNavigator = React.createClass({
             </bem.LibNav__logo>
             <bem.LibNav__search className={hiddenClass}>
               <ListSearch
-                  placeholder={t('search library')}
+                  placeholder={gettext('search library')}
                   searchContext={this.state.searchContext}
                 />
             </bem.LibNav__search>
@@ -677,7 +677,7 @@ class DownloadButtons extends React.Component {
                     kind={this.props.kind}
                     disabled={links.length === 0}
                     icon="cloud-download"
-                    title={t('download')} />
+                    title={gettext('download')} />
       );
   }
 }
@@ -785,13 +785,13 @@ class PublicPermDiv extends UserPermDiv {
           <i className={`fa fa-group fa-lg`} />
           &nbsp;&nbsp;
           {isOn ?
-            t('Link sharing on') :
-            t('Link sharing off')}
+            gettext('Link sharing on') :
+            gettext('Link sharing off')}
         </button>
         <p className='text-muted text-center'>
           {isOn ?
-            t('Anyone with the link can view this item') :
-            t('This item can only be viewed by you and anyone you specify')}
+            gettext('Anyone with the link can view this item') :
+            gettext('This item can only be viewed by you and anyone you specify')}
         </p>
       </div>
       );
@@ -831,7 +831,7 @@ var FormInput = React.createClass({
             <div className="mdl-cell mdl-cell--3-col">
               <label htmlFor='webform-style' className={'mdl-button mdl-js-button'}
                   onClick={this.focusSelect}>
-                {t('Web form style')}
+                {gettext('Web form style')}
               </label>
             </div>
             <div className="mdl-cell mdl-cell--5-col">
@@ -841,10 +841,10 @@ var FormInput = React.createClass({
                   value={this.props.styleValue}
                   onChange={this.props.onStyleChange}
                   options={[
-                      {value: '', label: t('Default - single page')},
-                      {value: 'theme-grid', label: t('Grid theme')},
-                      {value: 'pages', label: t('Multiple pages')},
-                      {value: 'theme-grid pages', label: t('Grid theme + Multiple pages')},
+                      {value: '', label: gettext('Default - single page')},
+                      {value: 'theme-grid', label: gettext('Grid theme')},
+                      {value: 'pages', label: gettext('Multiple pages')},
+                      {value: 'theme-grid pages', label: gettext('Grid theme + Multiple pages')},
                     ]}
                 />
             </div>
@@ -904,7 +904,7 @@ var Loading = React.createClass({
     return (
         <bem.Loading>
           <bem.Loading__message>
-            {t('loading kobotoolbox')}
+            {gettext('loading kobotoolbox')}
           </bem.Loading__message>
           <bem.Loading__img src={loadingImage} />
         </bem.Loading>
@@ -926,7 +926,7 @@ var Forms = React.createClass({
         stores.pageState.setHeaderBreadcrumb(
           [
             {
-              label: t('Forms'),
+              label: gettext('Forms'),
               'to': 'forms'
             }
           ]
@@ -1182,17 +1182,17 @@ var FormSharing = React.createClass({
         );
     }
     return (
-      <ui.Modal open onClose={this.routeBack} title={t('manage sharing permissions')}>
+      <ui.Modal open onClose={this.routeBack} title={gettext('manage sharing permissions')}>
         <ui.Modal.Body>
           <ui.Panel className="k-div--sharing">
             <div className="k-sharing__title">
               <h5>{this.state.asset.name}</h5>
             </div>
             <p>
-              {this.state.asset.owner__username}{'&nbsp;'}<span className="text-small">({t('owner')})</span>
+              {this.state.asset.owner__username}{'&nbsp;'}<span className="text-small">({gettext('owner')})</span>
             </p>
             <div className="k-sharing__header">
-              <div className="text-small">{t('To share this item with others just enter their username below, then choose which permissions they shoud have. To remove them again just deselect both permissions. Note: this does not control permissions to the data collected by projects')}</div>
+              <div className="text-small">{gettext('To share this item with others just enter their username below, then choose which permissions they shoud have. To remove them again just deselect both permissions. Note: this does not control permissions to the data collected by projects')}</div>
             </div>
 
             <div className="mdl-grid">
@@ -1200,10 +1200,10 @@ var FormSharing = React.createClass({
                 <div className="k-share-username mdl-card mdl-shadow--2dp">
                   <form onSubmit={this.addInitialUserPermission}>
                     <div className="mdl-card__title">
-                      <h2 className="mdl-card__title-text">{t('share with username')}</h2>
+                      <h2 className="mdl-card__title-text">{gettext('share with username')}</h2>
                     </div>
                     <div className="mdl-card__supporting-text">
-                      <ui.SmallInputBox ref='usernameInput' placeholder={t('share with username')} onKeyUp={this.usernameCheck} />
+                      <ui.SmallInputBox ref='usernameInput' placeholder={gettext('share with username')} onKeyUp={this.usernameCheck} />
                       <button className={btnKls}>
                         <i className="fa fa-fw fa-lg fa-plus" />
                       </button>
@@ -1221,7 +1221,7 @@ var FormSharing = React.createClass({
               <div className="mdl-cell mdl-cell--5-col">
                 <div className="k-share-publicly mdl-card mdl-shadow--2dp">
                   <div className="mdl-card__title">
-                    <h2 className="mdl-card__title-text">{t('Link sharing')}</h2>
+                    <h2 className="mdl-card__title-text">{gettext('Link sharing')}</h2>
                   </div>
                   <div className="mdl-card__supporting-text">
                     {(() => {
@@ -1382,7 +1382,7 @@ var CollectionSharing = React.createClass({
         );
     }
     return (
-      <ui.Modal open onClose={this.routeBack} title={t('manage sharing permissions')}>
+      <ui.Modal open onClose={this.routeBack} title={gettext('manage sharing permissions')}>
         <ui.Modal.Body>
           <ui.Panel className="k-div--sharing">
             <div className="k-sharing__title">
@@ -1393,10 +1393,10 @@ var CollectionSharing = React.createClass({
                 <StackedIcon frontIcon='user' />
                 <div className="user--pill__name">
                   <UserProfileLink username={this.state.asset.owner__username} /><br/>
-                  <span className="text-small">{t('owner')}</span>
+                  <span className="text-small">{gettext('owner')}</span>
                 </div>
               </div>
-              <div className="text-small">{t('note: this does not control permissions to the data collected by projects')}</div>
+              <div className="text-small">{gettext('note: this does not control permissions to the data collected by projects')}</div>
             </div>
 
             <div className="mdl-grid">
@@ -1404,10 +1404,10 @@ var CollectionSharing = React.createClass({
                 <div className="k-share-username mdl-card mdl-shadow--2dp">
                   <form onSubmit={this.addInitialUserPermission}>
                     <div className="mdl-card__title">
-                      <h2 className="mdl-card__title-text">{t('Share with other users')}</h2>
+                      <h2 className="mdl-card__title-text">{gettext('Share with other users')}</h2>
                     </div>
                     <div className="mdl-card__supporting-text">
-                      <ui.SmallInputBox ref='usernameInput' placeholder={t('enter a username')} onKeyUp={this.usernameCheck} />
+                      <ui.SmallInputBox ref='usernameInput' placeholder={gettext('enter a username')} onKeyUp={this.usernameCheck} />
                       <button className={btnKls}>
                         <i className="fa fa-fw fa-lg fa-plus" />
                       </button>
@@ -1425,7 +1425,7 @@ var CollectionSharing = React.createClass({
               <div className="mdl-cell mdl-cell--5-col">
                 <div className="k-share-publicly mdl-card mdl-shadow--2dp">
                     <div className="mdl-card__title">
-                      <h2 className="mdl-card__title-text">{t('Link sharing')}</h2>
+                      <h2 className="mdl-card__title-text">{gettext('Link sharing')}</h2>
                     </div>
                     <div className="mdl-card__supporting-text">
                       {(() => {
@@ -1479,13 +1479,13 @@ var FormEnketoPreview = React.createClass({
       });
       let bcRoot;
       if (asset.asset_type === 'survey') {
-        bcRoot = {'label': t('Forms'), 'to': 'forms'};
+        bcRoot = {'label': gettext('Forms'), 'to': 'forms'};
       } else {
-        bcRoot = {label: t('Library'), 'to': 'library'};
+        bcRoot = {label: gettext('Library'), 'to': 'library'};
       }
       stores.pageState.setHeaderBreadcrumb([
         bcRoot,
-        {'label': t('Preview')}
+        {'label': gettext('Preview')}
       ]);
     });
     this.listenTo(stores.snapshots, this.snapshotCreation);
@@ -1494,7 +1494,7 @@ var FormEnketoPreview = React.createClass({
   getInitialState () {
     return {
       enketopreviewlink: false,
-      message: t('loading...'),
+      message: gettext('loading...'),
       error: false
     };
   },
@@ -1561,7 +1561,7 @@ var FormLanding = React.createClass({
     willTransitionTo: function(transition, params, idk, callback) {
       var headerBreadcrumb = [
         {
-          'label': t('Forms'),
+          'label': gettext('Forms'),
           'to': 'forms',
         }
       ];
@@ -1586,7 +1586,7 @@ var FormNotFound = React.createClass({
   render () {
     return (
         <ui.Panel>
-          {t('path not found / recognized')}
+          {gettext('path not found / recognized')}
         </ui.Panel>
       );
   }
@@ -1596,7 +1596,7 @@ var UserList = React.createClass({
   render () {
     return (
         <ui.Panel className="k-div--userlist">
-          <h1>{t('users')}</h1>
+          <h1>{gettext('users')}</h1>
         </ui.Panel>
       );
   }
@@ -1607,11 +1607,11 @@ var UserProfile = React.createClass({
     var username = this.props.username;
     return (
         <ui.Panel className="k-div--userprofile">
-          <h1>{t('user')}: {username}</h1>
+          <h1>{gettext('user')}: {username}</h1>
           <hr />
           <div className="well">
             <h3 className="page-header">
-              {t('my forms shared with user')}
+              {gettext('my forms shared with user')}
             </h3>
             <div className="well-content">
               <p>There are no forms shared with this user?</p>
@@ -1620,7 +1620,7 @@ var UserProfile = React.createClass({
 
           <div className="well">
             <h3 className="page-header">
-              {t('public forms')}
+              {gettext('public forms')}
             </h3>
             <div className="well-content">
               <p>This user has no public forms</p>
@@ -1666,7 +1666,7 @@ var SelfProfile = React.createClass({
   render () {
     return (
         <ui.Panel className="k-div--selfprofile">
-          <em>{t('self profile')}</em>
+          <em>{gettext('self profile')}</em>
         </ui.Panel>
       );
   }

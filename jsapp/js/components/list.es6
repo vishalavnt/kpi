@@ -63,20 +63,20 @@ var List = React.createClass({
           {
             (searchState === 'none' && !showDefault) ?
               <bem.CollectionAssetList__message>
-                {t('enter a search term above')}
+                {gettext('enter a search term above')}
               </bem.CollectionAssetList__message>
           : (()=>{
               if (isLoading) {
                 return (
                   <bem.CollectionAssetList__message m={'loading'}>
-                    {t('loading...')}
+                    {gettext('loading...')}
                   </bem.CollectionAssetList__message>
                 );
               } else if (showDefault && searchState === 'none') {
                 if (defaultSearchResultsList.length === 0) {
                   return (
                       <bem.CollectionAssetList__message>
-                        {t('no assets were found')}
+                        {gettext('no assets were found')}
                       </bem.CollectionAssetList__message>
                     );
                 }
@@ -85,7 +85,7 @@ var List = React.createClass({
                 if (searchResultsList.length === 0) {
                   return (
                       <bem.CollectionAssetList__message>
-                        {t('no results were found matching your query')}
+                        {gettext('no results were found matching your query')}
                       </bem.CollectionAssetList__message>
                     );
 
@@ -190,7 +190,7 @@ var ListTagFilter = React.createClass({
               value=""
               disabled={true}
               multi={true}
-              placeholder={t('tags are loading')}
+              placeholder={gettext('tags are loading')}
               className={this.props.hidden ? 'hidden' : null}
             />
         );
@@ -199,7 +199,7 @@ var ListTagFilter = React.createClass({
         <Select
             name="tags"
             multi={true}
-            placeholder={t('select tags')}
+            placeholder={gettext('select tags')}
             options={this.state.availableTags}
             onChange={this.onTagChange}
             className={this.props.hidden ? 'hidden' : null}
@@ -248,12 +248,12 @@ var ListExpandToggle = React.createClass({
     return (
       <bem.LibNav__expanded className={{hidden: this.props.hidden}}>
         <bem.LibNav__count>
-          {count} {t('assets found')}
+          {count} {gettext('assets found')}
         </bem.LibNav__count>
         <bem.LibNav__expandedToggle>
           <label className='mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect' htmlFor='expandedToggleCheckbox'>
             <input type='checkbox' className='mdl-checkbox__input' id='expandedToggleCheckbox' checked={this.state.assetNavExpanded} onChange={this.handleChange} />
-            <span className='mdl-checkbox__label'>{t('expand details')} {this.state.assetNavExpanded}</span>
+            <span className='mdl-checkbox__label'>{gettext('expand details')} {this.state.assetNavExpanded}</span>
           </label>
         </bem.LibNav__expandedToggle>
       </bem.LibNav__expanded>
@@ -288,36 +288,36 @@ var ListSearchSummary = React.createClass({
     if (s.searchState === 'loading') {
       if (s.searchFor) {
         if (s.searchFor.string) {
-          messages.push(t('searching for "___"').replace('___', s.searchFor.string));
+          messages.push(gettext('searching for "___"').replace('___', s.searchFor.string));
         }
         if (tagString) {
-          messages.push(t('tagged with [___]').replace('___', tagString));
+          messages.push(gettext('tagged with [___]').replace('___', tagString));
         }
       }
       modifier = 'loading';
     } else if (s.searchResultsDisplayed) {
       if (s.searchFor) {
         if (s.searchFor.string) {
-          messages.push(t('searched for "___"').replace('___', s.searchFor.string));
+          messages.push(gettext('searched for "___"').replace('___', s.searchFor.string));
         }
         if (tagString) {
-          messages.push(t('tagged with [___]').replace('___', tagString));
+          messages.push(gettext('tagged with [___]').replace('___', tagString));
         }
       }
-      messages.push(t('found ## results').replace('##', s.searchResultsCount));
+      messages.push(gettext('found ## results').replace('##', s.searchResultsCount));
       modifier = 'done';
     } else {
       if (s.defaultQueryState === 'loading') {
         modifier = 'loading';
       } else if (s.defaultQueryState === 'done') {
         var desc = s.defaultQueryCount === 1 ? this.props.assetDescriptor : this.props.assetDescriptorPlural;
-        messages.push(t('## ___ available').replace('##', s.defaultQueryCount).replace('___', desc));
+        messages.push(gettext('## ___ available').replace('##', s.defaultQueryCount).replace('___', desc));
         modifier = 'done';
         if (s.defaultQueryCount < 1) {
           if (s.defaultQueryFor.assetType == 'asset_type:survey') {
-            messages.push(t('You currently have no forms. You can create a new form by clicking on the + button below.'));
+            messages.push(gettext('You currently have no forms. You can create a new form by clicking on the + button below.'));
           } else {
-            messages.push(t('Your library is currently empty. You can create a new question or a new block by clicking on the + button below, or add them from within your forms.'));
+            messages.push(gettext('Your library is currently empty. You can create a new question or a new block by clicking on the + button below, or add them from within your forms.'));
           }
         }
       }
@@ -359,11 +359,11 @@ var ListSearchDebug = React.createClass({
               <bem.CollectionNav__searchcriterion m={{
                 success: searchResultsSuccess
                   }}>
-                {t('success')}
-                {this.state.searchResultsSuccess ? t('yes') : t('no')}
+                {gettext('success')}
+                {this.state.searchResultsSuccess ? gettext('yes') : gettext('no')}
               </bem.CollectionNav__searchcriterion>
               <bem.CollectionNav__searchcriterion>
-                {t('count')}
+                {gettext('count')}
                 {this.state.searchResultsCount}
               </bem.CollectionNav__searchcriterion>
               { searchDebugQuery ?

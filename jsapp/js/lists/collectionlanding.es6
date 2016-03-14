@@ -65,8 +65,8 @@ var CollectionLanding = React.createClass({
   statics: {
     willTransitionTo: function(transition, params, idk, callback) {
       stores.pageState.setHeaderBreadcrumb([
-        {'label': t('library'), 'to': 'library'},
-        {'label': t('Collection'), 'to': 'collection-page', 'params': {
+        {'label': gettext('library'), 'to': 'library'},
+        {'label': gettext('Collection'), 'to': 'collection-page', 'params': {
           uid: params.uid
         }}
       ]);
@@ -153,13 +153,13 @@ var CollectionLanding = React.createClass({
     if (s.collectionLoading) {
       return (
           <ui.Panel>
-            {t('collection loading...')}
+            {gettext('collection loading...')}
           </ui.Panel>
         );
     } else if (!s.collection.url) {
       return (
           <ui.Panel>
-            {t('collection not loaded')}
+            {gettext('collection not loaded')}
           </ui.Panel>
         );
     }
@@ -174,7 +174,7 @@ var CollectionLanding = React.createClass({
                 }}
               value={collectionName}
               onChange={this.changeCollectionName}
-              placeholder={t('collection name')}
+              placeholder={gettext('collection name')}
               />
           </div>
         </bem.CollectionHeader__item>
@@ -190,23 +190,23 @@ var CollectionLanding = React.createClass({
               <bem.CollectionNav__button m={['new', 'new-collection']} className="mdl-menu__item"
                   onClick={this.createCollection}>
                 <i />
-                {t('new collection inside "___"').replace('___', collectionIdentifier)}
+                {gettext('new collection inside "___"').replace('___', collectionIdentifier)}
               </bem.CollectionNav__button>
               <bem.CollectionNav__button m={['new', 'new-question']} className="mdl-menu__item"
                   onClick={this.createQuestion}>
                 <i />
-                {t('new question inside "___"').replace('___', collectionIdentifier)}
+                {gettext('new question inside "___"').replace('___', collectionIdentifier)}
               </bem.CollectionNav__button>
               <bem.CollectionNav__button m={['new', 'new-block']} className="mdl-menu__item"
                   onClick={this.createBlock}>
                 <i />
-                {t('new block inside "___"').replace('___', collectionIdentifier)}
+                {gettext('new block inside "___"').replace('___', collectionIdentifier)}
               </bem.CollectionNav__button>
               <li className="mdl-menu__item">
                 <Dropzone onDropFiles={this.dropFiles} params={{destination: false}} fileInput>
                   <bem.CollectionNav__button m={['upload', 'upload-block']} className="mdl-menu__item">
                     <i className='fa fa-icon fa-cloud fa-fw' />
-                    {t('upload into "___"').replace('___', collectionIdentifier)}
+                    {gettext('upload into "___"').replace('___', collectionIdentifier)}
                   </bem.CollectionNav__button>
                 </Dropzone>
               </li>
@@ -237,7 +237,7 @@ var CollectionLanding = React.createClass({
       return (
         <bem.CollectionAssetList>
           <bem.CollectionAssetList__message m={'loading'}>
-            {t('loading...')}
+            {gettext('loading...')}
           </bem.CollectionAssetList__message>
         </bem.CollectionAssetList>
       );
@@ -246,7 +246,7 @@ var CollectionLanding = React.createClass({
         return (
           <bem.CollectionAssetList>
             <bem.CollectionAssetList__message m={'loading'}>
-              {t('no assets to display')}
+              {gettext('no assets to display')}
             </bem.CollectionAssetList__message>
           </bem.CollectionAssetList>
         );

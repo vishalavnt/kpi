@@ -144,10 +144,10 @@ var dmix = {
               value={value}
               allowCreate={true}
               clearable={true}
-              addLabelText={t('make new collection: "{label}"')}
-              clearValueText={t('none')}
-              searchPromptText={t('collection name')}
-              placeholder={t('select parent collection')}
+              addLabelText={gettext('make new collection: "{label}"')}
+              clearValueText={gettext('none')}
+              searchPromptText={gettext('collection name')}
+              placeholder={gettext('select parent collection')}
               options={this.state.collectionOptionList}
               onChange={this.onCollectionChange}
             />
@@ -198,17 +198,17 @@ var dmix = {
     return (
       <bem.AssetView__col m='owner'>
         <bem.AssetView__label>
-          {t('owner')}
+          {gettext('owner')}
         </bem.AssetView__label>
         <bem.AssetView__span m='val'>
           <bem.AssetView__span m='username'>
             {this.state.owner__username}
           </bem.AssetView__span>
           <bem.AssetView__span m='can-view'>
-            { `${viewerCount} ${viewerCount === 1 ? t('viewer') : t('viewers')}` }
+            { `${viewerCount} ${viewerCount === 1 ? gettext('viewer') : gettext('viewers')}` }
           </bem.AssetView__span>
           <bem.AssetView__span m='can-edit'>
-            { `${editorCount} ${editorCount === 1 ? t('editor') : t('editors')}` }
+            { `${editorCount} ${editorCount === 1 ? gettext('editor') : gettext('editors')}` }
           </bem.AssetView__span>
         </bem.AssetView__span>
       </bem.AssetView__col>
@@ -220,11 +220,11 @@ var dmix = {
     return (
       <bem.AssetView__col m={linkSharingM}>
         <bem.AssetView__label>
-          {t('status')}
+          {gettext('status')}
         </bem.AssetView__label>
         <bem.AssetView__span m='val'>
           {
-            is_public ? t('public') : t('private')
+            is_public ? gettext('public') : gettext('private')
           }
         </bem.AssetView__span>
       </bem.AssetView__col>
@@ -234,7 +234,7 @@ var dmix = {
     return (
       <bem.AssetView__col m='rowcount'>
         <bem.AssetView__label>
-          {t('questions')}
+          {gettext('questions')}
         </bem.AssetView__label>
         <bem.AssetView__span m='val'>
           {this.state.summary.row_count}
@@ -246,7 +246,7 @@ var dmix = {
     return (
       <bem.AssetView__col m='revisions'>
         <bem.AssetView__label>
-          {t('revisions')}
+          {gettext('revisions')}
         </bem.AssetView__label>
         <bem.AssetView__span m='val'>
           {this.state.version_count}
@@ -258,7 +258,7 @@ var dmix = {
     return (
       <bem.AssetView__col m='date-created'>
         <bem.AssetView__label>
-          {t('created')}
+          {gettext('created')}
         </bem.AssetView__label>
         <bem.AssetView__span m='val'>
           {formatTime(this.state.date_created)}
@@ -270,7 +270,7 @@ var dmix = {
     return (
       <bem.AssetView__col m='date-modified'>
         <bem.AssetView__label>
-          {t('modified')}
+          {gettext('modified')}
         </bem.AssetView__label>
         <bem.AssetView__span m='val'>
           {formatTime(this.state.date_modified)}
@@ -285,7 +285,7 @@ var dmix = {
       return (
           <bem.AssetView__langs m={'null'}>
             <bem.AssetView__label>
-              {t('no language information')}
+              {gettext('no language information')}
             </bem.AssetView__label>
           </bem.AssetView__langs>
         );
@@ -293,7 +293,7 @@ var dmix = {
       return (
           <bem.AssetView__langs m={'none'}>
             <bem.AssetView__label>
-              {t('no translations')}
+              {gettext('no translations')}
             </bem.AssetView__label>
           </bem.AssetView__langs>
         );
@@ -301,7 +301,7 @@ var dmix = {
     return (
         <bem.AssetView__langs>
           <bem.AssetView__label>
-            {t('languages') + ': '}
+            {gettext('languages') + ': '}
           </bem.AssetView__label>
           <bem.AssetView__value>
             {this.state.summary.languages.length}
@@ -339,7 +339,7 @@ var dmix = {
           <bem.AssetView__buttoncol>
             <bem.AssetView__link m='preview' href={this.makeHref('form-preview-enketo', {assetid: this.state.uid})}>
               <i />
-              {t('preview')}
+              {gettext('preview')}
             </bem.AssetView__link>
           </bem.AssetView__buttoncol>
           <bem.AssetView__buttoncol>
@@ -347,7 +347,7 @@ var dmix = {
               disabled: !this.state.userCanEdit,
                 }]} href={this.makeHref('form-edit', {assetid: this.state.uid})}>
               <i />
-              {t('edit')}
+              {gettext('edit')}
             </bem.AssetView__link>
           </bem.AssetView__buttoncol>
           <bem.AssetView__buttoncol
@@ -356,7 +356,7 @@ var dmix = {
             <bem.AssetView__button m={'download'}
                   disabled={!downloadable}>
               <i />
-              {t('download')}
+              {gettext('download')}
             </bem.AssetView__button>
             { (downloadable && this.state.downloadsShowing) ?
               <bem.PopoverMenu ref='dl-popover'>
@@ -375,20 +375,20 @@ var dmix = {
           <bem.AssetView__buttoncol>
             <bem.AssetView__link m='clone' onClick={this.saveCloneAs}>
               <i />
-              {t('clone')}
+              {gettext('clone')}
             </bem.AssetView__link>
           </bem.AssetView__buttoncol>
           <bem.AssetView__buttoncol>
             <bem.AssetView__link m='sharing' href={this.makeHref('form-sharing', {assetid: this.state.uid})}>
               <i />
-              {t('share')}
+              {gettext('share')}
             </bem.AssetView__link>
           </bem.AssetView__buttoncol>
           { deployable ?
           <bem.AssetView__buttoncol>
             <bem.AssetView__button m={'deploy'}  onClick={this.deployAsset}>
               <i />
-              {t('deploy')}
+              {gettext('deploy')}
             </bem.AssetView__button>
           </bem.AssetView__buttoncol>
           : null }
@@ -397,7 +397,7 @@ var dmix = {
       );
   },
   saveCloneAs () {
-    customPromptAsync(t('new form name'))
+    customPromptAsync(gettext('new form name'))
       .then((value) => {
         let uid = this.props.params.assetid;
         actions.resources.cloneAsset({
@@ -416,14 +416,14 @@ var dmix = {
     let defaultFormId = (settings && settings.form_id) || '';
     let dialog = alertify.dialog('prompt');
     let opts = {
-      title: t('deploy form to kobocat'),
-      message: t('please specify a form id'),
+      title: gettext('deploy form to kobocat'),
+      message: gettext('please specify a form id'),
       value: defaultFormId,
-      labels: {ok: t('ok'), cancel: t('cancel')},
+      labels: {ok: gettext('ok'), cancel: gettext('cancel')},
       onok: (evt, val) => {
         let ok_button = dialog.elements.buttons.primary.firstChild;
         ok_button.disabled = true;
-        ok_button.innerText = t('Deploying...');
+        ok_button.innerText = gettext('Deploying...');
         // pass the dialog so it can be modified to include error messages
         actions.resources.deployAsset(asset_url, val, dialog);
         // keep the dialog open
@@ -443,7 +443,7 @@ var dmix = {
   deleteAsset (...args) {
     let uid = this.props.params.assetid;
     let aType = this.state.asset_type;
-    let q_ = t('You are about to permanently delete this ___. Are you sure you want to continue?')
+    let q_ = gettext('You are about to permanently delete this ___. Are you sure you want to continue?')
                 .replace('___', t(aType));
     customConfirmAsync(q_)
       .done(() => {
@@ -465,7 +465,7 @@ var dmix = {
                 disabled: !this.state.userCanEdit
                   }]}>
                 <i />
-                {t('refresh')}
+                {gettext('refresh')}
               </bem.AssetView__button>
             </Dropzone>
           </bem.AssetView__buttoncol>
@@ -474,15 +474,15 @@ var dmix = {
           <bem.AssetView__buttoncol>
             <bem.AssetView__button m='delete' onClick={this.deleteAsset}>
               <i />
-              {t('delete')}
+              {gettext('delete')}
             </bem.AssetView__button>
           </bem.AssetView__buttoncol>
           <bem.AssetView__deployments>
             {
               this.state.deployment_count ?
-                `${t('deployments')}: ${this.state.deployment_count}`
+                `${gettext('deployments')}: ${this.state.deployment_count}`
                 :
-                t('no deployments')
+                gettext('no deployments')
             }
           </bem.AssetView__deployments>
         </bem.AssetView__row>
@@ -532,7 +532,7 @@ var dmix = {
         <bem.AssetView m='loadin g'>
           <ui.Panel>
             <i />
-            {t('loading asset')}
+            {gettext('loading asset')}
           </ui.Panel>
         </bem.AssetView>
       );
@@ -584,7 +584,7 @@ var dmix = {
 
         stores.pageState.setHeaderBreadcrumb([
           {
-            label: isLibrary ? t('library') : t('forms'),
+            label: isLibrary ? gettext('library') : gettext('forms'),
             to: isLibrary ? 'library' : 'forms',
           },
           {
@@ -660,7 +660,7 @@ mixins.droppable = {
                 isCurrentPage = this.state.uid === assetUid;
 
             if (!assetUid) {
-              alertify.error(t('Could not redirect to asset.'));
+              alertify.error(gettext('Could not redirect to asset.'));
             } else if (isCurrentPage) {
               actions.resources.loadAsset({id: assetUid});
             } else {
@@ -669,23 +669,23 @@ mixins.droppable = {
           }
           // If the import task didn't complete immediately, inform the user accordingly.
           else if (importData.status === 'processing') {
-            alertify.warning(t('Your library assets have uploaded and are being processed. This may take a few moments.'));
+            alertify.warning(gettext('Your library assets have uploaded and are being processed. This may take a few moments.'));
           } else if (importData.status === 'created') {
-            alertify.warning(t('Your library assets have uploaded and are queued for processing. This may take a few moments.'));
+            alertify.warning(gettext('Your library assets have uploaded and are queued for processing. This may take a few moments.'));
           } else if (importData.status === 'error')  {
             var error_message= `<strong>Import Error.</strong><br><code><strong>${importData.messages.error_type}</strong><br>${importData.messages.error}</code>`
             alertify.error(t(error_message));
           } else {
-            alertify.error(t('Import Failure.'));
+            alertify.error(gettext('Import Failure.'));
           }
         }).fail((failData)=>{
-          alertify.error(t('Import Failed.'));
+          alertify.error(gettext('Import Failed.'));
           log('import failed', failData);
         });
       }), 2500);
     }).fail((jqxhr)=> {
       log('Failed to create import: ', jqxhr);
-      alertify.error(t('Failed to create import.'));
+      alertify.error(gettext('Failed to create import.'));
     });
   },
   dropFiles (files, params={}) {
@@ -727,7 +727,7 @@ mixins.ancestorBreadcrumb = {
       return arr;
     }, [
       {
-        children: t('collections'),
+        children: gettext('collections'),
         to: 'collections'
       }
     ]);
@@ -820,19 +820,19 @@ mixins.cmix = {
             <bem.ListView__searchcriterion>
               <label>
                 <input type='checkbox' />
-                {t('my forms')}
+                {gettext('my forms')}
               </label>
             </bem.ListView__searchcriterion>
             <bem.ListView__searchcriterion>
               <label>
                 <input type='radio' />
-                {t('shared with me')}
+                {gettext('shared with me')}
               </label>
             </bem.ListView__searchcriterion>
             <bem.ListView__searchcriterion>
               <label>
                 <input type='radio' />
-                {t('public')}
+                {gettext('public')}
               </label>
             </bem.ListView__searchcriterion>
           </bem.ListView__searchcriteria>
@@ -858,7 +858,7 @@ mixins.cmix = {
     if (this.state.loadError) {
       return (
           <bem.Message m='error'>
-            <strong>{t('error loading data')}</strong>
+            <strong>{gettext('error loading data')}</strong>
             <br />
             {this.state.loadError}
           </bem.Message>
@@ -866,7 +866,7 @@ mixins.cmix = {
     } else if (this.state.results) {
       return (
           <bem.Message m='loaded'>
-            <strong>{t('results loaded')}</strong>
+            <strong>{gettext('results loaded')}</strong>
             <br />
             {this.state.results.length}
           </bem.Message>
@@ -875,7 +875,7 @@ mixins.cmix = {
       return (
           <bem.Message m='loading'>
             <i />
-            {t('loading')}
+            {gettext('loading')}
           </bem.Message>
         );
 
@@ -924,7 +924,7 @@ mixins.clickAssets = {
         this.transitionTo('collection-page', {uid: uid});
       },
       delete: function(uid/*, evt*/){
-        var q_ = t('Warning! You are about to delete this collection with all its questions and blocks. Are you sure you want to continue?');
+        var q_ = gettext('Warning! You are about to delete this collection with all its questions and blocks. Are you sure you want to continue?');
         customConfirmAsync(q_)
           .done(function(){
             actions.resources.deleteCollection({uid: uid});
@@ -939,7 +939,7 @@ mixins.clickAssets = {
         this.transitionTo('form-landing', {assetid: uid});
       },
       clone: function(uid/*, evt*/){
-        customPromptAsync(t('new name?'))
+        customPromptAsync(gettext('new name?'))
           .then((value) => {
             actions.resources.cloneAsset({
               uid: uid,
@@ -958,7 +958,7 @@ mixins.clickAssets = {
         this.transitionTo('form-edit', {assetid: uid});
       },
       delete: function(uid/*, evt*/){
-        var q_ = t('You are about to permanently delete this form. Are you sure you want to continue?');
+        var q_ = gettext('You are about to permanently delete this form. Are you sure you want to continue?');
         customConfirmAsync(q_)
           .done(function(){
             actions.resources.deleteAsset({uid: uid});

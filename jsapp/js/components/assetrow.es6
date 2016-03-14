@@ -83,21 +83,21 @@ var AssetRow = React.createClass({
             <bem.AssetRow__cell m={'userlink'}>
               {
                 selfowned ?
-                  t('me') :
+                  gettext('me') :
                   this.props.owner__username
               }
             </bem.AssetRow__cell>
             <bem.AssetRow__cell m={'date-modified'}>
-              <span className="date date--modified">{t('Modified')} {formatTime(this.props.date_modified)}</span>
+              <span className="date date--modified">{gettext('Modified')} {formatTime(this.props.date_modified)}</span>
             </bem.AssetRow__cell>
             <bem.AssetRow__cell m={'row-count'}>
               {()=>{
                 if (this.props.kind === 'collection') {
-                  return t('collection with ___ items').replace('___', _rc);
+                  return gettext('collection with ___ items').replace('___', _rc);
                 } else if (this.props.asset_type === 'survey') {
-                  return t('survey with ___ questions').replace('___', _rc);
+                  return gettext('survey with ___ questions').replace('___', _rc);
                 } else if (this.props.asset_type === 'block') {
-                  return t('block with ___ questions').replace('___', _rc);
+                  return gettext('block with ___ questions').replace('___', _rc);
                 }
               }()}
             </bem.AssetRow__cell>
@@ -127,7 +127,7 @@ var AssetRow = React.createClass({
                         data-asset-type={this.props.kind}
                       >
                     <i />
-                    {t('deploy')}
+                    {gettext('deploy')}
                   </bem.AssetRow__actionIcon>
                 }
                 { this.props.kind === 'collection' &&
