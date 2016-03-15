@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-14 19:37+0000\n"
+"POT-Creation-Date: 2016-03-15 19:04+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,886 +17,544 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: jsapp/compiled/bundle.js:56451
+#: jsapp/js/actions.es6:269 staticfiles/js/actions.es6:269
 msgid "successfully uploaded file; processing may take a few minutes"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:56457
+#: jsapp/js/actions.es6:275 staticfiles/js/actions.es6:275
 msgid "Error: import.status not available"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:56511
+#: jsapp/js/actions.es6:333 staticfiles/js/actions.es6:333
 msgid "deployed form"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:56519
+#: jsapp/js/actions.es6:341 staticfiles/js/actions.es6:341
 msgid "unable to deploy"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:56523 jsapp/compiled/bundle.js:67425
-#: jsapp/compiled/bundle.min.js:26
+#: jsapp/js/actions.es6:345 staticfiles/js/actions.es6:345
 msgid "ok"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:56529
+#: jsapp/js/actions.es6:353 staticfiles/js/actions.es6:353
 msgid "please check your connection and try again."
 msgstr ""
 
-#: jsapp/compiled/bundle.js:56529
-msgid "if this problem persists, contact support@kobotoolbox.org"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:56530
+#: jsapp/js/actions.es6:356 staticfiles/js/actions.es6:356
 msgid "retry"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:56532
+#: jsapp/js/actions.es6:359 staticfiles/js/actions.es6:359
 msgid "your form id was not valid:"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:56532
-msgid "please specify a different form id:"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:56534
+#: jsapp/js/actions.es6:365 staticfiles/js/actions.es6:365
 msgid "your form cannot be deployed because it contains errors:"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:56934
+#: jsapp/js/app.es6:127 staticfiles/js/app.es6:127
 msgid "profile"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:56944 jsapp/compiled/bundle.js:59675
-#: jsapp/compiled/bundle.min.js:22
-msgid "logout"
+#: jsapp/js/app.es6:231 staticfiles/js/app.es6:231
+msgid "log in"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:57043 jsapp/compiled/bundle.js:69271
-#: jsapp/compiled/bundle.min.js:27
-msgid "no name"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:57205 jsapp/compiled/bundle.js:66804
-#: jsapp/compiled/bundle.js:67903 jsapp/compiled/bundle.min.js:25
-#: jsapp/compiled/bundle.min.js:26
+#: jsapp/js/app.es6:314 jsapp/js/mixins.es6:878 staticfiles/js/app.es6:314
+#: staticfiles/js/mixins.es6:878
 msgid "loading"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:57215
+#: jsapp/js/app.es6:322 staticfiles/js/app.es6:322
 msgid "no search results found"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:57242
+#: jsapp/js/app.es6:345 staticfiles/js/app.es6:345
 msgid "block of ___ questions"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:57367
+#: jsapp/js/app.es6:460 staticfiles/js/app.es6:460
 msgid "loading library assets"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:57408 jsapp/compiled/bundle.js:66696
-#: jsapp/compiled/bundle.min.js:25
-msgid "search library"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:57678 jsapp/compiled/bundle.js:67353
-#: jsapp/compiled/bundle.min.js:21 jsapp/compiled/bundle.min.js:26
+#: jsapp/js/app.es6:680 jsapp/js/mixins.es6:359 staticfiles/js/app.es6:680
+#: staticfiles/js/mixins.es6:359
 msgid "download"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:57830 jsapp/compiled/bundle.min.js:21
-msgid "Link sharing on"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:57830 jsapp/compiled/bundle.min.js:21
-msgid "Link sharing off"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:57835 jsapp/compiled/bundle.min.js:21
+#: jsapp/js/app.es6:793 staticfiles/js/app.es6:793
 msgid "Anyone with the link can view this item"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:57835 jsapp/compiled/bundle.min.js:21
+#: jsapp/js/app.es6:794 staticfiles/js/app.es6:794
 msgid "This item can only be viewed by you and anyone you specify"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:57980 jsapp/compiled/bundle.min.js:21
+#: jsapp/js/app.es6:834 staticfiles/js/app.es6:834
+msgid "Web form style"
+msgstr ""
+
+#: jsapp/js/app.es6:844 jsapp/js/constants.es6:12 staticfiles/js/app.es6:844
+#: staticfiles/js/constants.es6:12
+msgid "Default - single page"
+msgstr ""
+
+#: jsapp/js/app.es6:845 jsapp/js/constants.es6:13 staticfiles/js/app.es6:845
+#: staticfiles/js/constants.es6:13
+msgid "Grid theme"
+msgstr ""
+
+#: jsapp/js/app.es6:846 jsapp/js/constants.es6:14 staticfiles/js/app.es6:846
+#: staticfiles/js/constants.es6:14
+msgid "Multiple pages"
+msgstr ""
+
+#: jsapp/js/app.es6:847 jsapp/js/constants.es6:15 staticfiles/js/app.es6:847
+#: staticfiles/js/constants.es6:15
+msgid "Grid theme + Multiple pages"
+msgstr ""
+
+#: jsapp/js/app.es6:907 staticfiles/js/app.es6:907
 msgid "loading kobotoolbox"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:57999 jsapp/compiled/bundle.js:58641
-#: jsapp/compiled/bundle.js:58718 jsapp/compiled/bundle.js:66429
-#: jsapp/compiled/bundle.min.js:21 jsapp/compiled/bundle.min.js:25
-msgid "Forms"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:58253 jsapp/compiled/bundle.js:58499
-#: jsapp/compiled/bundle.min.js:21
+#: jsapp/js/app.es6:1385 staticfiles/js/app.es6:1385
 msgid "manage sharing permissions"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:58278 jsapp/compiled/bundle.js:58530
-#: jsapp/compiled/bundle.js:67143 jsapp/compiled/bundle.min.js:21
-#: jsapp/compiled/bundle.min.js:26
+#: jsapp/js/app.es6:1396 jsapp/js/mixins.es6:201 staticfiles/js/app.es6:1396
+#: staticfiles/js/mixins.es6:201
 msgid "owner"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:58288 jsapp/compiled/bundle.min.js:21
-msgid ""
-"To share this item with others just enter their username below, then choose "
-"which permissions they shoud have. To remove them again just deselect both "
-"permissions. Note: this does not control permissions to the data collected "
-"by projects"
+#: jsapp/js/app.es6:1482 jsapp/js/lists/forms.es6:36
+#: staticfiles/js/app.es6:1482 staticfiles/js/lists/forms.es6:36
+msgid "Forms"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:58309 jsapp/compiled/bundle.js:58315
-#: jsapp/compiled/bundle.min.js:21
-msgid "share with username"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:58345 jsapp/compiled/bundle.js:58594
-#: jsapp/compiled/bundle.min.js:21
-msgid "Link sharing"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:58537 jsapp/compiled/bundle.min.js:21
-msgid ""
-"note: this does not control permissions to the data collected by projects"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:58558 jsapp/compiled/bundle.min.js:21
-msgid "Share with other users"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:58564 jsapp/compiled/bundle.min.js:21
-msgid "enter a username"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:58643 jsapp/compiled/bundle.js:66597
-#: jsapp/compiled/bundle.min.js:21 jsapp/compiled/bundle.min.js:25
+#: jsapp/js/app.es6:1484 jsapp/js/lists/library.es6:39
+#: staticfiles/js/app.es6:1484 staticfiles/js/lists/library.es6:39
 msgid "Library"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:58645 jsapp/compiled/bundle.min.js:21
+#: jsapp/js/app.es6:1488 staticfiles/js/app.es6:1488
 msgid "Preview"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:58652 jsapp/compiled/bundle.js:60412
-#: jsapp/compiled/bundle.js:60422 jsapp/compiled/bundle.js:61406
-#: jsapp/compiled/bundle.js:66002 jsapp/compiled/bundle.js:66339
-#: jsapp/compiled/bundle.min.js:21 jsapp/compiled/bundle.min.js:22
-#: jsapp/compiled/bundle.min.js:23 jsapp/compiled/bundle.min.js:25
+#: jsapp/js/app.es6:1497 jsapp/js/components/searchcollectionlist.es6:73
+#: jsapp/js/editorMixins/editableForm.es6:515
+#: jsapp/js/lists/collectionlanding.es6:240 staticfiles/js/app.es6:1497
+#: staticfiles/js/components/searchcollectionlist.es6:73
+#: staticfiles/js/editorMixins/editableForm.es6:515
+#: staticfiles/js/lists/collectionlanding.es6:240
 msgid "loading..."
 msgstr ""
 
-#: jsapp/compiled/bundle.js:58745 jsapp/compiled/bundle.min.js:21
+#: jsapp/js/app.es6:1589 staticfiles/js/app.es6:1589
 msgid "path not found / recognized"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:58760 jsapp/compiled/bundle.min.js:21
-msgid "users"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:58777 jsapp/compiled/bundle.min.js:21
-msgid "user"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:58788 jsapp/compiled/bundle.min.js:21
+#: jsapp/js/app.es6:1614 staticfiles/js/app.es6:1614
 msgid "my forms shared with user"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:58806 jsapp/compiled/bundle.min.js:21
+#: jsapp/js/app.es6:1623 staticfiles/js/app.es6:1623
 msgid "public forms"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:58878 jsapp/compiled/bundle.min.js:21
-msgid "self profile"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:59364 jsapp/compiled/bundle.min.js:22
-msgid "me"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:59372 jsapp/compiled/bundle.min.js:22
+#: jsapp/js/components/assetrow.es6:91
+#: staticfiles/js/components/assetrow.es6:91
 msgid "Modified"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:59382 jsapp/compiled/bundle.min.js:22
+#: jsapp/js/components/assetrow.es6:96
+#: staticfiles/js/components/assetrow.es6:96
 msgid "collection with ___ items"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:59384 jsapp/compiled/bundle.min.js:22
+#: jsapp/js/components/assetrow.es6:98
+#: staticfiles/js/components/assetrow.es6:98
 msgid "survey with ___ questions"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:59386 jsapp/compiled/bundle.min.js:22
+#: jsapp/js/components/assetrow.es6:100
+#: staticfiles/js/components/assetrow.es6:100
 msgid "block with ___ questions"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:59418 jsapp/compiled/bundle.js:67396
-#: jsapp/compiled/bundle.min.js:22 jsapp/compiled/bundle.min.js:26
+#: jsapp/js/components/assetrow.es6:130 jsapp/js/mixins.es6:391
+#: staticfiles/js/components/assetrow.es6:130 staticfiles/js/mixins.es6:391
 msgid "deploy"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:59653 jsapp/compiled/bundle.min.js:22
-msgid "drafts in progress"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:59655 jsapp/compiled/bundle.js:61078
-#: jsapp/compiled/bundle.js:66479 jsapp/compiled/bundle.js:67600
-#: jsapp/compiled/bundle.min.js:22 jsapp/compiled/bundle.min.js:23
-#: jsapp/compiled/bundle.min.js:25 jsapp/compiled/bundle.min.js:26
+#: jsapp/js/components/drawer.es6:93
+#: jsapp/js/editorMixins/editableForm.es6:204 jsapp/js/lists/forms.es6:82
+#: jsapp/js/mixins.es6:587 staticfiles/js/components/drawer.es6:93
+#: staticfiles/js/editorMixins/editableForm.es6:204
+#: staticfiles/js/lists/forms.es6:82 staticfiles/js/mixins.es6:587
 msgid "forms"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:59656 jsapp/compiled/bundle.js:61078
-#: jsapp/compiled/bundle.js:66130 jsapp/compiled/bundle.js:67600
-#: jsapp/compiled/bundle.min.js:22 jsapp/compiled/bundle.min.js:23
-#: jsapp/compiled/bundle.min.js:25 jsapp/compiled/bundle.min.js:26
-msgid "library"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:59661 jsapp/compiled/bundle.min.js:22
-msgid "deployed projects"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:59663 jsapp/compiled/bundle.min.js:22
+#: jsapp/js/components/drawer.es6:99 staticfiles/js/components/drawer.es6:99
 msgid "projects"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:59668 jsapp/compiled/bundle.min.js:22
+#: jsapp/js/components/drawer.es6:103 jsapp/js/components/sidebar.es6:228
+#: staticfiles/js/components/drawer.es6:103
+#: staticfiles/js/components/sidebar.es6:228
 msgid "account actions"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:59673 jsapp/compiled/bundle.min.js:22
-msgid "settings"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:59674 jsapp/compiled/bundle.min.js:22
+#: jsapp/js/components/drawer.es6:108 staticfiles/js/components/drawer.es6:108
 msgid "leave beta"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:59676 jsapp/compiled/bundle.min.js:22
-msgid "login"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:60114 jsapp/compiled/bundle.min.js:22
+#: jsapp/js/components/list.es6:193 staticfiles/js/components/list.es6:193
 msgid "tags are loading"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:60121 jsapp/compiled/bundle.min.js:22
-msgid "select tags"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:60173 jsapp/compiled/bundle.min.js:22
+#: jsapp/js/components/list.es6:251 staticfiles/js/components/list.es6:251
 msgid "assets found"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:60185 jsapp/compiled/bundle.min.js:22
+#: jsapp/js/components/list.es6:256 staticfiles/js/components/list.es6:256
 msgid "expand details"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:60221 jsapp/compiled/bundle.min.js:22
+#: jsapp/js/components/list.es6:291 staticfiles/js/components/list.es6:291
 msgid "searching for \"___\""
 msgstr ""
 
-#: jsapp/compiled/bundle.js:60224 jsapp/compiled/bundle.js:60234
-#: jsapp/compiled/bundle.min.js:22
+#: jsapp/js/components/list.es6:294 jsapp/js/components/list.es6:304
+#: staticfiles/js/components/list.es6:294
+#: staticfiles/js/components/list.es6:304
 msgid "tagged with [___]"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:60231 jsapp/compiled/bundle.min.js:22
+#: jsapp/js/components/list.es6:301 staticfiles/js/components/list.es6:301
 msgid "searched for \"___\""
 msgstr ""
 
-#: jsapp/compiled/bundle.js:60237 jsapp/compiled/bundle.min.js:22
+#: jsapp/js/components/list.es6:307 staticfiles/js/components/list.es6:307
 msgid "found ## results"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:60244 jsapp/compiled/bundle.min.js:22
+#: jsapp/js/components/list.es6:314 staticfiles/js/components/list.es6:314
 msgid "## ___ available"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:60248 jsapp/compiled/bundle.min.js:22
+#: jsapp/js/components/list.es6:318 staticfiles/js/components/list.es6:318
 msgid ""
 "You currently have no forms. You can create a new form by clicking on the + "
 "button below."
 msgstr ""
 
-#: jsapp/compiled/bundle.js:60250 jsapp/compiled/bundle.min.js:22
+#: jsapp/js/components/list.es6:320 staticfiles/js/components/list.es6:320
 msgid ""
 "Your library is currently empty. You can create a new question or a new "
 "block by clicking on the + button below, or add them from within your forms."
 msgstr ""
 
-#: jsapp/compiled/bundle.js:60297 jsapp/compiled/bundle.min.js:22
+#: jsapp/js/components/list.es6:362 staticfiles/js/components/list.es6:362
 msgid "success"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:60298 jsapp/compiled/bundle.min.js:22
+#: jsapp/js/components/list.es6:363 staticfiles/js/components/list.es6:363
 msgid "yes"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:60298 jsapp/compiled/bundle.min.js:22
+#: jsapp/js/components/list.es6:363 staticfiles/js/components/list.es6:363
 msgid "no"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:60303 jsapp/compiled/bundle.min.js:22
-msgid "count"
+#: jsapp/js/components/sidebar.es6:190
+#: staticfiles/js/components/sidebar.es6:190
+msgid "logout"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:60432 jsapp/compiled/bundle.min.js:22
-msgid "error"
+#: jsapp/js/components/sidebar.es6:196
+#: staticfiles/js/components/sidebar.es6:196
+msgid "logged out"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:60457 jsapp/compiled/bundle.min.js:22
-msgid "Default - single page"
+#: jsapp/js/components/sidebar.es6:213
+#: staticfiles/js/components/sidebar.es6:213
+msgid "drafts in progress"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:60457 jsapp/compiled/bundle.min.js:22
-msgid "Grid theme"
+#: jsapp/js/components/sidebar.es6:215
+#: jsapp/js/editorMixins/editableForm.es6:204 jsapp/js/mixins.es6:587
+#: staticfiles/js/components/sidebar.es6:215
+#: staticfiles/js/editorMixins/editableForm.es6:204
+#: staticfiles/js/mixins.es6:587
+msgid "library"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:60457 jsapp/compiled/bundle.min.js:22
-msgid "Multiple pages"
+#: jsapp/js/components/sidebar.es6:224
+#: staticfiles/js/components/sidebar.es6:224
+msgid "deployed projects"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:60457 jsapp/compiled/bundle.min.js:22
-msgid "Grid theme + Multiple pages"
+#: jsapp/js/components/sidebar.es6:232
+#: staticfiles/js/components/sidebar.es6:232
+msgid "login"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:61026 jsapp/compiled/bundle.min.js:23
+#: jsapp/js/editorMixins/editableForm.es6:153
+#: staticfiles/js/editorMixins/editableForm.es6:153
 msgid "none (0 metadata specified)"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:61034 jsapp/compiled/bundle.min.js:23
+#: jsapp/js/editorMixins/editableForm.es6:160
+#: staticfiles/js/editorMixins/editableForm.es6:160
 msgid "metadata:"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:61083 jsapp/compiled/bundle.min.js:23
+#: jsapp/js/editorMixins/editableForm.es6:210
+#: staticfiles/js/editorMixins/editableForm.es6:210
 msgid "new"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:61144 jsapp/compiled/bundle.min.js:23
+#: jsapp/js/editorMixins/editableForm.es6:272
+#: staticfiles/js/editorMixins/editableForm.es6:272
 msgid "you have unsaved changes"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:61205 jsapp/compiled/bundle.min.js:23
+#: jsapp/js/editorMixins/editableForm.es6:331
+#: staticfiles/js/editorMixins/editableForm.es6:331
 msgid ""
 "failed to generate preview. please report this to support@kobotoolbox.org"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:61287 jsapp/compiled/bundle.min.js:23
+#: jsapp/js/editorMixins/editableForm.es6:411
+#: staticfiles/js/editorMixins/editableForm.es6:411
 msgid "create"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:61289 jsapp/compiled/bundle.min.js:23
+#: jsapp/js/editorMixins/editableForm.es6:413
+#: staticfiles/js/editorMixins/editableForm.es6:413
 msgid "save"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:61313 jsapp/compiled/bundle.min.js:23
+#: jsapp/js/editorMixins/editableForm.es6:436
+#: staticfiles/js/editorMixins/editableForm.es6:436
 msgid "form name"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:61334 jsapp/compiled/bundle.min.js:23
+#: jsapp/js/editorMixins/editableForm.es6:451
+#: staticfiles/js/editorMixins/editableForm.es6:451
 msgid "close"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:61343 jsapp/compiled/bundle.js:67328
-#: jsapp/compiled/bundle.min.js:23 jsapp/compiled/bundle.min.js:26
+#: jsapp/js/editorMixins/editableForm.es6:458 jsapp/js/mixins.es6:342
+#: staticfiles/js/editorMixins/editableForm.es6:458
+#: staticfiles/js/mixins.es6:342
 msgid "preview"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:61351 jsapp/compiled/bundle.min.js:23
+#: jsapp/js/editorMixins/editableForm.es6:465
+#: staticfiles/js/editorMixins/editableForm.es6:465
 msgid "show all responses"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:61360 jsapp/compiled/bundle.min.js:23
+#: jsapp/js/editorMixins/editableForm.es6:474
+#: staticfiles/js/editorMixins/editableForm.es6:474
 msgid "group questions"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:61368 jsapp/compiled/bundle.min.js:23
-msgid "form-style"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:61377 jsapp/compiled/bundle.min.js:23
-msgid "form style"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:61382 jsapp/compiled/bundle.min.js:23
+#: jsapp/js/editorMixins/editableForm.es6:492
+#: staticfiles/js/editorMixins/editableForm.es6:492
 msgid "select the form style that you would like to use."
 msgstr ""
 
-#: jsapp/compiled/bundle.js:61383 jsapp/compiled/bundle.min.js:23
+#: jsapp/js/editorMixins/editableForm.es6:493
+#: staticfiles/js/editorMixins/editableForm.es6:493
 msgid "for more info, see: "
 msgstr ""
 
-#: jsapp/compiled/bundle.js:61390 jsapp/compiled/bundle.min.js:23
-msgid "custom form style: \"{label}\""
-msgstr ""
-
-#: jsapp/compiled/bundle.js:61456 jsapp/compiled/bundle.min.js:23
-msgid "Untitled"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:61493 jsapp/compiled/bundle.min.js:23
+#: jsapp/js/editorMixins/editableForm.es6:593
+#: staticfiles/js/editorMixins/editableForm.es6:593
 msgid "Form Preview"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:61557 jsapp/compiled/bundle.js:61603
-#: jsapp/compiled/bundle.min.js:23
+#: jsapp/js/editorMixins/existingForm.es6:36
+#: jsapp/js/editorMixins/newForm.es6:30
+#: staticfiles/js/editorMixins/existingForm.es6:36
+#: staticfiles/js/editorMixins/newForm.es6:30
 msgid "you have unsaved changes. would you like to save?"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:65891 jsapp/compiled/bundle.min.js:25
+#: jsapp/js/lists/collection.es6:34 staticfiles/js/lists/collection.es6:34
 msgid "Collections"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:65958 jsapp/compiled/bundle.js:66732
-#: jsapp/compiled/bundle.min.js:25
+#: jsapp/js/lists/collection.es6:94 jsapp/js/lists/library.es6:148
+#: staticfiles/js/lists/collection.es6:94 staticfiles/js/lists/library.es6:148
 msgid "new collection"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:65972 jsapp/compiled/bundle.js:66514
-#: jsapp/compiled/bundle.js:66743 jsapp/compiled/bundle.min.js:25
-msgid "upload"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:66130 jsapp/compiled/bundle.min.js:25
-msgid "Collection"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:66225 jsapp/compiled/bundle.min.js:25
-msgid "collection loading..."
-msgstr ""
-
-#: jsapp/compiled/bundle.js:66231 jsapp/compiled/bundle.min.js:25
+#: jsapp/js/lists/collectionlanding.es6:162
+#: staticfiles/js/lists/collectionlanding.es6:162
 msgid "collection not loaded"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:66254 jsapp/compiled/bundle.js:67085
-#: jsapp/compiled/bundle.min.js:25
-msgid "collection name"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:66283 jsapp/compiled/bundle.min.js:25
+#: jsapp/js/lists/collectionlanding.es6:193
+#: staticfiles/js/lists/collectionlanding.es6:193
 msgid "new collection inside \"___\""
 msgstr ""
 
-#: jsapp/compiled/bundle.js:66290 jsapp/compiled/bundle.min.js:25
+#: jsapp/js/lists/collectionlanding.es6:198
+#: staticfiles/js/lists/collectionlanding.es6:198
 msgid "new question inside \"___\""
 msgstr ""
 
-#: jsapp/compiled/bundle.js:66297 jsapp/compiled/bundle.min.js:25
+#: jsapp/js/lists/collectionlanding.es6:203
+#: staticfiles/js/lists/collectionlanding.es6:203
 msgid "new block inside \"___\""
 msgstr ""
 
-#: jsapp/compiled/bundle.js:66309 jsapp/compiled/bundle.min.js:25
+#: jsapp/js/lists/collectionlanding.es6:209
+#: staticfiles/js/lists/collectionlanding.es6:209
 msgid "upload into \"___\""
 msgstr ""
 
-#: jsapp/compiled/bundle.js:66350 jsapp/compiled/bundle.min.js:25
+#: jsapp/js/lists/collectionlanding.es6:249
+#: staticfiles/js/lists/collectionlanding.es6:249
 msgid "no assets to display"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:66471 jsapp/compiled/bundle.min.js:25
+#: jsapp/js/lists/forms.es6:74 staticfiles/js/lists/forms.es6:74
 msgid "search forms"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:66478 jsapp/compiled/bundle.min.js:25
+#: jsapp/js/lists/forms.es6:81 staticfiles/js/lists/forms.es6:81
 msgid "form"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:66505 jsapp/compiled/bundle.min.js:25
+#: jsapp/js/lists/forms.es6:98 staticfiles/js/lists/forms.es6:98
 msgid "new form"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:66725 jsapp/compiled/bundle.min.js:25
+#: jsapp/js/lists/forms.es6:103 jsapp/js/lists/library.es6:155
+#: staticfiles/js/lists/forms.es6:103 staticfiles/js/lists/library.es6:155
+msgid "upload"
+msgstr ""
+
+#: jsapp/js/lists/library.es6:124 staticfiles/js/lists/library.es6:124
+msgid "search library"
+msgstr ""
+
+#: jsapp/js/lists/library.es6:143 staticfiles/js/lists/library.es6:143
 msgid "add to library"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:66761 jsapp/compiled/bundle.min.js:25
+#: jsapp/js/lists/library.es6:171 staticfiles/js/lists/library.es6:171
 msgid "all items (no filter)"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:66784 jsapp/compiled/bundle.js:67491
-#: jsapp/compiled/bundle.min.js:25 jsapp/compiled/bundle.min.js:26
+#: jsapp/js/lists/library.es6:178 staticfiles/js/lists/library.es6:178
+msgid "filter by collection"
+msgstr ""
+
+#: jsapp/js/lists/library.es6:199 jsapp/js/mixins.es6:477
+#: staticfiles/js/lists/library.es6:199 staticfiles/js/mixins.es6:477
 msgid "delete"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:66789 jsapp/compiled/bundle.min.js:25
-msgid "sharing"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:66794 jsapp/compiled/bundle.js:67340
-#: jsapp/compiled/bundle.min.js:25 jsapp/compiled/bundle.min.js:26
+#: jsapp/js/lists/library.es6:205 jsapp/js/mixins.es6:350
+#: staticfiles/js/lists/library.es6:205 staticfiles/js/mixins.es6:350
 msgid "edit"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:66809 jsapp/compiled/bundle.min.js:25
+#: jsapp/js/lists/library.es6:220 staticfiles/js/lists/library.es6:220
 msgid "library item"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:66810 jsapp/compiled/bundle.min.js:25
+#: jsapp/js/lists/library.es6:221 staticfiles/js/lists/library.es6:221
 msgid "library items"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:67083 jsapp/compiled/bundle.min.js:25
-msgid "make new collection: \"{label}\""
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67084 jsapp/compiled/bundle.min.js:25
-msgid "none"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67086 jsapp/compiled/bundle.min.js:25
-msgid "select parent collection"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67156 jsapp/compiled/bundle.min.js:26
+#: jsapp/js/mixins.es6:208 staticfiles/js/mixins.es6:208
 msgid "viewer"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:67156 jsapp/compiled/bundle.min.js:26
+#: jsapp/js/mixins.es6:208 staticfiles/js/mixins.es6:208
 msgid "viewers"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:67161 jsapp/compiled/bundle.min.js:26
-msgid "editor"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67161 jsapp/compiled/bundle.min.js:26
-msgid "editors"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67175 jsapp/compiled/bundle.min.js:26
+#: jsapp/js/mixins.es6:223 staticfiles/js/mixins.es6:223
 msgid "status"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:67180 jsapp/compiled/bundle.js:67852
-#: jsapp/compiled/bundle.min.js:26
-msgid "public"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67180 jsapp/compiled/bundle.min.js:26
-msgid "private"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67191 jsapp/compiled/bundle.min.js:26
-msgid "questions"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67207 jsapp/compiled/bundle.min.js:26
+#: jsapp/js/mixins.es6:249 staticfiles/js/mixins.es6:249
 msgid "revisions"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:67223 jsapp/compiled/bundle.min.js:26
-msgid "created"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67239 jsapp/compiled/bundle.min.js:26
+#: jsapp/js/mixins.es6:273 staticfiles/js/mixins.es6:273
 msgid "modified"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:67258 jsapp/compiled/bundle.min.js:26
-msgid "no language information"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67268 jsapp/compiled/bundle.min.js:26
-msgid "no translations"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67278 jsapp/compiled/bundle.min.js:26
-msgid "languages"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67376 jsapp/compiled/bundle.min.js:26
+#: jsapp/js/mixins.es6:378 staticfiles/js/mixins.es6:378
 msgid "clone"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:67386 jsapp/compiled/bundle.min.js:26
+#: jsapp/js/mixins.es6:384 staticfiles/js/mixins.es6:384
 msgid "share"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:67404 jsapp/compiled/bundle.min.js:26
-msgid "new form name"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67422 jsapp/compiled/bundle.min.js:26
-msgid "deploy form to kobocat"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67423 jsapp/compiled/bundle.min.js:26
-msgid "please specify a form id"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67425 jsapp/compiled/bundle.min.js:26
-msgid "cancel"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67429 jsapp/compiled/bundle.min.js:26
-msgid "Deploying..."
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67451 jsapp/compiled/bundle.min.js:26
-msgid ""
-"You are about to permanently delete this ___. Are you sure you want to "
-"continue?"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67478 jsapp/compiled/bundle.min.js:26
+#: jsapp/js/mixins.es6:468 staticfiles/js/mixins.es6:468
 msgid "refresh"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:67497 jsapp/compiled/bundle.min.js:26
+#: jsapp/js/mixins.es6:483 staticfiles/js/mixins.es6:483
 msgid "deployments"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:67497 jsapp/compiled/bundle.min.js:26
+#: jsapp/js/mixins.es6:485 staticfiles/js/mixins.es6:485
 msgid "no deployments"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:67549 jsapp/compiled/bundle.min.js:26
+#: jsapp/js/mixins.es6:535 staticfiles/js/mixins.es6:535
 msgid "loading asset"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:67673 jsapp/compiled/bundle.min.js:26
+#: jsapp/js/mixins.es6:663 staticfiles/js/mixins.es6:663
 msgid "Could not redirect to asset."
 msgstr ""
 
-#: jsapp/compiled/bundle.js:67682 jsapp/compiled/bundle.min.js:26
+#: jsapp/js/mixins.es6:672 staticfiles/js/mixins.es6:672
 msgid ""
 "Your library assets have uploaded and are being processed. This may take a "
 "few moments."
 msgstr ""
 
-#: jsapp/compiled/bundle.js:67684 jsapp/compiled/bundle.min.js:26
+#: jsapp/js/mixins.es6:674 staticfiles/js/mixins.es6:674
 msgid ""
 "Your library assets have uploaded and are queued for processing. This may "
 "take a few moments."
 msgstr ""
 
-#: jsapp/compiled/bundle.js:67689 jsapp/compiled/bundle.min.js:26
-msgid "Import Failure."
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67692 jsapp/compiled/bundle.min.js:26
-msgid "Import Failed."
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67698 jsapp/compiled/bundle.min.js:26
-msgid "Failed to create import."
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67740 jsapp/compiled/bundle.min.js:26
+#: jsapp/js/mixins.es6:730 staticfiles/js/mixins.es6:730
 msgid "collections"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:67832 jsapp/compiled/bundle.min.js:26
+#: jsapp/js/mixins.es6:823 staticfiles/js/mixins.es6:823
 msgid "my forms"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:67842 jsapp/compiled/bundle.min.js:26
-msgid "shared with me"
+#: jsapp/js/mixins.es6:835 staticfiles/js/mixins.es6:835
+msgid "public"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:67881 jsapp/compiled/bundle.min.js:26
-msgid "error loading data"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67893 jsapp/compiled/bundle.min.js:26
-msgid "results loaded"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67951 jsapp/compiled/bundle.min.js:26
-msgid ""
-"Warning! You are about to delete this collection with all its questions and "
-"blocks. Are you sure you want to continue?"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67967 jsapp/compiled/bundle.min.js:26
-msgid "new name?"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:67985 jsapp/compiled/bundle.min.js:26
-msgid ""
-"You are about to permanently delete this form. Are you sure you want to "
-"continue?"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:68860 jsapp/compiled/bundle.min.js:26
+#: jsapp/js/stores.es6:384 staticfiles/js/stores.es6:384
 msgid "failed to list assets"
 msgstr ""
 
-#: jsapp/compiled/bundle.js:69278 jsapp/compiled/bundle.min.js:27
+#: jsapp/js/ui.es6:151 staticfiles/js/ui.es6:151
+msgid "no name"
+msgstr ""
+
+#: jsapp/js/ui.es6:155 staticfiles/js/ui.es6:155
 msgid "and one other question"
-msgstr ""
-
-#: jsapp/compiled/bundle.js:69284 jsapp/compiled/bundle.min.js:27
-msgid "and ## other questions"
-msgstr ""
-
-#: staticfiles/admin/js/SelectFilter2.js:45
-#, javascript-format
-msgid "Available %s"
-msgstr ""
-
-#: staticfiles/admin/js/SelectFilter2.js:46
-#, javascript-format
-msgid ""
-"This is the list of available %s. You may choose some by selecting them in "
-"the box below and then clicking the \"Choose\" arrow between the two boxes."
-msgstr ""
-
-#: staticfiles/admin/js/SelectFilter2.js:53
-#, javascript-format
-msgid "Type into this box to filter down the list of available %s."
-msgstr ""
-
-#: staticfiles/admin/js/SelectFilter2.js:57
-msgid "Filter"
-msgstr ""
-
-#: staticfiles/admin/js/SelectFilter2.js:61
-msgid "Choose all"
-msgstr ""
-
-#: staticfiles/admin/js/SelectFilter2.js:61
-#, javascript-format
-msgid "Click to choose all %s at once."
-msgstr ""
-
-#: staticfiles/admin/js/SelectFilter2.js:67
-msgid "Choose"
-msgstr ""
-
-#: staticfiles/admin/js/SelectFilter2.js:69
-msgid "Remove"
-msgstr ""
-
-#: staticfiles/admin/js/SelectFilter2.js:75
-#, javascript-format
-msgid "Chosen %s"
-msgstr ""
-
-#: staticfiles/admin/js/SelectFilter2.js:76
-#, javascript-format
-msgid ""
-"This is the list of chosen %s. You may remove some by selecting them in the "
-"box below and then clicking the \"Remove\" arrow between the two boxes."
-msgstr ""
-
-#: staticfiles/admin/js/SelectFilter2.js:80
-msgid "Remove all"
-msgstr ""
-
-#: staticfiles/admin/js/SelectFilter2.js:80
-#, javascript-format
-msgid "Click to remove all chosen %s at once."
-msgstr ""
-
-#: staticfiles/admin/js/actions.js:22 staticfiles/admin/js/actions.min.js:1
-msgid "%(sel)s of %(cnt)s selected"
-msgid_plural "%(sel)s of %(cnt)s selected"
-msgstr[0] ""
-msgstr[1] ""
-
-#: staticfiles/admin/js/actions.js:114 staticfiles/admin/js/actions.min.js:4
-msgid ""
-"You have unsaved changes on individual editable fields. If you run an "
-"action, your unsaved changes will be lost."
-msgstr ""
-
-#: staticfiles/admin/js/actions.js:126 staticfiles/admin/js/actions.min.js:5
-msgid ""
-"You have selected an action, but you haven't saved your changes to "
-"individual fields yet. Please click OK to save. You'll need to re-run the "
-"action."
-msgstr ""
-
-#: staticfiles/admin/js/actions.js:128 staticfiles/admin/js/actions.min.js:5
-msgid ""
-"You have selected an action, and you haven't made any changes on individual "
-"fields. You're probably looking for the Go button rather than the Save "
-"button."
-msgstr ""
-
-#: staticfiles/admin/js/admin/DateTimeShortcuts.js:79
-#, javascript-format
-msgid "Note: You are %s hour ahead of server time."
-msgid_plural "Note: You are %s hours ahead of server time."
-msgstr[0] ""
-msgstr[1] ""
-
-#: staticfiles/admin/js/admin/DateTimeShortcuts.js:87
-#, javascript-format
-msgid "Note: You are %s hour behind server time."
-msgid_plural "Note: You are %s hours behind server time."
-msgstr[0] ""
-msgstr[1] ""
-
-#: staticfiles/admin/js/admin/DateTimeShortcuts.js:114
-#: staticfiles/admin/js/admin/DateTimeShortcuts.js:149
-msgid "Now"
-msgstr ""
-
-#: staticfiles/admin/js/admin/DateTimeShortcuts.js:118
-msgid "Clock"
-msgstr ""
-
-#: staticfiles/admin/js/admin/DateTimeShortcuts.js:146
-msgid "Choose a time"
-msgstr ""
-
-#: staticfiles/admin/js/admin/DateTimeShortcuts.js:150
-msgid "Midnight"
-msgstr ""
-
-#: staticfiles/admin/js/admin/DateTimeShortcuts.js:151
-msgid "6 a.m."
-msgstr ""
-
-#: staticfiles/admin/js/admin/DateTimeShortcuts.js:152
-msgid "Noon"
-msgstr ""
-
-#: staticfiles/admin/js/admin/DateTimeShortcuts.js:156
-#: staticfiles/admin/js/admin/DateTimeShortcuts.js:276
-msgid "Cancel"
-msgstr ""
-
-#: staticfiles/admin/js/admin/DateTimeShortcuts.js:216
-#: staticfiles/admin/js/admin/DateTimeShortcuts.js:269
-msgid "Today"
-msgstr ""
-
-#: staticfiles/admin/js/admin/DateTimeShortcuts.js:220
-msgid "Calendar"
-msgstr ""
-
-#: staticfiles/admin/js/admin/DateTimeShortcuts.js:267
-msgid "Yesterday"
-msgstr ""
-
-#: staticfiles/admin/js/admin/DateTimeShortcuts.js:271
-msgid "Tomorrow"
-msgstr ""
-
-#: staticfiles/admin/js/calendar.js:8
-msgid ""
-"January February March April May June July August September October November "
-"December"
-msgstr ""
-
-#: staticfiles/admin/js/calendar.js:9
-msgid "S M T W T F S"
-msgstr ""
-
-#: staticfiles/admin/js/collapse.js:8 staticfiles/admin/js/collapse.js:19
-#: staticfiles/admin/js/collapse.min.js:1
-msgid "Show"
-msgstr ""
-
-#: staticfiles/admin/js/collapse.js:16 staticfiles/admin/js/collapse.min.js:1
-msgid "Hide"
 msgstr ""
