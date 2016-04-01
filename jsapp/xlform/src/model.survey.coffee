@@ -73,7 +73,9 @@ module.exports = do ->
       index = @rows.length  if index is -1
       for row, row_i in survey.rows.models
         index_incr = index + row_i
-        if row.rows
+        # rank and score rows don't qualify as "groups"
+        # when testing presence of "row.rows"
+        if row.rows or row._rankRows or row._scoreRows
           # item is a group
           group = row
           group.forEachRow(((r)=> @_ensure_row_list_is_copied(r)), includeGroups: true)
