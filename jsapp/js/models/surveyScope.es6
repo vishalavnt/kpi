@@ -21,7 +21,17 @@ class SurveyScope {
         notify(t('question has been added to the library'));
       });
     } else {
-      console.error('cannot add group to question library');
+      let Survey = row.getSurvey().constructor;
+      let tmpSurvey = new Survey();
+      tmpSurvey.addRow(row.clone());
+      let survData = tmpSurvey.toSsStructure();
+      delete(survData.settings);
+      actions.resources.createResource({
+        asset_type: 'block',
+        content: JSON.stringify(survData),
+      }).then(function(){
+        notify(t('question has been added to the library'));
+      });
     }
   }
   handleItem({position, itemData}) {
