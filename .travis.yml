@@ -38,6 +38,6 @@ install:
   - npm install --save-dev
   - npm config set strict-ssl true
   - bower install
-  - pip install -r requirements.txt
+  - pip install --user -r requirements.txt
   - python manage.py syncdb --noinput
   - python manage.py migrate --noinput
