@@ -17,8 +17,8 @@ script:
   - python manage.py test
   - npm run test
 env:
-  - PIP_DOWNLOAD_CACHE=$HOME/.pip-download-cache DJANGO_DEBUG=False DJANGO_SECRET_KEY=ZGtvYm90cmF2aXM
+  - PIP_DOWNLOAD_CACHE=$HOME/.pip-download-cache DJANGO_DEBUG=False DJANGO_SECRET_KEY=ZGtvYm90cmF2aXM DJANGO_SETTINGS_MODULE=kobo_playground.settings
 install:
   - pip install -r requirements.txt
-  - python manage.py syncdb --noinput --settings=kobo_playground.settings
-  - python manage.py migrate --noinput --settings=kobo_playground.settings
+  - python manage.py syncdb --noinput
+  - python manage.py migrate --noinput
