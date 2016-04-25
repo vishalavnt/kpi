@@ -1,8 +1,8 @@
 sudo:
   false
+# instead of python, using language: node_js to
+# get node v5 installed
 language: node_js
-python:
-  - "2.7"
 node_js:
   - "5"
 addons:
@@ -20,24 +20,17 @@ addons:
       - libpcre3-dev
       - libpq-dev
       - ttfautohint
-# cache:
-#   directories:
-#     - $HOME/.pip-download-cache
-#     - node_modules
+cache:
+  directories:
+    - $HOME/.pip-download-cache
+    - node_modules
 script:
   - python manage.py test
   - npm run test
 env:
   - PIP_DOWNLOAD_CACHE=$HOME/.pip-download-cache DJANGO_DEBUG=False DJANGO_SECRET_KEY=ZGtvYm90cmF2aXM DJANGO_SETTINGS_MODULE=kobo_playground.settings
 install:
-  - node --version
-  - npm --version
   - npm install -g install npm@latest
-  - npm --version
-  - npm config set strict-ssl false
-  - npm install --save-dev
-  - npm config set strict-ssl true
+  - npm config set strict-ssl false && npm install --save-dev
   - bower install
   - pip install --user -r requirements.txt
-  - python manage.py syncdb --noinput
-  - python manage.py migrate --noinput
