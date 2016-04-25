@@ -14,10 +14,10 @@ addons:
       - libpcre3-dev
       - libpq-dev
       - ttfautohint
-cache:
-  directories:
-    - $HOME/.pip-download-cache
-    - node_modules
+# cache:
+#   directories:
+#     - $HOME/.pip-download-cache
+#     - node_modules
 script:
   - python manage.py test
   - npm run test
