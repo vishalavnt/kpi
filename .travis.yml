@@ -9,10 +9,6 @@ cache:
   directories:
     - $HOME/.pip-download-cache
     - node_modules
-before_install:
-  - gem install sass
-  - npm install --save-dev
-  - bower install
 script:
   - python manage.py test
   - npm run test
@@ -21,6 +17,8 @@ env:
 install:
   - apt-get -qq update
   - apt-get install -y fontforge gettext git-core libpcre3 libpcre3-dev libpq-dev ttfautohint
+  - npm install --save-dev
+  - bower install
   - pip install -r requirements.txt
   - python manage.py syncdb --noinput
   - python manage.py migrate --noinput
