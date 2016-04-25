@@ -1,0 +1,24 @@
+root:
+  false
+language: python
+python:
+  - '2.7'
+addons:
+  postgresql: 9.3
+cache:
+  directories:
+    - $HOME/.pip-download-cache
+    - node_modules
+before_install:
+  - gem install sass
+  - npm install --save-dev
+  - bower install
+script:
+  - python manage.py test
+  - npm run test
+env:
+  - PIP_DOWNLOAD_CACHE=$HOME/.pip-download-cache DJANGO_DEBUG=False DJANGO_SECRET_KEY=ZGtvYm90cmF2aXM
+install:
+  - pip install -r requirements.txt
+  - python manage.py syncdb --noinput --settings=kobo_playground.settings
+  - python manage.py migrate --noinput --settings=kobo_playground.settings
