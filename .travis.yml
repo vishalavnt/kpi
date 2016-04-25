@@ -2,10 +2,14 @@ sudo:
   false
 language: python
 python:
-  - '2.7'
+  - "2.7"
+node_js:
+  - "5"
 addons:
   postgresql: 9.3
   apt:
+    sources:
+
     packages:
       - build-essential
       - fontforge
@@ -25,6 +29,7 @@ script:
 env:
   - PIP_DOWNLOAD_CACHE=$HOME/.pip-download-cache DJANGO_DEBUG=False DJANGO_SECRET_KEY=ZGtvYm90cmF2aXM DJANGO_SETTINGS_MODULE=kobo_playground.settings
 install:
+  - node --version
   - npm install grunt-webfont
   - npm install --save-dev
   - bower install
