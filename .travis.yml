@@ -13,6 +13,8 @@ addons:
       - fontforge
       - gettext
       - git-core
+      - python-2.7
+      - python-pip
       - libpcre3
       - libpcre3-dev
       - libpq-dev
