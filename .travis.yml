@@ -15,6 +15,7 @@ addons:
       - git-core
       - python-2.7
       - python-pip
+      - python-virtualenv
       - libpcre3
       - libpcre3-dev
       - libpq-dev
