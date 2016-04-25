@@ -1,6 +1,8 @@
 sudo:
   false
-language: python
+languages:
+  - "node_js"
+  - "python"
 python:
   - "2.7"
 node_js:
@@ -8,8 +10,6 @@ node_js:
 addons:
   postgresql: 9.3
   apt:
-    sources:
-
     packages:
       - build-essential
       - fontforge
