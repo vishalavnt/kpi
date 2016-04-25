@@ -4,12 +4,9 @@ var path = require('path');
 var assign = require('react/lib/Object.assign');
 var WebpackDevServer = require('webpack-dev-server');
 var webpack = require('webpack');
+var open = require('open');
 
 var WebpackConfig = require('./helper/webpack-config');
-
-var port = webpackConfigs.port || 3000;
-var host = webpackConfigs.host || '0.0.0.0';
-var open = require('open');
 
 var webpackConfigs = assign(WebpackConfig({
   hash: false,
@@ -21,7 +18,7 @@ var webpackConfigs = assign(WebpackConfig({
   failOnError: true,
   outputDir: path.resolve(__dirname, 'test', 'compiled'),
   outputHash: false,
-  devTool: 'source-map'
+  devTool: 'eval'
 }), {
   output: {
     path: path.resolve(__dirname, 'test', 'compiled'),
@@ -32,6 +29,9 @@ var webpackConfigs = assign(WebpackConfig({
     path.resolve(__dirname, 'test', 'index'),
   ],
 });
+
+var port = webpackConfigs.port || 3000;
+var host = webpackConfigs.host || '0.0.0.0';
 
 module.exports = new WebpackDevServer(
   webpack(webpackConfigs),
@@ -50,5 +50,5 @@ module.exports = new WebpackDevServer(
     console.log(err);
   }
   console.log('Listening at '+host+':'+port);
-  open('http://localhost:3000/test/tests.html');
+  open('http://localhost:'+ port +'/test/tests_hot.html');
 });
