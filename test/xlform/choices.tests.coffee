@@ -3,6 +3,9 @@
 $ = require "jquery"
 $survey = require("../../jsapp/xlform/src/model.survey")
 $choices = require("../../jsapp/xlform/src/model.choices")
+_ = require "underscore"
+$surveyFixtures = require("../fixtures/xlformSurveys")
+window._ = _
 
 module.exports = do ->
   describe 'model.choices', ->
@@ -59,6 +62,34 @@ module.exports = do ->
               ]
           }
       ])
+
+    describe 'model.choices--CASCADES', ->
+      it 'imports a survey with a cascading choice list', ->
+        survey = $survey.Survey.load($surveyFixtures.cascading)
+        row0 = survey.rows.at(0)
+        expect(survey.toCsvJson().choices.rowObjects.map(((r)->
+            return "#{r.list_name}-#{r.name}"
+          )).sort()).toEqual(["city-brownsville", "city-dumont", "city-finney",
+              "city-harlingen", "city-puyallup", "city-redmond", "city-seattle",
+              "city-tacoma", "county-cameron", "county-king", "county-king", #2 kings
+              "county-pierce", "state-texas", "state-washington"])
+        expect(row0.getList().get("name")).toBe("city")
+
+        expect(row0.getList().getList).toBeDefined()
+        expect(row0.getList().getList()).not.toBe(null)
+        expect(row0.getList().getList().get("name")).toBe("county")
+        expect(row0.getList()
+                   .getList()
+                   .getList().get("name")).toBe("state")
+        # console.log($survey.Survey.load(survey.toSsStructure())
+        #                                         .toSsStructure())
+
+        # Do we want to get survey.toJSON() working?
+        # it has largely been replaced by survey.toSsStructure()
+        # expect(_.keys(survey.toJSON().choices).sort()).toEqual([
+        #     "city", "county", "state",
+        #   ])
+
 
     describe 'Choicelist', ->
       describe 'Clone method', ->

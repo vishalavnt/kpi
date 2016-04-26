@@ -17,6 +17,17 @@ module.exports = do ->
       @collection.remove(@)
       survey.trigger('remove-option', choicelist_cid, @cid)
     list: -> @collection
+    getKeys: (with_val)->
+      # returns a list of columns in the xlsform.
+      # if `with_val` is true, only returns columns that
+      # have an associated value.
+      keys = []
+      for key, attribute of @attributes
+        if !with_val
+          keys.push(key)
+        else if @get key
+          keys.push(key)
+      keys
     toJSON: ()->
       attributes = {}
       for key, attribute of @attributes
@@ -34,6 +45,21 @@ module.exports = do ->
       @options = new choices.Options(options || [], _parent: @)
     summaryObj: ->
       @toJSON()
+    getSurvey: ->
+      @collection.getSurvey()
+    getList: ->
+      # used for cascading selects: if choiceList is connected to
+      # another choiceList, pass it on.
+      if @__cascadedList
+        @__cascadedList
+      else
+        null
+    getOptionKeys: (with_val=true)->
+      option_keys = []
+      for option in @options.models
+        for option_key in option.getKeys(with_val)
+          option_keys.push(option_key)
+      _.uniq(option_keys)
     finalize: ->
       # ensure that all options have names
       names = []
@@ -74,6 +100,8 @@ module.exports = do ->
     create: ->
       @add(cl = new choices.ChoiceList(name: $modelUtils.txtid()))
       cl
+    getListNames: ->
+      @invoke('get', 'name')
     summaryObj: (shorter=false)->
       out = {}
       for model in @models
