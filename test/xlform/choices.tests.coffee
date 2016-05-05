@@ -64,21 +64,71 @@ module.exports = do ->
       ])
 
     describe 'model.choices--CASCADES', ->
+      it 'cascade choice list utility methods work', ->
+        survey = $survey.Survey.load($surveyFixtures.cascading)
+        expect(survey.choices.models.map((cl)->
+            cl.get('name')
+          )).toEqual(['state', 'county', 'city'])
+        expect(survey.choices.models.map((cl)->
+            cl._get_last_linked_choice_list().get('name')
+          )).toEqual(['city', 'city', 'city'])
+        expect(survey.choices.models.map((cl)->
+            cl._get_first_linked_choice_list().get('name')
+          )).toEqual(['state', 'state', 'state'])
+
+        _city_choicelist = survey.choices.get('city')
+        expect(_city_choicelist.get('name')).toBe('city')
+        expect(_city_choicelist._has_corresponding_row()).toEqual(false)
+        row_data = _city_choicelist._create_corresponding_row_data()
+        expect(row_data).toEqual([
+            {
+                "label": "state",
+                "type": "select_one state",
+                "choice_filter": ""
+            },
+            {
+                "label": "county",
+                "type": "select_one county",
+                "choice_filter": "state=${state}"
+            },
+            {
+                "label": "city",
+                "type": "select_one city",
+                "choice_filter": "state=${state} and county=${county}"
+            }
+          ])
+
       it 'imports a survey with a cascading choice list', ->
         survey = $survey.Survey.load($surveyFixtures.cascading)
+        _city_choicelist = survey.choices.get('city')
+        for choiceList in survey.choices.models
+          expect(choiceList._has_corresponding_row()).toEqual(false)
+
+        _city_choicelist.create_corresponding_rows()
+
+        for choiceList in survey.choices.models
+          expect(choiceList._has_corresponding_row()).toEqual(true)
+
         row0 = survey.rows.at(0)
+        row2 = survey.rows.at(2)
         expect(survey.toCsvJson().choices.rowObjects.map(((r)->
             return "#{r.list_name}-#{r.name}"
           )).sort()).toEqual(["city-brownsville", "city-dumont", "city-finney",
               "city-harlingen", "city-puyallup", "city-redmond", "city-seattle",
               "city-tacoma", "county-cameron", "county-king", "county-king", #2 kings
               "county-pierce", "state-texas", "state-washington"])
-        expect(row0.getList().get("name")).toBe("city")
-
-        expect(row0.getList().getList).toBeDefined()
-        expect(row0.getList().getList()).not.toBe(null)
-        expect(row0.getList().getList().get("name")).toBe("county")
-        expect(row0.getList()
+        expect(survey.toCsvJson().survey.rowObjects.map(((r)->
+            return "#{r.type}-#{r.name}"
+          ))).toEqual(["select_one state-state",
+                        "select_one county-county",
+                        "select_one city-city",
+                        "start-start",
+                        "end-end"])
+        expect(row2.getList().get("name")).toBe("city")
+        expect(row2.getList().getList).toBeDefined()
+        expect(row2.getList().getList()).not.toBe(null)
+        expect(row2.getList().getList().get("name")).toBe("county")
+        expect(row2.getList()
                    .getList()
                    .getList().get("name")).toBe("state")
         # console.log($survey.Survey.load(survey.toSsStructure())

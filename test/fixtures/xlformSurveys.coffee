@@ -28,11 +28,6 @@ class SurveyFixture
 surveys = {}
 
 surveys.cascading =
-  survey: [
-    type: 'select_one city',
-    name: 'select_city',
-    label: 'Select State > County > City',
-  ]
   choices: (_.object(["list_name", "name", "label", "state", "county"], x) \
                   for x in [
                     ["state", "texas", "Texas", null, null],

@@ -62,6 +62,7 @@ module.exports = do ->
         else if overlapping_choice_keys.length is 1
           choiceList.__cascadedList = @choices.get(overlapping_choice_keys[0])
       null
+
     insert_row: (row, index) ->
       if row._isCloned
         @rows.add(row, at: index)
