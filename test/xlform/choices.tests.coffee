@@ -79,7 +79,9 @@ module.exports = do ->
         _city_choicelist = survey.choices.get('city')
         expect(_city_choicelist.get('name')).toBe('city')
         expect(_city_choicelist._has_corresponding_row()).toEqual(false)
-        row_data = _city_choicelist._create_corresponding_row_data()
+        row_data = _city_choicelist._create_corresponding_row_data({
+            _full_path_choice_filter: true
+          })
         expect(row_data).toEqual([
             {
                 "label": "state",
@@ -95,7 +97,27 @@ module.exports = do ->
                 "label": "city",
                 "type": "select_one city",
                 "choice_filter": "state=${state} and county=${county}"
-            }
+            },
+          ])
+        row_data = _city_choicelist._create_corresponding_row_data({
+            _full_path_choice_filter: false
+          })
+        expect(row_data).toEqual([
+            {
+                "label": "state",
+                "type": "select_one state",
+                "choice_filter": ""
+            },
+            {
+                "label": "county",
+                "type": "select_one county",
+                "choice_filter": "state=${state}"
+            },
+            {
+                "label": "city",
+                "type": "select_one city",
+                "choice_filter": "county=${county}"
+            },
           ])
 
       it 'imports a survey with a cascading choice list', ->

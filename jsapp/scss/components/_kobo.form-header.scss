@@ -103,6 +103,10 @@ http://codepen.io/adamaoc/pen/KguLA
   }
 }
 
+.form-header__button--import-choice-list {
+  @include formHeaderButton("list");
+}
+
 .form-header__button--show-all {
   @include formHeaderButton("caret-right");
 

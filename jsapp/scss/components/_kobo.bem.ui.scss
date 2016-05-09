@@ -175,3 +175,13 @@
     border-bottom: 8px solid #8a9aa4 !important;
   }
 }
+
+.cascade-popup {
+  background-color: #ddd;
+  padding: 20px 15px;
+
+  textarea {
+    width: 100%;
+    height: 120px;
+  }
+}

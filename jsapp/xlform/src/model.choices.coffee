@@ -77,16 +77,21 @@ module.exports = do ->
           r.get('type').get('listName') is _name
         )
 
-    _create_corresponding_row_data: ->
+    _create_corresponding_row_data: (opts={})->
+      full_path = !!opts._full_path_choice_filter
       cl = @_get_first_linked_choice_list()
       prevs = []
       rows_data = []
       build_row_data = (curlist)->
         name = curlist.get 'name'
+        if full_path
+          _choice_filtered = prevs
+        else
+          _choice_filtered = _.compact([_.last(prevs)])
         {
           label: name
           type: "select_one #{name}"
-          choice_filter: prevs.map((cl)->
+          choice_filter: _choice_filtered.map((cl)->
               cl_name = cl.get('name')
               "#{cl_name}=${#{cl_name}}"
             ).join(" and ")

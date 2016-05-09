@@ -28,7 +28,10 @@ import {dataInterface} from '../dataInterface';
 var FormHeader__panel = bem('form-header__panel'),
     FormHeader__row = bem('form-header__row'),
     FormHeader__panelheader = bem('form-header__panelheader'),
-    FormHeader__paneltext = bem('form-header__paneltext');
+    FormHeader__paneltext = bem('form-header__paneltext'),
+    CascadePopup = bem.create('cascade-popup'),
+    CascadePopup__message = bem.create('cascade-popup__message'),
+    CascadePopup__button = bem.create('cascade-popup__button', '<button>');
 
 var FormSettingsEditor = React.createClass({
   render () {
@@ -414,6 +417,46 @@ export default {
     }
     return ooo;
   },
+  toggleCascade () {
+    this.setState({
+      addCascadePopup: !this.state.addCascadePopup,
+    });
+  },
+  cascadePopopChange (evt) {
+    var s = {
+      cascadeTextareaValue: this.refs.cascade.getDOMNode().value,
+    }
+    if (s.cascadeTextareaValue.length === 0) {
+      return this.cancelCascade();
+    }
+    try {
+      var inp = dkobo_xlform.model.utils.split_paste(s.cascadeTextareaValue);
+      var tmpSurvey = new dkobo_xlform.model.Survey({
+        survey: [],
+        choices: inp
+      });
+      if (tmpSurvey.choices.length === 0) {
+        throw new Error(t('paste a properly formatted cascading select list'));
+      }
+      tmpSurvey.choices.at(0).create_corresponding_rows();
+      var rowCount = tmpSurvey.rows.length;
+      if (rowCount === 0) {
+        throw new Error(t('paste a properly formatted cascading select list'));
+      }
+      s.cascadeReady = true;
+      s.cascadeReadySurvey = tmpSurvey;
+      s.cascadeMessage = {
+        msgType: 'ready',
+        addCascadeMessage: t('add cascade with # questions').replace('#', rowCount),
+      };
+    } catch (err) {
+      s.cascadeMessage = {
+        msgType: 'warning',
+        message: err.message,
+      }
+    }
+    this.setState(s);
+  },
   renderSaveAndPreviewButtons () {
     let {
       allButtonsDisabled,
@@ -462,6 +505,10 @@ export default {
                 disabled={previewDisabled}>
               <i />
               {t('preview')}
+            </bem.FormHeader__button>
+            <bem.FormHeader__button m={'import-choice-list'} onClick={this.toggleCascade}>
+              <i />
+              {t('import choice list')}
             </bem.FormHeader__button>
             { showAllAvailable ?
               <bem.FormHeader__button m={['show-all', {
@@ -563,6 +610,40 @@ export default {
       asset_type: optionalParams.asset_type,
     });
   },
+  cancelCascade () {
+    this.setState({
+      cascadeError: false,
+      cascadeReady: false,
+      cascadeReadySurvey: false,
+      addCascadePopup: false,
+      cascadeTextareaValue: '',
+      cascadeStr: '',
+    });
+  },
+  renderCascadePreview () {
+    return (
+        <CascadePopup__message m='ready'>
+          <p>cascade preview</p>
+          <ul>
+            {this.state.cascadeReadySurvey.rows.map((row, n)=>{
+              return (
+                  <li key={'cascaderow'+n}>{row.getValue('label')}</li>
+                )
+            })}
+          </ul>
+          <CascadePopup__button m="create" onClick={()=>{
+                var survey = this.app.survey;
+                survey.insertSurvey(this.state.cascadeReadySurvey);
+                this.cancelCascade();
+              }}>
+            {this.state.cascadeMessage.addCascadeMessage || t('add cascade')}
+          </CascadePopup__button>
+          <CascadePopup__button m="close" onClick={this.cancelCascade}>
+            {t('cancel')}
+          </CascadePopup__button>
+        </CascadePopup__message>
+      );
+  },
   render () {
     var isSurvey = this.app && !this.isLibrary();
     return (
@@ -572,6 +653,26 @@ export default {
               <bem.AssetView__row m={'header'}>
                 {this.renderSaveAndPreviewButtons()}
               </bem.AssetView__row>
+              {this.state.addCascadePopup ?
+                <CascadePopup>
+                  {this.state.cascadeMessage ?
+                    <CascadePopup__message m={this.state.cascadeMessage.msgType}>
+                      {this.state.cascadeMessage.message}
+                    </CascadePopup__message>
+                  :
+                    <CascadePopup__message m="instructions">
+                      {t('paste choice list')}
+                    </CascadePopup__message>
+                  }
+
+                  {this.state.cascadeReady ?
+                    this.renderCascadePreview()
+                  :
+                    <textarea ref="cascade" onChange={this.cascadePopopChange}
+                      value={this.state.cascadeTextareaValue} />
+                  }
+                </CascadePopup>
+              : null}
               <bem.AssetView__row m={'form'}>
                 { isSurvey ?
                   <bem.AssetView__row>
