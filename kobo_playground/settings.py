@@ -54,7 +54,7 @@ INSTALLED_APPS = (
     'cachebuster',
     'django.contrib.staticfiles',
     'reversion',
-    'debug_toolbar',
+    # 'debug_toolbar',
     'mptt',
     'haystack',
     'kpi.apps.KpiConfig',

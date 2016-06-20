@@ -6,7 +6,6 @@ import alertify from 'alertifyjs';
 import {Link} from 'react-router';
 import mdl from './libs/rest_framework/material';
 import TagsInput from 'react-tagsinput';
-import ReactZeroClipboard from 'react-zeroclipboard';
 
 import {dataInterface} from './dataInterface';
 import stores from './stores';
@@ -565,9 +564,6 @@ var dmix = {
           </bem.FormView__item>
           {this.state.selectedCollectOption.value ?
             <bem.FormView__item m={'collect-links'}>
-              <ReactZeroClipboard text={this.state.selectedCollectOption.value} onAfterCopy={this.afterCopy}>
-                <a className="copy">copy</a>
-              </ReactZeroClipboard>
               {this.state.selectedCollectOption.key != 'iframe_url' ?
                 <a href={this.state.selectedCollectOption.value} target="_blank" className="open">
                   {t('Open')}
