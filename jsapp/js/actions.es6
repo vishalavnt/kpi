@@ -401,6 +401,22 @@ actions.resources.deployAsset.failed.listen(function(data, dialog_or_alert){
   alertify.alert(t('unable to deploy'), failure_message);
 });
 
+actions.charts = Reflux.createActions({
+  setStyle: {
+    children: [
+      'completed',
+      'failed',
+    ]
+  }
+});
+
+actions.charts.setStyle.listen(function(assetId, details){
+  dataInterface.patchAsset(assetId, {
+    chart_styles: JSON.stringify(details),
+  }).done(actions.charts.setStyle.completed)
+    .fail(actions.charts.setStyle.failed);
+});
+
 actions.resources.createResource.listen(function(details){
   return new Promise(function(resolve, reject){
     dataInterface.createResource(details)

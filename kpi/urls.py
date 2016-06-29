@@ -19,6 +19,7 @@ from kpi.views import (
 )
 
 from kpi.views import current_user, home, one_time_login
+from kpi.apps.charts.views import ChartsViewSet
 from kpi.views import authorized_application_authenticate_user
 from kpi.forms import RegistrationForm
 from hub.views import switch_builder
@@ -32,6 +33,7 @@ router.register(r'collections', CollectionViewSet)
 router.register(r'users', UserViewSet)
 router.register(r'tags', TagViewSet)
 router.register(r'permissions', ObjectPermissionViewSet)
+router.register(r'charts', ChartsViewSet, base_name='charts')
 router.register(r'imports', ImportTaskViewSet)
 router.register(r'sitewide_messages', SitewideMessageViewSet)
 
