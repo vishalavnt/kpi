@@ -197,7 +197,7 @@ class KobocatDeploymentBackend(BaseDeploymentBackend):
             id_string = backend_response['id_string']
             users = backend_response['users']
             owner = filter(lambda u: u['role'] == 'owner', users)[0]['user']
-            return '{}__{}'.format(owner, id_string)
+            return '{}_{}'.format(owner, id_string)
         except KeyError, e:
             return None
 
