@@ -1,9 +1,16 @@
+from django.conf import settings
+from formpack import FormPack
+
 from .constants import (CHARTABLE_TYPES,
                         SPECIFIC_CHARTS_KEY, DEFAULT_CHARTS_KEY
                         )
 
-from pymongo import MongoClient
-kobo_instances = MongoClient().formhub.instances
+
+def get_instances_for_userform_id(userform_id, submission=None):
+    query = {'_userform_id': userform_id, '_deleted_at': {'$exists': False}}
+    if submission:
+        query['_id'] = submission
+    return settings.MONGO_DB.instances.find(query)
 
 
 def _kuids(asset, cache=False):
@@ -16,19 +23,21 @@ def _kuids(asset, cache=False):
     return asset._available_chart_uids
 
 
-def _data(asset, kuids):
-    cursor = kobo_instances.find({
-        '_userform_id': asset.deployment.mongo_userform_id,
-        '_deleted_at': {
-            '$exists': False
-        }
-    }).count()
+def _data(asset, kuids, lang=None, fields=None, split_by=None):
+    schema = {
+        "id_string": asset.deployment.xform_id_string,
+        "version": 'v1',
+        "content": asset.valid_xlsform_content(),
+    }
 
-    packaged_data = {}
-    # packaged_data = formpack.autoreport(cursor,
-    #                                     kuids=kuids,
-    #                                     run_calculations=necessary_calculations,
-    #                                     ).get_stats_as_object()
+    pack = FormPack([schema])
+    report = pack.autoreport()
+    fields = fields or [field.name for field in pack.get_fields_for_versions()]
+    translations = pack.available_translations
+    lang = lang or next(iter(translations), None)
+
+    data = [("v1", get_instances_for_userform_id(asset.deployment.mongo_userform_id))]
+    stats = report.get_stats(data, fields, lang, split_by)
 
     available_kuids = set(_kuids(asset, cache=True)) & set(kuids)
     default_style = asset.chart_styles[DEFAULT_CHARTS_KEY]
@@ -38,7 +47,7 @@ def _data(asset, kuids):
 
     return [
         {
-            'data': packaged_data.get(kuid, {}),
+            'data': None,
             'style': chart_styles.get(kuid, default_style),
             'kuid': kuid,
         } for kuid in available_kuids

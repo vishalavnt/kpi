@@ -1,7 +1,6 @@
 from django.conf.urls import url, include
 from django.views.i18n import javascript_catalog
 from hub.views import ExtraDetailRegistrationView
-from rest_framework import renderers
 from rest_framework.routers import DefaultRouter
 
 from kpi.views import (
