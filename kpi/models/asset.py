@@ -24,7 +24,7 @@ from ..utils.asset_content_analyzer import AssetContentAnalyzer
 from ..utils.kobo_to_xlsform import to_xlsform_structure
 from ..utils.random_id import random_id
 from ..deployment_backends.mixin import DeployableMixin
-from kpi.apps.charts.constants import (SPECIFIC_CHARTS_KEY, DEFAULT_CHARTS_KEY,
+from kobo_playground.apps.charts.constants import (SPECIFIC_CHARTS_KEY, DEFAULT_CHARTS_KEY,
                                        CHARTABLE_TYPES)
 
 

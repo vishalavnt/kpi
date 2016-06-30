@@ -19,7 +19,7 @@ from kpi.views import (
 )
 
 from kpi.views import current_user, home, one_time_login
-from kpi.apps.charts.views import ChartsViewSet
+from kobo_playground.apps.charts.views import ChartsViewSet
 from kpi.views import authorized_application_authenticate_user
 from kpi.forms import RegistrationForm
 from hub.views import switch_builder
@@ -46,7 +46,7 @@ router.register(r'authorized_application/one_time_authentication_keys',
 
 # Apps whose translations should be available in the client code.
 js_info_dict = {
-    'packages': ('kpi.apps.KpiConfig',),
+    'packages': ('kobo_playground.apps.KpiConfig',),
 }
 
 urlpatterns = [

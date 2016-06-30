@@ -58,7 +58,7 @@ INSTALLED_APPS = (
     'debug_toolbar',
     'mptt',
     'haystack',
-    'kpi.apps.KpiConfig',
+    'kobo_playground.apps.KpiConfig',
     'hub',
     'webpack_loader',
     'registration', # Must come AFTER kpi
