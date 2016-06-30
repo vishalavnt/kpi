@@ -293,7 +293,8 @@ class Asset(ObjectPermissionMixin,
             self.content = {}
             self.summary = {}
             return
-        analyzer = AssetContentAnalyzer(**self.content)
+        analyzer = AssetContentAnalyzer(xlsform_content=self.valid_xlsform_content(),
+                                        **self.content)
         self.summary = analyzer.summary
 
     def save(self, *args, **kwargs):

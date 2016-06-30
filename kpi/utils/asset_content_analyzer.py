@@ -13,7 +13,37 @@ class AssetContentAnalyzer(object):
         self.survey = kwargs.get('survey')
         self.settings = kwargs.get('settings', False)
         self.choices = kwargs.get('choices', [])
+        self.pyxform_feedback = self._run_through_pyxform(kwargs.get('xlsform_content'))
         self.summary = self.get_summary()
+
+    def _run_through_pyxform(self, source):
+        warnings = []
+        default_name = None
+        default_language = u'default'
+        # settingslist
+        if 'settings' in source and len(source['settings']) > 0:
+            settings = source['settings'][0]
+        else:
+            settings = {}
+        settings.setdefault('id_string', 'xform_id_string')
+        default_form_title = 'Untitled'
+        settings.setdefault('form_title', default_form_title)
+        source['settings'] = [settings]
+        try:
+            dict_repr = pyxform.xls2json.workbook_to_json(
+                source, default_name, default_language, warnings)
+
+            for k in (u'name', u'id_string', u'sms_keyword'):
+                dict_repr.setdefault(k, 'xform_id_string')
+                if not isinstance(dict_repr[k], basestring):
+                    dict_repr[k] = 'xform_id_string'
+            survey = pyxform.builder.create_survey_element_from_dict(dict_repr)
+            if len(warnings) > 0:
+                return {'warnings': warnings}
+            else:
+                return {}
+        except Exception, e:
+            return {'error': e.message}
 
     def _get_languages_from_column_names(self, cols):
         langs = set()
@@ -67,6 +97,7 @@ class AssetContentAnalyzer(object):
             'languages': self._get_languages_from_column_names(keys),
             'geo': geo,
             'labels': labels[0:5],
+            'pyxform_feedbacl': self.pyxform_feedback,
             'columns': list(keys),
         }
         return summary
