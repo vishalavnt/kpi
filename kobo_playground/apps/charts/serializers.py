@@ -21,5 +21,5 @@ class ChartsDetailSerializer(serializers.BaseSerializer):
             'url': reverse('charts-detail', args=(obj.uid,), request=request),
             'kuids': kuids,
             'available_kuids': get_chart._kuids(obj),
-            'data':  get_chart._data(obj, kuids),
+            'data':  get_chart.data(obj, kuids),
         }
