@@ -29,6 +29,7 @@ def _kuids(asset, cache=False):
                 row_type = row['type']
                 if isinstance(row_type, dict):
                     row_type = row_type.keys()[0]
+                # TODO: Probably want to remove this condition.
                 if row_type in CHARTABLE_TYPES:
                     asset._available_chart_uids.append(row.get('$kuid'))
 
@@ -73,7 +74,7 @@ def data(asset, kuids, lang=None, fields=None, split_by=None):
 
     data = [("v1", get_instances_for_userform_id(asset.deployment.mongo_userform_id))]
     stats = report.get_stats(data, fields, lang, split_by).stats
-    stats_by_variable_name = {s[0].name: (s[0].name,)+s[1:] for s in stats}
+    stats_by_variable_name = {s[0].name: s[1:] for s in stats}
 
     available_kuids = set(_kuids(asset, cache=True))
     if kuids:
@@ -85,12 +86,11 @@ def data(asset, kuids, lang=None, fields=None, split_by=None):
         asset._populate_chart_styles()
     default_style = asset.chart_styles[DEFAULT_CHARTS_KEY]
     specified = asset.chart_styles[SPECIFIC_CHARTS_KEY]
-    chart_styles = dict([(kuid, specified[kuid])
-                         for kuid in available_kuids if kuid in specified])
+    chart_styles = {kuid: specified[kuid] for kuid in available_kuids if specified.get(kuid)}
 
     return [
         {
-            'data': stats_by_kuid,
+            'data': stats_by_kuid[kuid],
             'style': chart_styles.get(kuid, default_style),
             'kuid': kuid,
         } for kuid in available_kuids
