@@ -430,11 +430,11 @@ KOBOCAT_DEFAULT_PERMISSION_CONTENT_TYPES = [
 ]
 
 MONGO_DATABASE = {
-    'HOST': os.environ.get('MONGO_HOST', 'mongo'),
-    'PORT': int(os.environ.get('MONGO_PORT', 27017)),
-    'NAME': os.environ.get('MONGO_NAME', 'formhub'),
-    'USER': os.environ.get('MONGO_USER', ''),
-    'PASSWORD': os.environ.get('MONGO_PASS', '')
+    'HOST': os.environ.get('KPI_MONGO_HOST', 'mongo'),
+    'PORT': int(os.environ.get('KPI_MONGO_PORT', 27017)),
+    'NAME': os.environ.get('KPI_MONGO_NAME', 'formhub'),
+    'USER': os.environ.get('KPI_MONGO_USER', ''),
+    'PASSWORD': os.environ.get('KPI_MONGO_PASS', '')
 }
 
 if MONGO_DATABASE.get('USER') and MONGO_DATABASE.get('PASSWORD'):
@@ -444,6 +444,6 @@ else:
     MONGO_CONNECTION_URL = "mongodb://%(HOST)s:%(PORT)s" % MONGO_DATABASE
 
 MONGO_CONNECTION = MongoClient(
-    MONGO_CONNECTION_URL, safe=True, j=True, tz_aware=True)
+    MONGO_CONNECTION_URL, j=True, tz_aware=True)
 MONGO_DB = MONGO_CONNECTION[MONGO_DATABASE['NAME']]
 
