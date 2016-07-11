@@ -1,3 +1,5 @@
+from __future__ import unicode_literals
+
 from django.conf import settings
 from formpack import FormPack
 
@@ -73,15 +75,40 @@ def data(asset, kuids, lang=None, fields=None, split_by=None):
     lang = lang or next(iter(translations), None)
 
     data = [("v1", get_instances_for_userform_id(asset.deployment.mongo_userform_id))]
-    stats = report.get_stats(data, fields, lang, split_by).stats
-    stats_by_variable_name = {s[0].name: s[1:] for s in stats}
+    stats = list(report.get_stats(data, fields, lang, split_by).stats)
+    report_data_by_variable_name = dict()
+    for s in stats:
+        form_field = s[0]
+        label = s[1]
+        stats_dict = s[2]
+
+        variable_name = form_field.name
+        field_type = form_field.data_type
+
+        # Modify `stats_dict` so it's more amenable to quick use with Chart.js.
+        freq = stats_dict.pop('frequency', None)
+        if freq:
+            prcntg = stats_dict.pop('percentage')
+            responses, frequencies = zip(*freq)
+            responses_percentage, percentages = zip(*prcntg)
+            if responses != responses_percentage:
+                raise ValueError('Frequency and percentage response lists mismatch.')
+
+            stats_dict.update({'responses': responses, 'frequencies': frequencies,
+                               'percentages': percentages})
+
+        stats_dict.update({'variable_name': variable_name, 'label': label,
+                          'field_type': field_type})
+        report_data_by_variable_name[variable_name] = stats_dict
 
     available_kuids = set(_kuids(asset, cache=True))
     if kuids:
         available_kuids &= set(kuids)
     kuid_to_variable_name_map = get_kuid_to_variable_name_map(asset)
-    stats_by_kuid = {kuid: stats_by_variable_name[kuid_to_variable_name_map[kuid]]
-                     for kuid in available_kuids}
+    data_by_kuid = dict()
+    for kuid in available_kuids:
+        data_by_kuid[kuid] = report_data_by_variable_name[kuid_to_variable_name_map[kuid]]
+
     if not asset.chart_styles:
         asset._populate_chart_styles()
     default_style = asset.chart_styles[DEFAULT_CHARTS_KEY]
@@ -90,7 +117,7 @@ def data(asset, kuids, lang=None, fields=None, split_by=None):
 
     return [
         {
-            'data': stats_by_kuid[kuid],
+            'data': data_by_kuid[kuid],
             'style': chart_styles.get(kuid, default_style),
             'kuid': kuid,
         } for kuid in available_kuids
