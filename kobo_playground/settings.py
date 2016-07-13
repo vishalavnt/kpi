@@ -27,6 +27,12 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', '@25)**hc^rjaiagb4#&q*84hr*uscs
 
 UPCOMING_DOWNTIME = False
 
+def os_env_bool(var, default=False):
+    if default is False:
+        return os.environ.get(var, 'False') == 'True'
+    elif default is True:
+        return os.environ.get(var, 'True') == 'True'
+
 # Domain must not exclude KoBoCAT when sharing sessions
 if os.environ.get('CSRF_COOKIE_DOMAIN'):
     CSRF_COOKIE_DOMAIN = os.environ['CSRF_COOKIE_DOMAIN']
