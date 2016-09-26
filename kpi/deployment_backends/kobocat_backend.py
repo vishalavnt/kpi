@@ -37,6 +37,7 @@ class KobocatDeploymentException(exceptions.APIException):
         )
         return self.detail in invalid_form_id_responses
 
+
 class KobocatDeploymentBackend(BaseDeploymentBackend):
     '''
     Used to deploy a project into KC. Stores the project identifiers in the
@@ -204,6 +205,11 @@ class KobocatDeploymentBackend(BaseDeploymentBackend):
             return '{}_{}'.format(owner, self.xform_id_string)
         except KeyError:
             return None
+
+    def query_data(self):
+        query = {'_userform_id': self.mongo_userform_id,
+                 '_deleted_at': {'$exists': False}}
+        return settings.MONGO_DB.instances.find(query)
 
     def connect(self, identifier=None, active=False):
         '''
