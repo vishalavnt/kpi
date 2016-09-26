@@ -96,6 +96,9 @@ def deploy_ref(deployment_name, ref, force=False):
         run("pip install --upgrade 'pip==8.1.1' pip-tools")
         run("pip-sync '%s'" % env.pip_requirements_file)
 
+    last_update_info_file = os.path.join(env.kpi_path, 'staticfiles',
+                                         'LAST_UPDATE.txt')
+
     with cd(env.kpi_path):
         with kobo_workon(env.kpi_virtualenv_name):
             run("bower install")
@@ -109,8 +112,8 @@ def deploy_ref(deployment_name, ref, force=False):
                 run("python manage.py migrate")
                 run("python manage.py collectstatic --noinput")
 
-    with cd(os.path.join(env.kpi_path, 'staticfiles')):
-        run("date > LAST_UPDATE.txt")
+        run("date > {}".format(last_update_info_file))
+        run("git log --oneline -n1 >> {}".format(last_update_info_file))
 
     run("sudo restart kpi_celeryd")
     run("sudo service uwsgi reload")
