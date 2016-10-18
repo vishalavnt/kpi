@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import json
+import sys
 
 from kpi.models import Asset, AssetVersion
 from reversion.models import Version
@@ -41,7 +42,13 @@ def populate_assetversions(_Asset, _AssetVersion, _ReversionVersion,
     asset_ids = _cur.order_by('-date_modified').values_list('id', flat=True)
 
     for _i in xrange(0, len(asset_ids)):
-        _create_versions_for_asset_id(asset_ids[_i], _AssetVersion, _ReversionVersion)
+        try:
+            _create_versions_for_asset_id(asset_ids[_i], _AssetVersion, _ReversionVersion)
+        except KeyboardInterrupt:
+            sys.exit(0)
+        except Exception as e:
+            print("error on asset {} | {}".format(asset_ids[_i],
+                                                  e.message))
         if _i % 1000 == 0:
             print('on {} with {} created'.format(_i, _AssetVersion.objects.count()))
 
