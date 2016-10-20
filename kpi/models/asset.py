@@ -141,9 +141,23 @@ class FormpackXLSFormUtils(object):
     def _expand_kobo_qs(self, content):
         expand_rank_and_score_in_place(content)
 
+    def _ensure_settings(self, content):
+        # asset.settings should exist already, but
+        # on some legacy forms it might not
+        _settings = content.get('settings', {})
+        if isinstance(_settings, list):
+            if len(_settings) > 0:
+                _settings = _settings[0]
+            else:
+                _settings = {}
+        if not isinstance(_settings, dict):
+            _settings = {}
+        content['settings'] = _settings
+
     def _append(self, content, **sheet_data):
         settings = sheet_data.pop('settings', None)
         if settings:
+            self._ensure_settings(content)
             content['settings'].update(settings)
         for (sht, rows) in sheet_data.items():
             if sht in content:
@@ -503,6 +517,7 @@ class Asset(ObjectPermissionMixin,
     def snapshot(self):
         return self._snapshot(regenerate=False)
 
+    @transaction.atomic
     def _snapshot(self, regenerate=True):
         asset_version = self.asset_versions.first()
 
@@ -517,6 +532,12 @@ class Asset(ObjectPermissionMixin,
             if regenerate:
                 snapshot.delete()
                 snapshot = False
+        except AssetSnapshot.MultipleObjectsReturned:
+            # how did multiple snapshots get here?
+            snaps = AssetSnapshot.objects.filter(asset=self,
+                                                 asset_version=asset_version)
+            snaps.delete()
+            snapshot = False
         except AssetSnapshot.DoesNotExist:
             snapshot = False
 
@@ -567,6 +588,7 @@ class AssetSnapshot(models.Model, XlsExportable, FormpackXLSFormUtils):
         if self.asset is not None:
             if self.asset_version is None:
                 self.asset_version = self.asset.latest_version
+            if self.source is None:
                 self.source = self.asset_version.version_content
             if self.owner is None:
                 self.owner = self.asset.owner
@@ -612,13 +634,14 @@ class AssetSnapshot(models.Model, XlsExportable, FormpackXLSFormUtils):
                                      u'name': u'prepended_note',
                                      u'label': _label})
 
-        self._expand_kobo_qs(source)
-        self._populate_fields_with_autofields(source)
+        source_copy = copy.deepcopy(source)
+        self._expand_kobo_qs(source_copy)
+        self._populate_fields_with_autofields(source_copy)
 
         warnings = []
         details = {}
         try:
-            xml = FormPack({'content': source},
+            xml = FormPack({'content': source_copy},
                                 root_node_name=root_node_name,
                                 id_string=id_string,
                                 title=form_title)[0].to_xml(warnings=warnings)

@@ -1,14 +1,11 @@
 # File for use with `pip-compile`; see https://github.com/nvie/pip-tools
 # https://github.com/bndr/pipreqs is a handy utility, too.
 
-# Custom Whoosh; see https://bitbucket.org/mchaput/whoosh/issues/386/keyerror-1l
--e git+https://github.com/jnm/whoosh@master#egg=Whoosh
-
 # Custom pyxform
--e git+https://github.com/kobotoolbox/pyxform.git@master#egg=pyxform
+-e git+https://github.com/kobotoolbox/pyxform.git@6dfff060fc2ad6c575c6a7d953c381d2180e6833#egg=pyxform
 
 # Formpack
--e git+https://github.com/kobotoolbox/formpack.git@1.2#egg=formpack
+-e git+https://github.com/kobotoolbox/formpack.git@1.4#egg=formpack
 
 # Regular PyPI packages
 Django<1.9
@@ -21,7 +18,7 @@ billiard
 boto
 celery
 dj-static
-dj_database_url
+dj-database-url
 django-braces
 django-debug-toolbar
 django-extensions
@@ -59,5 +56,11 @@ tabulate
 unicodecsv
 uWSGI
 whitenoise
+Whoosh==2.7.4
 xlrd
 xlwt
+
+# These packages allow `requests` to support SNI
+pyopenssl
+ndg-httpsclient
+pyasn1
