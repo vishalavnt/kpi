@@ -275,14 +275,18 @@ class XlsExportable(object):
         Extra settings may be included as a dictionary in the same
         parameter.
             `{'settings': {'setting name': 'setting value'}}` '''
+        id_string = kwargs.pop('id_string', None)
         if versioned:
+            settings = {'version': self.version_id}
+            if id_string:
+                settings['id_string'] = id_string
             kwargs['append'
                    ] = {'survey': [
                         {'name': '__version__',
                          'calculation': '\'{}\''.format(self.version_id),
                          'type': 'calculate'}
                         ],
-                        'settings': {'version': self.version_id}}
+                        'settings': settings}
         try:
             def _add_contents_to_sheet(sheet, contents):
                 cols = []

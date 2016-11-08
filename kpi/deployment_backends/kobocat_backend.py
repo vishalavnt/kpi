@@ -248,10 +248,9 @@ class KobocatDeploymentBackend(BaseDeploymentBackend):
                 raise Exception('The identifier is not properly formatted.')
 
         url = self.external_to_internal_url(u'{}/api/v1/forms'.format(server))
-        csv_io = self.to_csv_io(self.asset.to_xls_io(versioned=True), id_string)
-        valid_xlsform_csv_repr = csv_io.getvalue()
         payload = {
-            u'text_xls_form': valid_xlsform_csv_repr,
+            u'xls_file': self.asset.to_xls_io(versioned=True,
+                                              id_string=id_string),
             u'downloadable': active
         }
         json_response = self._kobocat_request('POST', url, payload)
