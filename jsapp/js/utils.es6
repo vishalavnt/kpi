@@ -129,18 +129,30 @@ if (window.gettext) {
     return s;
   };
 }
+
+let savedTranslations = [],
+    recordUntranslatedStrings = false;
+
 export function t(str) {
-  return _gettext(str);
+  let translated = _gettext(str),
+      hasChanged = (translated !== str);
+
+  if (recordUntranslatedStrings && !hasChanged &&
+      savedTranslations.indexOf(str) === -1) {
+    savedTranslations.push(str);
+  }
+  return translated;
 };
+
 export function currentLang() {
   return cookie.load(LANGUAGE_COOKIE_NAME) || 'en';
 }
 
-
-log.t = function () {
-  let _t = {};
-  __strings.forEach(function(str){ _t[str] = str; })
-  console.log(JSON.stringify(_t, null, 4));
+log.recordUntranslatedStrings = function (tf) {
+  recordUntranslatedStrings = !!tf;
+};
+log.savedTranslations = function () {
+  return savedTranslations;
 };
 
 // unique id for forms with inputs and labels
