@@ -69,6 +69,7 @@ INSTALLED_APPS = (
     'mptt',
     'haystack',
     'kobo.apps.KpiConfig',
+    'kobo.apps.tasks',
     'hub',
     'loginas',
     'webpack_loader',
