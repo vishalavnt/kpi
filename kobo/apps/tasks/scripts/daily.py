@@ -8,7 +8,11 @@ MAX_DELETE_COUNT = 10000
 
 
 def run():
-    logger = logging.getLogger('django')
+    logger = logging.getLogger('daily')
+    purge_snapshots(logger)
+
+
+def purge_snapshots(logger):
     try:
         _deleted = delete_n_oldest_snapshots_before(MAX_DELETE_COUNT,
                                                     ONE_MONTH_AGO)
