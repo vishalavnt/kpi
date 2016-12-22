@@ -54,6 +54,7 @@ kombu==3.0.35
 lxml==2.3.4
 Markdown==2.6.6
 MarkupSafe==0.23          # via jinja2
+moment==0.6
 ndg-httpsclient==0.4.2
 oauthlib==1.0.3
 paramiko==1.17.0          # via fabric
@@ -81,6 +82,7 @@ sqlparse==0.1.19
 static3==0.7.0
 statistics==1.0.3.5
 tabulate==0.7.5
+times==0.7                # via moment
 transifex-client==0.11
 unicodecsv==0.14.1
 urllib3==1.15.1           # via transifex-client
