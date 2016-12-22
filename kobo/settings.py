@@ -310,7 +310,7 @@ CELERYBEAT_SCHEDULE = {
 if 'KOBOCAT_URL' in os.environ:
     # Create/update KPI assets to match KC forms
     CELERYBEAT_SCHEDULE['sync-kobocat-xforms'] = {
-        'task': 'kpi.tasks.sync_kobocat_xforms',
+        'task': 'kobo.apps.schedule.tasks.sync_kobocat_xforms',
         'schedule': timedelta(minutes=30),
     }
 

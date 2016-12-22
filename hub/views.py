@@ -6,7 +6,7 @@ from registration.backends.default.views import RegistrationView
 from registration.forms import RegistrationForm
 from rest_framework.decorators import api_view
 
-from kpi.tasks import sync_kobocat_xforms
+from kobo.apps.schedule.tasks import sync_kobocat_xforms
 from .models import FormBuilderPreference, ExtraUserDetail
 
 # The `api_view` decorator allows authentication via DRF

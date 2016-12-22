@@ -21,9 +21,9 @@ from rest_framework.authtoken.models import Token
 
 from formpack.utils.xls_to_ss_structure import xls_to_dicts
 from hub.models import FormBuilderPreference
-from ...deployment_backends.kobocat_backend import KobocatDeploymentBackend
-from ...models import Asset
-from .import_survey_drafts_from_dkobo import _set_auto_field_update
+from kpi.deployment_backends.kobocat_backend import KobocatDeploymentBackend
+from kpi.models import Asset
+from kpi.management.commands.import_survey_drafts_from_dkobo import _set_auto_field_update
 
 TIMESTAMP_DIFFERENCE_TOLERANCE = datetime.timedelta(seconds=30)
 
