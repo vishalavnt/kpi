@@ -83,7 +83,7 @@ from .serializers import (
 from .utils.gravatar_url import gravatar_url
 from .utils.kobo_to_xlsform import to_xlsform_structure
 from .utils.ss_structure_to_mdtable import ss_structure_to_mdtable
-from .tasks import import_in_background
+from kobo.apps.schedule.tasks import import_in_background
 from deployment_backends.backends import DEPLOYMENT_BACKENDS
 
 CLONE_ARG_NAME = 'clone_from'
