@@ -305,6 +305,10 @@ CELERYBEAT_SCHEDULE = {
     #    'task': 'kpi.tasks.update_search_index',
     #    'schedule': timedelta(hours=12)
     #},
+    'daily': {
+        'task': 'kobo.apps.schedule.tasks.daily',
+        'schedule': timedelta(days=1),
+    },
 }
 
 if 'KOBOCAT_URL' in os.environ:

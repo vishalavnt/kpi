@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from celery import shared_task
 from django.core.management import call_command
+from .scripts.daily import run as run_daily
 from kpi.models import ImportTask
 
 
@@ -18,3 +19,8 @@ def import_in_background(import_task_uid):
 @shared_task
 def sync_kobocat_xforms(username=None, quiet=True):
     call_command('sync_kobocat_xforms', username=username, quiet=quiet)
+
+
+@shared_task
+def daily():
+    run_daily()
