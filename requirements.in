@@ -45,6 +45,7 @@ gunicorn
 jsonfield
 kombu
 lxml
+moment
 oauthlib
 psycopg2
 pymongo
