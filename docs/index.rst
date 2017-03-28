@@ -10,7 +10,7 @@ Welcome to KoBoForm's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   README.md
+   README <README.md>
 
 Indices and tables
 ==================
