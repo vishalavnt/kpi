@@ -80,6 +80,8 @@ RUN mkdir "${GRUNT_BUILD_DIR}" && \
     # FIXME: Move `webpack-stats.json` to some build target directory so these ad-hoc workarounds don't continue to accumulate.
     ln -s "${WEBPACK_STATS_PATH}" webpack-stats.json
 
+RUN find "${KPI_SRC_DIR}"
+
 RUN grunt copy && npm run build
 
 
