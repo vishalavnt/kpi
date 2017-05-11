@@ -356,18 +356,55 @@
 
     > .form-view__label {
       display: inline-block;
-      width: 25%;
-      padding: 10px 15px;
+      width: 21.9%;
+      padding: 8px 12px;
       margin: 0px;
       vertical-align: middle;
 
       &--buttons {
         text-align: right;
+
+        a {
+          display: none;
+        }
+      }
+
+      &--language-name {
+        width: 34%;
+      }
+
+      &--language-name, &--code {
+        input {
+          border-color: transparent;
+          background: transparent;
+          padding: 5px 0px;
+
+          &:focus {
+            border-bottom-color: $cool-blue;
+          }
+        }
       }
     }
 
     &:hover {
       background: $hover-asset-row;
+
+      .form-view__label--language-name,
+      .form-view__label--code {
+        input {
+          border-bottom-color: $divider-color;
+
+          &:focus {
+            border-bottom-color: $cool-blue;
+          }
+        }
+      }
+
+      .form-view__label--buttons {
+        a {
+          display: inline-block;
+        }
+      }
     }
   }
 

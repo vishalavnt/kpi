@@ -11,6 +11,7 @@ import ui from '../ui';
 import mixins from '../mixins';
 import DocumentTitle from 'react-document-title';
 import CopyToClipboard from 'react-copy-to-clipboard';
+import AutosizeInput from 'react-input-autosize';
 import icons from '../../xlform/src/view.icons';
 import $ from 'jquery';
 
@@ -43,7 +44,7 @@ var FormLanding = React.createClass({
   },
   assetStoreChange(data) {
     var langList = [];
-    this.state.summary.languages.map((l, n) => {
+    this.state.content.translations.map((l, n) => {
       var langName = l.split('(');
       var langCode = langName[1].split(')');
 
@@ -77,26 +78,24 @@ var FormLanding = React.createClass({
       langList: langList
     });
 
-    // clearTimeout(typingTimer);
+    clearTimeout(typingTimer);
 
-    // typingTimer = setTimeout(() => { 
-    //   if (!langName && !langCode) {
-    //     alertify.error(t('The language name or code cannot be empty.'));
-    //   } else {
-    //     var content = this.state.content;
-    //     var summary = this.state.summary;
+    typingTimer = setTimeout(() => { 
+      if (!langName && !langCode) {
+        alertify.error(t('The language name or code cannot be empty.'));
+      } else {
+        var content = this.state.content;
+        langList.map((l, n) => {
+          content.translations[n] = `${l.name} (${l.code})`;
+        });
 
-    //     langList.map((l, n) => {
-    //       content.translations[n] = `${l.name} (${l.code})`;
-    //     });
-
-    //     actions.resources.updateAsset(
-    //       this.state.uid, {
-    //         content: content
-    //       }
-    //     );
-    //   }
-    // }, 1000);
+        actions.resources.updateAsset(
+          this.state.uid, {
+            translations: JSON.stringify(content.translations)
+          }
+        );
+      }
+    }, 1000);
 
   },
   nameValidate(e) {
@@ -134,6 +133,12 @@ var FormLanding = React.createClass({
         </bem.FormView__cell>
       );
   },
+  setActiveLanguage (evt) {
+    var el = $(evt.target).closest('[data-language]').get(0);
+    var language = el.getAttribute('data-language');
+    // var content = this.state.content;
+    // hashHistory.push(`/forms/${asset.uid}/edit`);
+  },
   renderFormLanguages () {
     return (
       <bem.FormView__cell m={['padding', 'bordertop', 'languages']}>
@@ -141,14 +146,14 @@ var FormLanding = React.createClass({
           <bem.FormView__label m='language-name'>{t('Language')}</bem.FormView__label>
           <bem.FormView__label m='code'>{t('Language code')}</bem.FormView__label>
           <bem.FormView__label m='progress'>{t('Translation Progress')}</bem.FormView__label>
-          <bem.FormView__label m='buttons'>buttons </bem.FormView__label>
+          <bem.FormView__label m='buttons'></bem.FormView__label>
         </bem.FormView__group>
         {this.state.langList &&
           this.state.langList.map((l, n) => {
           return (
             <bem.FormView__group m="items" key={n} >
               <bem.FormView__label m='language-name'>
-                <input type="text"
+                <AutosizeInput type="text"
                       data-index={n}
                       data-langCode={l.code}
                       name="langName"
@@ -165,7 +170,7 @@ var FormLanding = React.createClass({
 
               </bem.FormView__label>
               <bem.FormView__label m='code'>
-                <input type="text"
+                <AutosizeInput type="text"
                       data-index={n}
                       data-langName={l.name}
                       name="langCode"
@@ -179,7 +184,9 @@ var FormLanding = React.createClass({
               </bem.FormView__label>
               <bem.FormView__label m='buttons'>
                 <bem.FormView__link m='edit'
-                    data-tip={t('Edit this translation')}>
+                    data-tip={t('Edit this translation')}
+                    data-language={`${l.name} (${l.code})`}
+                    onClick={this.setActiveLanguage}>
                   <i className="k-icon-edit" />
                 </bem.FormView__link>
               </bem.FormView__label>
