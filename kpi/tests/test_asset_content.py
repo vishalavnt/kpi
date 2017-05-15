@@ -459,7 +459,7 @@ def kobomatrix_content():
             {u'type': 'begin_kobomatrix',
                 'name': 'm1',
                 'label': 'Items',
-                'kobo--matrix_list': 'car_bike_tv',
+                'select_from_list_name': 'car_bike_tv',
                 },
             {u'type': 'select_one', 'select_from_list_name': 'yn',
               'label': 'Possess?', 'name': 'possess', 'required': True},

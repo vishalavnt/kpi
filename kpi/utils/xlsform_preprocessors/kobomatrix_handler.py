@@ -21,12 +21,12 @@ class KoboMatrixGroupHandler(GroupHandler):
         """
         Convert KoboScoreGroup:
         # survey
-        |       type       | name | label | kobo--matrix_list | required |
-        | ---------------- | ---- | ----- | ----------------- | -------- |
-        | begin_kobomatrix | m1   |       | car_bike_tv       |          |
-        | select_one yn    | q1   | Q1    |                   | true     |
-        | text             | q2   | Q2    |                   | true     |
-        | end_kobomatrix   |      |       |                   |          |
+        |       type       | name | label | select_from_list_name | required |
+        | ---------------- | ---- | ----- | --------------------- | -------- |
+        | begin_kobomatrix | m1   |       | car_bike_tv           |          |
+        | select_one yn    | q1   | Q1    |                       | true     |
+        | text             | q2   | Q2    |                       | true     |
+        | end_kobomatrix   |      |       |                       |          |
 
         # choices
         |  list name  | name | label |
@@ -74,7 +74,9 @@ class KoboMatrixGroupHandler(GroupHandler):
     def begin(self, initial_row):
         super(KoboMatrixGroupHandler, self).begin(initial_row)
 
-        choice_key = 'kobo--matrix_list'
+        choice_key = 'select_from_list_name'
+        if choice_key not in initial_row:
+            raise ValueError('matrix questions must have list specified')
         self.items = self._base_handler.choices(list_name=initial_row.pop(choice_key))
         self.item_labels = initial_row.get('label')
         self.span_wrap = initial_row.get('kobomatrix--span-wrap', SPAN_WRAP)
