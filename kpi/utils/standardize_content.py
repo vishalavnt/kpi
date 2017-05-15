@@ -18,11 +18,15 @@ ALLOWED_TYPES = {
     u'end_rank': [
         u'end rank',
     ],
-    u'begin_kobomatrix': [
+    u'begin_matrix': [
         u'begin kobomatrix',
+        u'begin_kobomatrix',
+        u'begin matrix',
     ],
-    u'end_kobomatrix': [
+    u'end_matrix': [
         u'end kobomatrix',
+        u'end_kobomatrix',
+        u'end matrix',
     ],
 }
 

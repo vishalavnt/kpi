@@ -456,7 +456,7 @@ def test_named_score_question_compiles():
 def kobomatrix_content():
     return {
         u'survey': [
-            {u'type': 'begin_kobomatrix',
+            {u'type': 'begin_matrix',
                 'name': 'm1',
                 'label': 'Items',
                 'select_from_list_name': 'car_bike_tv',
@@ -467,7 +467,7 @@ def kobomatrix_content():
               'label': 'Necessary?', 'name': 'necess', 'required': True},
             {u'type': 'integer',
               'label': 'Number', 'name': 'number', 'required': True},
-            {u'type': 'end_kobomatrix'},
+            {u'type': 'end_matrix'},
         ],
         u'choices': [
             {u'list_name': 'car_bike_tv', u'label': 'Car', 'name': 'car'},

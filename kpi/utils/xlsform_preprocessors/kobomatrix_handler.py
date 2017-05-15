@@ -10,8 +10,8 @@ ROW_HEADER_WRAP = '##### {}'
 class KoboMatrixGroupHandler(GroupHandler):
     name = 'Kobo matrix group'
 
-    start_type = 'begin_kobomatrix'
-    end_type = 'end_kobomatrix'
+    start_type = 'begin_matrix'
+    end_type = 'end_matrix'
 
     description = '''
     Allows a survey builder to create a table of different question types
@@ -23,10 +23,10 @@ class KoboMatrixGroupHandler(GroupHandler):
         # survey
         |       type       | name | label | select_from_list_name | required |
         | ---------------- | ---- | ----- | --------------------- | -------- |
-        | begin_kobomatrix | m1   |       | car_bike_tv           |          |
+        | begin_matrix     | m1   |       | car_bike_tv           |          |
         | select_one yn    | q1   | Q1    |                       | true     |
         | text             | q2   | Q2    |                       | true     |
-        | end_kobomatrix   |      |       |                       |          |
+        | end_matrix       |      |       |                       |          |
 
         # choices
         |  list name  | name | label |

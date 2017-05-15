@@ -21,7 +21,7 @@ KOBO_CUSTOM_TYPE_HANDLERS = {
     'begin rank': KoboRankGroup,
     'begin_score': KoboScoreGroup,
     'begin_rank': KoboRankGroup,
-    'begin_kobomatrix': KoboMatrixGroupHandler,
+    'begin_matrix': KoboMatrixGroupHandler,
 }
 
 
