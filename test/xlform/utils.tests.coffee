@@ -1,6 +1,8 @@
 {expect} = require('../helper/fauxChai')
 $utils = require("../../jsapp/xlform/src/model.utils")
 
+$translationUtils = require("../../jsapp/xlform/src/model.translationUtils")
+
 pasted = [
             ["list_name", "name", "label", "state", "county"],
             ["state", "texas", "Texas", ""],
@@ -164,4 +166,88 @@ do ->
           [str, additionals] = inps
           _out = $utils.sluggifyLabel(str, additionals)
           expect(_out).toBe(exps)
- 
+
+describe 'model.translationUtils', ->
+  fn = $translationUtils.tx_strings_to_objects
+  fn2 = $translationUtils.tx_string_to_object
+
+  it 'converts translation list to objects', ->
+    expect(fn(['English', 'French', 'Spanish'])).toEqual(
+      [
+        {
+          name: 'English'
+          index: 0
+        }
+        {
+          name: 'French'
+          index: 1
+        }
+        {
+          name: 'Spanish'
+          index: 2
+        }
+      ])
+
+  it 'extracts codes', ->
+    expect(fn2('English(en)', 0)).toEqual(
+        name: 'English'
+        code: 'en'
+        index: 0
+      )
+
+  it 'sets $uid', ->
+    item = {
+      name: 'xx'
+      code: 'yy'
+    }
+
+    item2 = $translationUtils.set_tx_id(item)
+    expect(Object.keys(item2)).toEqual(['name', 'code', '$uid'])
+    expect(item2['$uid']).toBeDefined()
+
+    existing_item = {
+      name: 'xx'
+      code: 'yy'
+      '$uid': 'abcdef'
+    }
+    item3 = $translationUtils.set_tx_id(existing_item)
+    expect(Object.keys(item3)).toEqual(['name', 'code', '$uid'])
+    expect(item3['$uid']).toEqual('abcdef')
+
+
+  it 'reorders translated fields', ->
+    surv = {
+      survey: [
+        {
+          label: ['Lang1', 'Lang2']
+          type: 'select_one'
+          select_from_list_name; 'cl1'
+          name: 'somename'
+        }
+      ]
+      choices: [
+        {
+          list_name: 'cl1'
+          label: ['L1C1', 'L2C1']
+        }
+        {
+          list_name: 'cl1'
+          label: ['L1C2', 'L2C2']
+        }
+      ]
+      translations: ['Lang1', 'Lang2']
+      translated: ['label']
+    }
+    output = $translationUtils.prioritize_translation(surv, 'Lang2')
+    expect(output.survey[0].label[0]).toEqual('Lang2')
+    expect(output.choices[0].label[0]).toEqual('L2C1')
+    # expect(output.translation_list).toEqual([
+    #   {
+    #     name: 'Lang2'
+    #     index: 1
+    #   }
+    #   {
+    #     name: 'Lang1'
+    #     index: 0
+    #   }
+    # ])

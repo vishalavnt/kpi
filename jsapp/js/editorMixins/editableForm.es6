@@ -606,6 +606,9 @@ export default assign({
       if (!survey) {
         survey = dkobo_xlform.model.Survey.create();
       } else {
+        /*
+        dkobo_xlform.model.translationUtils.prioritize_translation(survey,
+          'currentlang'); */
         survey = dkobo_xlform.model.Survey.loadDict(survey);
       }
     } catch (err) {
