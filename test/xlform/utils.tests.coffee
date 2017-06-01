@@ -1,6 +1,8 @@
 {expect} = require('../helper/fauxChai')
 $utils = require("../../jsapp/xlform/src/model.utils")
 
+$translationUtils = require("../../jsapp/xlform/src/model.translationUtils")
+
 pasted = [
             ["list_name", "name", "label", "state", "county"],
             ["state", "texas", "Texas", ""],
@@ -164,4 +166,108 @@ do ->
           [str, additionals] = inps
           _out = $utils.sluggifyLabel(str, additionals)
           expect(_out).toBe(exps)
- 
+
+describe 'model.translationUtils', ->
+  fn = $translationUtils._tx_string_to_object
+
+  it 'converts translation list to objects', ->
+    expect(['English', 'French', 'Spanish'].map(fn)).toEqual(
+      [
+        {
+          name: 'English'
+          order: 0
+        }
+        {
+          name: 'French'
+          order: 1
+        }
+        {
+          name: 'Spanish'
+          order: 2
+        }
+      ])
+
+  it 'extracts codes', ->
+    expect(fn('English(en)', 0)).toEqual(
+        name: 'English'
+        code: 'en'
+        order: 0
+      )
+
+  it 'sets $uid', ->
+    item = {
+      name: 'xx'
+      code: 'yy'
+    }
+
+    item2 = $translationUtils.set_tx_id(item)
+    expect(Object.keys(item2)).toEqual(['name', 'code', '$uid'])
+    expect(item2['$uid']).toBeDefined()
+
+    existing_item = {
+      name: 'xx'
+      code: 'yy'
+      '$uid': 'abcdef'
+    }
+    item3 = $translationUtils.set_tx_id(existing_item)
+    expect(Object.keys(item3)).toEqual(['name', 'code', '$uid'])
+    expect(item3['$uid']).toEqual('abcdef')
+
+
+  describe 'reorders translated fields', ->
+    copy_obj = (obj)->
+      JSON.parse(JSON.stringify(obj))
+
+    surv = ->
+      {
+        survey: [
+          {
+            label: ['Lang1', 'Lang2']
+            type: 'select_one'
+            select_from_list_name: 'cl1'
+            name: 'somename'
+          }
+        ]
+        choices: [
+          {
+            list_name: 'cl1'
+            label: ['L1C1', 'L2C1']
+          }
+          {
+            list_name: 'cl1'
+            label: ['L1C2', 'L2C2']
+          }
+        ]
+        translations: ['Lang1', 'Lang2']
+        translated: ['label']
+      }
+
+    it 'fails without translation_list', ->
+      run = ->
+        $translationUtils.prioritize_translation(surv(), 'Lang2')
+      expect(run).toThrow()
+
+    it 'changes nothing when nothing should change', ->
+      _s = surv()
+      $translationUtils.add_translation_list(_s)
+      _s0 = copy_obj(_s)
+      $translationUtils.prioritize_translation(_s, 'Lang1')
+      expect(_s0).toEqual(_s)
+
+    it 'changes order when order should change', ->
+      _s = surv()
+      $translationUtils.add_translation_list(_s)
+      _s0 = copy_obj(_s)
+      $translationUtils.prioritize_translation(_s, 'Lang2')
+      expect(_s0).not.toEqual(_s)
+      expect(_s0.survey).toEqual(_s.survey)
+      expect(_s.translation_list).toEqual([
+        {
+          name: 'Lang1',
+          order: 1,
+        }
+        {
+          name: 'Lang2',
+          order: 0,
+        }
+      ])
