@@ -21,7 +21,7 @@ do ->
       list = new $choices.ChoiceList()
       $inputParser.loadChoiceLists($surveys.pizza_survey.main().choices, list)
 
-    describe '. parse()"', ->
+    describe '. parseArr()"', ->
       describe ' translated surveys', ->
         it 'flattens translated lists 1', ->
           results = $inputParser.parseArr('survey', [

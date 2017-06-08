@@ -1,5 +1,6 @@
 _ = require 'underscore'
 $aliases = require './model.aliases'
+$translationUtils = require './model.translationUtils'
 
 module.exports = do ->
   inputParser = {}
@@ -98,10 +99,16 @@ module.exports = do ->
     _curGrp().export().__rows
 
   inputParser.parseArr = parseArr
+
   inputParser.parse = (o)->
+    $translationUtils.add_translation_list o
+
+    if o.translations
+      throw new Error('stop using translations')
+    if not o.translation_list
+      throw new Error('no translations')
+
     t_list = o.translation_list
-    if not t_list
-      t_list = [{name: null}]
 
     if o.survey
       o.survey = parseArr('survey', o.survey, t_list)
@@ -114,8 +121,7 @@ module.exports = do ->
       o.settings = o.settings[0]
 
     o.translation_list = t_list
-    o.translations = _.pluck(t_list, 'name')
-    log(o.translation_list)
+
     o
 
   inputParser.loadChoiceLists = (passedChoices, choices)->

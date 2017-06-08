@@ -2,11 +2,8 @@ _ = require('underscore')
 trim = require('string.prototype.trim')
 
 txtid = require('./model.utils').txtid
-Immutable = require('immutable')
-List = Immutable.List
-Record = Immutable.Record
 
-_tx_string_to_object = (translation, index)->
+_tx_string_to_object = (translation, index, arr, active)->
   out =
     name: translation
     order: index
@@ -16,6 +13,9 @@ _tx_string_to_object = (translation, index)->
     out.name = trim(mtch[1])
     out.code = mtch[2]
 
+  if active
+    out.active = true
+
   out
 
 set_tx_id = (translation_object)->
@@ -24,54 +24,40 @@ set_tx_id = (translation_object)->
   translation_object
 
 add_translation_list = (content)->
-  if ('translation_list' not of content) and ('translations' of content)
+  if content.translations and not content.translation_list
     _tl = content.translations.map (translation_name, index)->
-      new Record _tx_string_to_object(translation_name, index)
+      _tx_string_to_object(translation_name, index, null, index is 0)
     content.translation_list = _tl
-  else if ('translation_list' not of content)
-    content.translation_list = [null]
+    delete content.translations
+  else if not content.translation_list
+    content.translation_list = [{name: null, active: true}]
+  _active = _.find content.translation_list, (tl)-> tl.active
+  if not _active
+    throw new Error('no active translation set')
   content
 
-sequence_translations = (_tl)->
-  # temporarily store the original order of the translation list
-  for item, n in _tl
-    item._index = n
-  # sort by the order property
-  _tl.sort (a, b)-> if a.order < b.order then -1 else 1
-  # reset the order property so that it is sequential starting at 0
-  for item, n in _tl
-    item.order = n
-  # return to the original order
-  _tl.sort (a, b)-> if a._index < b._index then -1 else 1
-  # remove temporary value
-  for item, n in _tl
-    delete item._index
+change_order_by_name = (list, name)->
+  for item in list
+    if item.name is name
+      item.order = -1
+      break
+  for item, index in _.sortBy(list, 'order')
+    item.order = index
 
-prioritize_translation = (content, translation_name)->
-  if 'translation_list' not of content
-    throw new Error('content must have translation_list defined')
-  _tl = content.translation_list
-  translation_index = -1
-  if _.isNumber(translation_name)
-    translation_index = translation_name
-  else
-    for item, n in _tl
-      if item.name is translation_name
-        translation_index = n
-        break
-  if translation_index is -1
-    throw new Error('translation not found')
-  if translation_index > (_tl.length - 1)
-    throw new Error("translation out of range: #{translation_index}")
-  _tl[translation_index].order = -1
-  sequence_translations(_tl)
-
-  content
-
+rename_first_translation_to_null = (list)->
+  for item in list
+    if item.order is 0
+      item.savename = item.name
+      item.name = null
+    else
+      if item.name is null
+        item.name = item.savename or 'NOT_NAMED'
+        item.savename = null
 
 module.exports = {
   add_translation_list: add_translation_list
   set_tx_id: set_tx_id
   _tx_string_to_object: _tx_string_to_object
-  prioritize_translation: prioritize_translation
+  rename_first_translation_to_null: rename_first_translation_to_null
+  change_order_by_name: change_order_by_name
 }

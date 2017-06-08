@@ -5,7 +5,7 @@ $model = require("../../jsapp/xlform/src/_model")
 
 xlform_survey_model = ($model)->
   beforeEach ->
-    @getPizzaSurvey = -> $model.Survey.load(PIZZA_SURVEY)
+    @getPizzaSurvey = -> $model.Survey.load.csv(PIZZA_SURVEY)
     @createSurveyCsv = (survey=[],choices=[])->
       choiceSheet = if choices.length is 0 then "" else """
       choices,,,
@@ -19,7 +19,7 @@ xlform_survey_model = ($model)->
       #{choiceSheet}
       """
     @createSurvey = (survey=[],choices=[])=>
-      $model.Survey.load @createSurveyCsv survey, choices
+      $model.Survey.load.csv @createSurveyCsv survey, choices
     @firstRow = (s)-> s.rows.at(0)
     @compareCsvs = (x1, x2)->
       x1r = x1.split("\n")
@@ -137,7 +137,7 @@ xlform_survey_model = ($model)->
         #{choiceSheet}
         """
       @createSurvey = (survey=[],choices=[])=>
-        $model.Survey.load @createSurveyCsv survey, choices
+        $model.Survey.load.csv @createSurveyCsv survey, choices
       @firstRow = (s)-> s.rows.at(0)
       @compareCsvs = (x1, x2)->
         x1r = x1.split("\n")
@@ -164,7 +164,7 @@ xlform_survey_model = ($model)->
       # @dumpAndLoad scsv
 
     it "captures required values", ->
-      srv = $model.Survey.loadDict({
+      srv = $model.Survey.load({
           survey: [
             {
               type: 'text',
@@ -175,6 +175,12 @@ xlform_survey_model = ($model)->
               type: 'text',
               name: 'q2',
               required: false
+            }
+          ],
+          translation_list: [
+            {
+              name: null
+              active: true
             }
           ]
         })
@@ -276,6 +282,7 @@ xlform_survey_model = ($model)->
   describe "lists", ->
     it "can change a list for a question", ->
       # add a new list. "yes, no, maybe"
+      @pizzaSurvey = @getPizzaSurvey()
       @pizzaSurvey.choices.add(name: "yes_no_maybe")
       ynm = @pizzaSurvey.choices.get("yes_no_maybe")
       expect(ynm).toBeDefined()
@@ -303,6 +310,7 @@ xlform_survey_model = ($model)->
       expect(firstRow.getList()?.get("name")).toBe("no_yes")
 
     it "can change options for a list", ->
+      @pizzaSurvey = @getPizzaSurvey()
       yn = @pizzaSurvey.choices.get("yes_no")
       expect(yn.options).toBeDefined()
 
@@ -317,7 +325,7 @@ xlform_survey_model = ($model)->
 
   describe "census xlform", ->
     beforeEach ->
-      @census = $model.Survey.load(CENSUS_SURVEY)
+      @census = $model.Survey.load.csv(CENSUS_SURVEY)
     it "looks good", ->
       expect(@census).toBeDefined()
 

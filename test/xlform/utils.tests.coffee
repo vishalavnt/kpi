@@ -1,5 +1,6 @@
 {expect} = require('../helper/fauxChai')
 $utils = require("../../jsapp/xlform/src/model.utils")
+_ = require("underscore")
 
 $translationUtils = require("../../jsapp/xlform/src/model.translationUtils")
 
@@ -242,32 +243,55 @@ describe 'model.translationUtils', ->
         translated: ['label']
       }
 
-    it 'fails without translation_list', ->
-      run = ->
-        $translationUtils.prioritize_translation(surv(), 'Lang2')
-      expect(run).toThrow()
-
-    it 'changes nothing when nothing should change', ->
-      _s = surv()
-      $translationUtils.add_translation_list(_s)
-      _s0 = copy_obj(_s)
-      $translationUtils.prioritize_translation(_s, 'Lang1')
-      expect(_s0).toEqual(_s)
-
-    it 'changes order when order should change', ->
-      _s = surv()
-      $translationUtils.add_translation_list(_s)
-      _s0 = copy_obj(_s)
-      $translationUtils.prioritize_translation(_s, 'Lang2')
-      expect(_s0).not.toEqual(_s)
-      expect(_s0.survey).toEqual(_s.survey)
-      expect(_s.translation_list).toEqual([
+    it 'rearranges list by changing order', ->
+      items = [
         {
           name: 'Lang1',
-          order: 1,
+          order: 0,
         }
         {
           name: 'Lang2',
+          order: 1,
+        }
+      ]
+      expect(_.pluck(items, 'order')).toEqual([0, 1])
+      $translationUtils.change_order_by_name(items, 'Lang2')
+      expect(_.pluck(items, 'order')).toEqual([1, 0])
+    it 'renames first translation to null when asked to do so', ->
+      tls = [
+        {
+          name: 'Lang1',
+          order: 2,
+        }
+        {
+          name: 'Lang2',
+          order: 1,
+        }
+        {
+          name: 'Lang3',
           order: 0,
         }
-      ])
+      ]
+      expect(_.pluck(tls, 'name')).toEqual(['Lang1', 'Lang2', 'Lang3'])
+      $translationUtils.rename_first_translation_to_null(tls)
+      expect(_.pluck(tls, 'name')).toEqual(['Lang1', 'Lang2', null])
+      expect(_.pluck(tls, 'savename')).toEqual([undefined, undefined, 'Lang3'])
+    it 'moves existing null translation', ->
+      tls = [
+        {
+          name: 'Lang1',
+          order: 2,
+        }
+        {
+          name: null,
+          order: 1,
+        }
+        {
+          name: 'Lang3',
+          order: 0,
+        }
+      ]
+      expect(_.pluck(tls, 'name')).toEqual(['Lang1', null, 'Lang3'])
+      $translationUtils.rename_first_translation_to_null(tls)
+      expect(_.pluck(tls, 'name')).toEqual(['Lang1', 'NOT_NAMED', null])
+      expect(_.pluck(tls, 'savename')).toEqual([undefined, null, 'Lang3'])

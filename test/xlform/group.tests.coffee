@@ -10,7 +10,7 @@ do ->
   describe 'rank.tests', ->
     describe 'survey imports ranks >', ->
       beforeEach ->
-        @survey = $survey.Survey.load {
+        @survey = $survey.Survey.deserialize_and_load {
             survey: [
               ["type", "name", "label", "kobo--rank-items"],
               {type: "begin_rank", name: "koborank", label: "Label", "kobo--rank-items": "needs"},
@@ -24,6 +24,7 @@ do ->
               ['needs', 'water', 'Water'],
               ['needs', 'shelter', 'Shelter'],
             ],
+            translation_list: [name: null, active: true]
           }
 
       it 'can import a simple rank group', ->
@@ -98,7 +99,7 @@ do ->
   describe 'score.tests', ->
     describe 'survey imports scores >', ->
       beforeEach ->
-        @survey = $survey.Survey.load {
+        @survey = $survey.Survey.deserialize_and_load {
             survey: [
               ["type", "name", "label", "kobo--score-choices"],
               {type: "begin score", name: "koboskore", label: "Label", "kobo--score-choices": "koboskorechoices"},
@@ -111,6 +112,7 @@ do ->
               ['koboskorechoices', 'ok', 'Okay'],
               ['koboskorechoices', 'not_ok', 'Not okay'],
             ],
+            translation_list: [name: null, active: true]
           }
 
       it 'can import a simple score group', ->
@@ -135,13 +137,14 @@ do ->
 
     describe 'survey imports groups >', ->
       beforeEach ->
-        @survey = $survey.Survey.load({
+        @survey = $survey.Survey.deserialize_and_load({
             survey: [
                 ['type',        'name', 'label'],
                 ['begin group', 'grp1', 'Group1'],
                 ['text',        'g1q1', 'Group1Question1'],
                 ['end group'],
               ]
+            translation_list: [name: null, active: true]
           })
 
       it 'can import a simple group', ->
@@ -153,13 +156,14 @@ do ->
         expect(@survey.rows.length).toBe(2)
         expect(_lastGroup(@survey).rows.length).toBe(0)
       it 'leaves empty group labels intact', ->
-        survey = $survey.Survey.load({
+        survey = $survey.Survey.deserialize_and_load({
             survey: [
                 ['type',        'name', 'label'],
                 ['begin group', 'grp1', null],
                 ['text',        'g1q1', 'Group1Question1'],
                 ['end group'],
               ]
+            translation_list: [name: null, active: true]
           })
 
         first_group = _firstGroup survey
@@ -169,7 +173,7 @@ do ->
         it 'works with a simple group', ->
           expect(@survey.toCSV().split('\n').length).toBe(8)
         it 'works with a nested group', ->
-          survey = $survey.Survey.load({
+          survey = $survey.Survey.deserialize_and_load({
               survey: [
                 ['type',        'name', 'label'],
                 ['begin group', 'grp1', 'Group1'],
@@ -179,17 +183,19 @@ do ->
                 ['end group'],
                 ['end group'],
               ]
+              translation_list: [name: null, active: true]
             })
           expect(survey.toCSV().split('\n').length).toBe(11)
 
     it 'can import repeats', ->
-      survey = $survey.Survey.load({
+      survey = $survey.Survey.deserialize_and_load({
           survey: [
             ['type',        'name', 'label'],
             ['begin repeat', 'grp1', 'Group1'],
             ['text',        'g1q1', 'Group1Question1'],
             ['end repeat'],
           ]
+          translation_list: [name: null, active: true]
         })
       first_row = survey.rows.first()
       expect(first_row).toBeDefined()
@@ -247,7 +253,7 @@ do ->
 
     describe 'group creation', ->
       beforeEach ->
-        @survey = $survey.Survey.load({
+        @survey = $survey.Survey.deserialize_and_load({
             survey: [
               ['type', 'name', 'label'],
               #------------------------
@@ -257,6 +263,7 @@ do ->
               ['text', 'q4',   'Q4'   ],
               ['text', 'q5',   'Q5'   ],
             ]
+            translation_list: [name: null, active: true]
           })
 
       describe 'group naming', ->
@@ -325,7 +332,7 @@ do ->
 
     describe 'group manipulation', ->
       beforeEach ->
-        @survey = $survey.Survey.load({
+        @survey = $survey.Survey.deserialize_and_load({
             survey: [
               ['type'       , 'name', 'label'           ],
               #------------------------------------------
@@ -335,6 +342,7 @@ do ->
               ['end group'                              ],
               ['text'       , 'q2'  , 'Q2'              ],
             ]
+            translation_list: [name: null, active: true]
           })
         @g1 = _firstGroup @survey
 
@@ -362,7 +370,7 @@ do ->
         expect(@getNames(@survey)).toEqual(['q1', 'g1q1', 'q2'])
       describe 'nested group can be split apart', ->
         beforeEach ->
-          @survey = $survey.Survey.load({
+          @survey = $survey.Survey.deserialize_and_load({
               survey: [
                 ['type',        'name', 'label' ],
                 #--------------------------------
@@ -373,6 +381,7 @@ do ->
                 ['end group'                    ],
                 ['text'       , 'q2'  , 'Q2'    ],
               ]
+              translation_list: [name: null, active: true]
             })
           @g1 = _firstGroup @survey
           @g2 = @g1.rows.at(0)
@@ -399,6 +408,7 @@ describe 'kuids', ->
           ['note', 'n1', 'Note 1', 'def'],
           {type: 'end_group',  '$kuid': '/abc (never parsed)'},
         ],
+        translation_list: [name: null, active: true]
       }
     rank: ->
       {
@@ -415,6 +425,7 @@ describe 'kuids', ->
           ['needs', 'water', 'Water', 'pqr'],
           ['needs', 'shelter', 'Shelter', 'stu'],
         ],
+        translation_list: [name: null, active: true]
       }
     score: ->
       {
@@ -430,12 +441,13 @@ describe 'kuids', ->
           ['scores', 'ok', 'Ok', 'qrst'],
           ['scores', 'good', 'Good', 'uvwx'],
         ],
+        translation_list: [name: null, active: true]
       }
   }
 
   describe 'passed to export', ->
     it 'for group', ->
-      survey = $survey.Survey.load survey_content.group()
+      survey = $survey.Survey.deserialize_and_load survey_content.group()
       content = survey.toFlatJSON()
       [r0, r1, r2] = content.survey
       expect(r0.$kuid).toEqual('abc')
@@ -443,7 +455,7 @@ describe 'kuids', ->
       expect(r2.$kuid).toEqual('/abc')
 
     it 'for rank survey', ->
-      survey = $survey.Survey.load survey_content.rank()
+      survey = $survey.Survey.deserialize_and_load survey_content.rank()
       content = survey.toFlatJSON()
       [r0, r1, r2, r3] = content.survey
       expect(r0.$kuid).toEqual('abc')
@@ -457,7 +469,7 @@ describe 'kuids', ->
           ).toEqual(['mno', 'pqr', 'stu'])
 
     it 'for score survey', ->
-      survey = $survey.Survey.load survey_content.score()
+      survey = $survey.Survey.deserialize_and_load survey_content.score()
       content = survey.toFlatJSON()
       [r0, r1, r2, r3] = content.survey
       expect(r0.$kuid).toEqual('abcd')
@@ -471,14 +483,14 @@ describe 'kuids', ->
 
   describe 'preserved from import', ->
     it 'for group', ->
-      survey = $survey.Survey.load survey_content.group()
+      survey = $survey.Survey.deserialize_and_load survey_content.group()
       grp1 = survey.rows.at(0)
       expect(grp1.isGroup()).toBeTruthy()
       expect(grp1.getValue('$kuid')).toEqual('abc')
       expect(grp1.rows.at(0).getValue('$kuid')).toEqual('def')
 
     it 'for rank survey', ->
-      survey = $survey.Survey.load survey_content.rank()
+      survey = $survey.Survey.deserialize_and_load survey_content.rank()
 
       r0 = survey.rows.at(0)
       r1 = r0._rankRows.at(0)
@@ -488,7 +500,7 @@ describe 'kuids', ->
       expect(r2.attributes.$kuid).toBe('ghi')
 
     it 'for score survey', ->
-      survey = $survey.Survey.load survey_content.score()
+      survey = $survey.Survey.deserialize_and_load survey_content.score()
       r0 = survey.rows.at(0)
       expect(r0.getValue('$kuid')).toBe('abcd')
       r1 = r0._scoreRows.at(0)

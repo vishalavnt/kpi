@@ -92,7 +92,7 @@ do ->
   describe 'Survey load', ->
     beforeEach ->
       @_load_csv = (scsv)=>
-        @survey = $model.Survey.load(scsv)
+        @survey = $model.Survey.load.csv(scsv)
       @_load_md = (md)=>
         @survey = $model.Survey.load.md(md)
       @expectKeys = (obj, keys)->
@@ -131,11 +131,12 @@ do ->
               }
             ]
           },
-          'translations': [
-            null
-          ],
-          'translations_list': [
-            {'name':null},
+          'translation_list': [
+            {
+              name: 'NOT_NAMED'
+              active: true
+              savename: null
+            },
           ]
         })
     describe 'survey row reordering', ->
