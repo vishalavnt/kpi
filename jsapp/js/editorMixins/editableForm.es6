@@ -406,7 +406,7 @@ export default assign({
       saveButtonText,
     } = this.buttonStates();
 
-    let translations = this.state.translations || [];
+    let translation_names = (this.state.ordered_translations || []).map((tl) => tl.name || tl.savename );
 
     return (
         <bem.FormBuilderHeader>
@@ -509,15 +509,15 @@ export default assign({
             </bem.FormBuilderHeader__cell>
             <bem.FormBuilderHeader__cell m="translations">
               {
-                (translations.length < 2) ?
+                (translation_names.length < 2) ?
                 <p>
-                  {translations[0]}
+                  {translation_names[0]}
                 </p>
                 :
                 <p>
-                  {translations[0]}
+                  {translation_names[0]}
                   <small>
-                    {translations[1]}
+                    {translation_names[1]}
                   </small>
                 </p>
               }
@@ -606,7 +606,7 @@ export default assign({
       if (!survey) {
         survey = dkobo_xlform.model.Survey.create();
       } else {
-        survey = dkobo_xlform.model.Survey.loadDict(survey);
+        survey = dkobo_xlform.model.Survey.load(survey);
       }
     } catch (err) {
       _state.surveyLoadError = err.message;
@@ -624,6 +624,7 @@ export default assign({
         stateStore: stores.surveyState,
         ngScope: skp,
       });
+      _state.ordered_translations = survey.ordered_translations;
       this.app.$el.appendTo(ReactDOM.findDOMNode(this.refs['form-wrap']));
       this.app.render();
       survey.rows.on('change', this.onSurveyChange);
