@@ -20,10 +20,14 @@ module.exports = do ->
       if cardText.find('.card__buttons__multioptions.js-expand-multioptions').length is 0
         cardText.prepend $.parseHTML($viewTemplates.row.expandChoiceList())
       @$el.html (@ul = $("<ul>", class: @ulClasses))
-      _ts = @model.getSurvey().translations
+      _ts = @model.getSurvey().ordered_translations
       if @row.get("type").get("rowType").specifyChoice
         for option, i in @model.options.models
-          new OptionView(model: option, cl: @model, translations: _ts).render().$el.appendTo @ul
+          new OptionView(
+            model: option
+            cl: @model
+            translations: _ts
+          ).render().$el.appendTo @ul
         if i == 0
           while i < 2
             @addEmptyOption("Option #{++i}")
@@ -55,8 +59,12 @@ module.exports = do ->
     addEmptyOption: (label)->
       emptyOpt = new $choices.Option(label: label)
       @model.options.add(emptyOpt)
-      _translations = @model.getSurvey().translations
-      new OptionView(model: emptyOpt, cl: @model, translations: _translations).render().$el.appendTo @ul
+      new OptionView(
+        model: emptyOpt
+        cl: @model
+        surv: @model.getSurvey()
+        translations: @model.getSurvey().ordered_translations
+      ).render().$el.appendTo @ul
       lis = @ul.find('li')
       if lis.length == 2
         lis.find('.js-remove-option').removeClass('hidden')
@@ -86,8 +94,9 @@ module.exports = do ->
       @p = $("<span class=\"js-cancel-select-row\">")
       @c = $("<code><label>#{_t('Value:')}</label> <span class=\"js-cancel-select-row\">#{_t('AUTOMATIC')}</span></code>")
       @d = $('<div>')
+      _ts = @options.translations
       if @model
-        @p.html @model.get("label") || 'Empty'
+        @p.html @model.getTranslatedField("label", _ts[0]) || 'Empty'
         @$el.attr("data-option-id", @model.cid)
         $('span', @c).html @model.get("name")
         @model.set('setManually', true)
@@ -95,7 +104,6 @@ module.exports = do ->
         @model = new $choices.Option()
         @options.cl.options.add(@model)
         @p.html("Option #{1+@options.i}").addClass("preliminary")
-
       $viewUtils.makeEditable @, @model, @p, edit_callback: _.bind @saveValue, @
       @n = $('span', @c)
       $viewUtils.makeEditable @, @model, @n, edit_callback: (val) =>
@@ -132,9 +140,9 @@ module.exports = do ->
       @d.append(@c)
       @$el.html(@d)
 
-      _translation_2 = @options.translations[1]
+      _translation_2 = _ts[1]
       if _translation_2 isnt undefined
-        _t_opt = @model.get("label::#{_translation_2}")
+        _t_opt = @model.getTranslatedField("label", _translation_2)
         if !_t_opt
           _no_t = _t("No translation")
           _klss = ["card__option-translation",

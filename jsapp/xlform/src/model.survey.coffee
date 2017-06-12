@@ -24,22 +24,32 @@ module.exports = do ->
       if !options.settings
         @settings.enable_auto_name()
 
+      r1 = options.survey[0]
+
       if (sname = @settings.get("name") or options.name)
         @set("name", sname)
 
+      $translationUtils.add_translation_list(options)
+
+      if addlOpts.current_translation
+        $translationUtils.change_order_by_name(options.translation_list, addlOpts.current_translation)
+        @current_translation = addlOpts.current_translation
+
       @newRowDetails = options.newRowDetails || $configs.newRowDetails
       @defaultsForType = options.defaultsForType || $configs.defaultsForType
+      _.assign options, $inputParser.parse(options)
 
       @surveyDetails = new $surveyDetail.SurveyDetails([], _parent: @).loadSchema(options.surveyDetailsSchema || $configs.surveyDetailSchema)
       @choices = new $choices.ChoiceLists([], _parent: @)
       $inputParser.loadChoiceLists(options.choices || [], @choices)
 
-      _.assign options, $inputParser.parse(options)
       @translations = options.translations
       @translation_list = options.translation_list
+      @ordered_translations = _.sortBy(@translation_list, 'order')
 
-      [@_translation_1_obj, @_translation_2_obj] = @translation_list
-      @_translation_1 = @_translation_1_obj?.name
+      [@_translation_1_obj, @_translation_2_obj] = @ordered_translations
+
+      @_translation_1 = @_translation_1_obj?.name or @_translation_1_obj?.savename
       @_translation_2 = @_translation_2_obj?.name
 
       if not @translation_list
@@ -48,12 +58,6 @@ module.exports = do ->
       # shouldnt be necessary:
       if @translations and @translations.length > 0 and @translations[0] instanceof Array
         throw new Error('bad translation list')
-
-      if addlOpts.current_translation
-        $translationUtils.change_order_by_name(@translation_list, addlOpts.current_translation)
-        @current_translation = addlOpts.current_translation
-
-      $translationUtils.rename_first_translation_to_null(options.translation_list)
 
       @active_translation = _.find @translation_list, (tl)-> tl.active
       @active_translation_name = @active_translation.active
@@ -75,6 +79,7 @@ module.exports = do ->
         @translations = [null]
         @_translation_1 = @_translation_2 = null
         @surveyDetails.importDefaults()
+
       @context =
         warnings: []
         errors: []

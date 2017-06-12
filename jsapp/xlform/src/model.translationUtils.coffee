@@ -33,7 +33,7 @@ add_translation_list = (content)->
     content.translation_list = [{name: null, active: true}]
   _active = _.find content.translation_list, (tl)-> tl.active
   if not _active
-    throw new Error('no active translation set')
+    content.translation_list[0].active = true
   content
 
 change_order_by_name = (list, name)->

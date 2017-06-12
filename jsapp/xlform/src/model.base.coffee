@@ -47,6 +47,13 @@ module.exports = do ->
         @_parent = arg._parent
         delete arg._parent
       super(arg, opts)
+    getTranslatedField: (field_name, translation)->
+      tname = translation?.name
+      if tname in [null, undefined]
+        @get(field_name)
+      else
+        @get("#{field_name}::#{translation.name}")
+
     parse: ->
     linkUp: (ctx)->
     finalize: ->

@@ -102,9 +102,11 @@ module.exports = do ->
 
   inputParser.parse = (o)->
     $translationUtils.add_translation_list o
+    $translationUtils.rename_first_translation_to_null o.translation_list
 
-    if o.translations
-      throw new Error('stop using translations')
+
+    if o.translations and not o.translation_list
+      console.error('translations with no translation_list')
     if not o.translation_list
       throw new Error('no translations')
 
