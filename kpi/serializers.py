@@ -462,13 +462,6 @@ class AssetSerializer(serializers.HyperlinkedModelSerializer):
         _req_data = self.context['request'].data
         _has_translations = 'translations' in _req_data
         _has_content = 'content' in _req_data
-        if _has_translations and not _has_content:
-            translations_list = json.loads(_req_data['translations'])
-            try:
-                asset.update_translation_list(translations_list)
-            except ValueError as err:
-                raise serializers.ValidationError(err.message)
-            validated_data['content'] = asset_content
         return super(AssetSerializer, self).update(asset, validated_data)
 
     def get_fields(self, *args, **kwargs):

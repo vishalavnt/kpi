@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-
+'''
 from kpi.utils.asset_translation_utils import (
                     compare_translations,
                     TRANSLATIONS_EQUAL,
@@ -57,3 +57,4 @@ class AssetTranslationTests(TestCase):
             [None, 'a', 'y', 'z'],
         )
         self.assertTrue(TRANSLATIONS_MULTIPLE_CHANGES in _params)
+'''
