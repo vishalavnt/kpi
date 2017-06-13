@@ -19,6 +19,7 @@ def test_expand_twice():
                                              'hint::English': 'hint',
                                              }]})
     a1.adjust_content_on_save()
+    assert 'translation_list' in a1.content
     assert 'translations' in a1.content
     assert len(a1.content['translations']) > 0
     assert 'translated' in a1.content
@@ -276,6 +277,7 @@ def test_save_transformations():
     a1._autoname(content)
     assert 'schema' in content
     assert content['translations'] == [None]
+    assert 'translation_list' not in content
     assert form_title == 'color picker'
     assert content['settings'] == {'id_string': 'colorpik'}
     # save complete!
