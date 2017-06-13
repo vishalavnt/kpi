@@ -24,8 +24,6 @@ module.exports = do ->
       if !options.settings
         @settings.enable_auto_name()
 
-      r1 = options.survey[0]
-
       if (sname = @settings.get("name") or options.name)
         @set("name", sname)
 

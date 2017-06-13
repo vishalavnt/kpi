@@ -30,7 +30,7 @@ add_translation_list = (content)->
     content.translation_list = _tl
     delete content.translations
   else if not content.translation_list
-    content.translation_list = [{name: null, active: true}]
+    content.translation_list = [{name: null, active: true, order: 0}]
   _active = _.find content.translation_list, (tl)-> tl.active
   if not _active
     content.translation_list[0].active = true
@@ -46,9 +46,12 @@ change_order_by_name = (list, name)->
 
 rename_first_translation_to_null = (list)->
   for item in list
+    # if 'order' not of item
+    #   throw new Error('translation order must be set')
     if item.order is 0
-      item.savename = item.name
-      item.name = null
+      if not item.savename
+        item.savename = item.name
+        item.name = null
     else
       if item.name is null
         item.name = item.savename or 'NOT_NAMED'
