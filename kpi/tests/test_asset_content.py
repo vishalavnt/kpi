@@ -563,3 +563,14 @@ def test_kobomatrix_content():
     assert _reqds == [None, False, False, False, False, None] + (
                         [None, False, True, True, True, None] * 3
                     )
+
+
+def test_required_value_can_be_a_string():
+    content = _compile_asset_content({
+        'survey': [
+            {'type': 'text', 'name': 'abc'},
+            {'type': 'text', 'name': 'req_if_abc', 'required': "${abc} != ''"},
+        ],
+    })
+    r2 = content['survey'][1]
+    assert r2['required'] == "${abc} != ''"
