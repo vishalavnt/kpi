@@ -474,9 +474,19 @@ def kobomatrix_content():
             {'list_name': 'car_bike_tv', 'label': 'Car', 'name': 'car'},
             {'list_name': 'car_bike_tv', 'label': 'Bike', 'name': 'bike'},
             {'list_name': 'car_bike_tv', 'label': 'TV', 'name': 'tv'},
+            {'list_name': 'yn', 'label': 'Yes', 'name': 'yes'},
+            {'list_name': 'yn', 'label': 'No', 'name': 'no'},
         ],
         'settings': {},
     }
+
+
+def kobomatrix_content_with_custom_fields():
+    _content = kobomatrix_content()
+    _survey = _content['survey']
+    _survey[2].update({'required': "${possess} = 'yes'"})
+    _survey[3].update({'constraint': '. > 3'})
+    return _content
 
 
 def test_kobomatrix_content():
@@ -563,6 +573,58 @@ def test_kobomatrix_content():
     assert _reqds == [None, False, False, False, False, None] + (
                         [None, False, True, True, True, None] * 3
                     )
+
+
+def test_xpath_fields_in_kobomatrix_are_preserved():
+    _content = kobomatrix_content_with_custom_fields()
+    (r0, r1, r2, r3, r4) = _content['survey']
+    assert r2['required'] == "${possess} = 'yes'"
+    assert r3['constraint'] == '. > 3'
+
+    compiled_content = _compile_asset_content(_content)
+    assert len(compiled_content['survey']) == 24
+    _survey_content = compiled_content['survey']
+
+    def _necess_reqs(arr, item):
+        _req = item.get('required')
+        if item.get('name', '').endswith('_necess') and _req:
+            arr.append(_req)
+        return arr
+
+    def _possess_constraints(arr, item):
+        _constraint = item.get('constraint')
+        print(item.get('name'), item.get('name', '').endswith('_possess'), _constraint)
+        if item.get('name', '').endswith('_possess'):
+            print(item)
+        if item.get('name', '').endswith('_possess') and _constraint:
+            arr.append(_constraint)
+        return arr
+
+
+    print reduce(_necess_reqs, _survey_content, [])
+    print reduce(_possess_constraints, _survey_content, [])
+    # _necesses = filter(lambda row: row.get('name', '').endswith('_necess'),
+    #                    _survey_content)
+    # _numbers = filter(lambda row: row.get('name', '').endswith('_number'),
+    #                   compiled_content['survey'])
+    # assert map(lambda r: r.get('required'), _necesses) == [
+    #     False,
+    #     "${possess} = 'yes'",
+    #     "${possess} = 'yes'",
+    #     "${possess} = 'yes'",
+    # ]
+    # assert map(lambda r: r.get('required'), _necesses) == [
+    #     False,
+    #     "${possess} = 'yes'",
+    #     "${possess} = 'yes'",
+    #     "${possess} = 'yes'",
+    # ]
+    # assert map(lambda r: r.get('required'), _necesses) == [
+    #     'a',
+    # ]
+    # (r0, r1, r2, r3, r4) = compiled_content['survey']
+    # assert r2['required'] == "${possess} = 'yes'"
+    # assert r3['constraint'] == '. > 3'
 
 
 def test_required_value_can_be_a_string():
