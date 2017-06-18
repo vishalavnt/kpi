@@ -1,5 +1,7 @@
 import alertify from 'alertifyjs';
 import {dataInterface} from './dataInterface';
+import {logging} from './logging';
+
 import {
   log,
   t,
@@ -330,9 +332,7 @@ actions.resources.listTags.listen(function(data){
 
 actions.resources.listTags.completed.listen(function(results){
   if (results.next) {
-    if (window.trackJs) {
-      window.trackJs.track('MAX_TAGS_EXCEEDED: Too many tags');
-    }
+    logging.error('MAX_TAGS_EXCEEDED: Too many tags');
   }
 });
 

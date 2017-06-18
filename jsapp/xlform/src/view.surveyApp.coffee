@@ -10,6 +10,7 @@ $viewRowSelector = require './view.rowSelector'
 $rowView = require './view.row'
 $baseView = require './view.pluggedIn.backboneView'
 $viewUtils = require './view.utils'
+logging = require('js/logging').logging
 _t = require('utils').t
 
 module.exports = do ->
@@ -29,9 +30,9 @@ module.exports = do ->
 
       _s = (i)-> JSON.stringify(i)
       if _s(rIds) isnt _s(elIds)
-        trackJs?.console.log _s(rIds)
-        trackJs?.console.log _s(elIds)
-        trackJs?.console.error("Row model does not match view")
+        logging.log _s(rIds)
+        logging.log _s(elIds)
+        logging.error("Row model does not match view")
         false
       else
         true
@@ -643,7 +644,7 @@ module.exports = do ->
           if parent.constructor.kls == "Group" && parent.rows.length == 0
             parent_view = @__rowViews.get(parent.cid)
             if !parent_view
-              trackJs?.console.error("parent view is not defined", matchingRow.get('name').get('value'))
+              logging.error("parent view is not defined", matchingRow.get('name').get('value'))
             parent_view._deleteGroup()
         @set_multioptions_label()
 

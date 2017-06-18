@@ -5,6 +5,7 @@ $modelUtils = require './model.utils'
 $validationLogicHelpers = require './mv.validationLogicHelpers'
 $modelRowDetailValidationLogic = require './model.rowDetail.validationLogic'
 $viewRowDetailValidationLogic = require './view.rowDetail.ValidationLogic'
+logging = require('js/logging').logging;
 
 module.exports = do ->
   # To be extended ontop of a RowDetail when the key matches
@@ -13,7 +14,7 @@ module.exports = do ->
     getValue: ()->
       v = @serialize()
       if v is "undefined"
-        trackJs?.console.error("Serialized value is returning a string, undefined")
+        logging.error("Serialized value is returning a string, undefined")
         v = ""
       v
 
@@ -40,7 +41,7 @@ module.exports = do ->
     getValue: () ->
       v = @serialize()
       if v is "undefined"
-        trackJs?.console.error("Serialized value is returning a string, undefined")
+        logging.error("Serialized value is returning a string, undefined")
         v = ""
       v
 

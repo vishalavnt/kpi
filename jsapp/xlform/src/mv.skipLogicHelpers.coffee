@@ -2,6 +2,7 @@ _ = require 'underscore'
 Backbone = require 'backbone'
 $ = require 'jquery'
 $skipLogicParser = require './model.skipLogicParser'
+logging = require('js/logging').logging
 _t = require('utils').t
 
 module.exports = do ->
@@ -170,8 +171,8 @@ module.exports = do ->
           criteria.push @build_empty_criterion()
 
       catch e
-        trackJs?.console.log("SkipLogic cell: #{serialized_criteria}")
-        trackJs?.console.error("could not parse skip logic. falling back to hand-coded")
+        logging.log("SkipLogic cell: #{serialized_criteria}")
+        logging.error("could not parse skip logic. falling back to hand-coded")
         return false
       return [criteria, parsed.operator]
 
@@ -336,7 +337,7 @@ module.exports = do ->
         @$add_new_criterion_button?.hide()
 
       if !@$add_new_criterion_button
-        trackJs?.console.error("@$add_new_criterion_button is not defined. cannot call #{action} [inside of determine_add_new_criterion_visibility]")
+        logging.error("@$add_new_criterion_button is not defined. cannot call #{action} [inside of determine_add_new_criterion_visibility]")
 
     constructor: (@presenters, separator, @builder, @view_factory, @context) ->
       @view = @view_factory.create_criterion_builder_view()
