@@ -79,6 +79,8 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     moment.locale(currentLang());
+    console.log("CONSOLE LOGS WORK!");
+    console.log("if this does not show up, then that means the build step is stripping out console logs");
     this.state = assign({
       pageState: stores.pageState.state
     });
