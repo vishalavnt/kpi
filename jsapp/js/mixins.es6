@@ -308,8 +308,10 @@ mixins.droppable = {
   },
   dropFiles (files, rejectedFiles, params={}) {
     files.map((file) => {
+      console.log('dropping file', file);
       var reader = new FileReader();
       reader.onload = (e)=>{
+        console.log('reader onload', e);
         var f = this.forEachDroppedFile || this._forEachDroppedFile;
         f.call(this, e, file, params);
       };
