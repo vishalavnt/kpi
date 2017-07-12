@@ -347,10 +347,12 @@ var dataInterface;
       });
     },
     postCreateBase64EncodedImport (contents) {
+      console.log('postCreateBase64EncodedImport', contents);
       var formData = new FormData();
       Object.keys(contents).forEach(function(key){
         formData.append(key, contents[key]);
       });
+      console.log('formData', formData);
       return $.ajax({
         method: 'POST',
         url: `${rootUrl}/imports/`,
