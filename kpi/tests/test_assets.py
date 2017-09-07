@@ -261,6 +261,27 @@ class AssetContentTests(AssetsTestCase):
         self.assertEqual(_c['settings'][0]['asdf'], 'jkl')
         self.assertEqual(_c['survey'][-1]['type'], 'note')
 
+    def test_media_files_pulled_from_content(self):
+        surv_content = {
+            'survey': [
+                {'type': 'text',
+                 'name': 'im1',
+                 'media::image': 'abc.jpg'},
+                {'type': 'text',
+                 'name': 'im2',
+                 'image': 'def.jpg'},
+                {'type': 'text',
+                 'name': 'im2',
+                 'media::video': 'jkl.mp4'},
+            ]
+        }
+        a1 = Asset.objects.create(content=deepcopy(surv_content),
+                                  owner=self.user,
+                                  asset_type='survey')
+        self.assertEqual(a1.media_files, ['abc.jpg',
+                                          'def.jpg',
+                                          'jkl.mp4'])
+
 
 class AssetSettingsTests(AssetsTestCase):
     def _content(self, form_title='some form title'):
@@ -387,6 +408,7 @@ class AssetSnapshotXmlTestCase(AssetSettingsTests):
         export = a1.snapshot
         self.assertTrue('<h:title>abcxyz</h:title>' in export.xml)
         self.assertTrue('<data id="xid_stringx">' in export.xml)
+
 
 
 # TODO: test values of "valid_xlsform_content"

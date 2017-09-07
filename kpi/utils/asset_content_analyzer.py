@@ -1,7 +1,14 @@
 import re
 from collections import OrderedDict
 
-from formpack.utils.replace_aliases import META_TYPES, GEO_TYPES
+from formpack.utils.aliases import META_TYPES, GEO_TYPES
+# from formpack.utils.replace_aliases import META_TYPES, GEO_TYPES
+
+MEDIA_TYPES = [
+    'media::image',
+    'media::video',
+]
+
 
 class AssetContentAnalyzer(object):
     def __init__(self, *args, **kwargs):
@@ -23,6 +30,7 @@ class AssetContentAnalyzer(object):
         summary_errors = []
         keys = OrderedDict()
         naming_conflicts = []
+        media_files = OrderedDict()
         if not self.survey:
             return {}
 
@@ -34,6 +42,14 @@ class AssetContentAnalyzer(object):
                 _label = row.get('label')
                 if _type in GEO_TYPES:
                     geo = True
+
+                for media_type in MEDIA_TYPES:
+                    if media_type in row:
+                        _media = row[media_type]
+                        if not isinstance(_media, list):
+                            _media = [_media]
+                        for _mfile in _media:
+                            media_files[_mfile] = True
 
                 if not _type or isinstance(_type, dict) or _type.startswith('end'):
                     summary_errors.append(row)
@@ -55,6 +71,7 @@ class AssetContentAnalyzer(object):
             'default_translation': self.default_translation,
             'geo': geo,
             'labels': labels[0:5],
+            'media_files': media_files.keys(),
             'columns': filter(lambda k: not k.startswith('$'), keys.keys()),
         }
         if len(naming_conflicts) > 0:

@@ -2,6 +2,7 @@ _ = require 'underscore'
 $base = require './model.base'
 $choices = require './model.choices'
 $modelUtils = require './model.utils'
+$translationUtils = require './model.translationUtils'
 $configs = require './model.configs'
 $surveyFragment = require './model.surveyFragment'
 $surveyDetail = require './model.surveyDetail'
@@ -12,8 +13,9 @@ csv = require './csv'
 
 module.exports = do ->
   class Survey extends $surveyFragment.SurveyFragment
-    constructor: (options={}, addlOpts)->
+    constructor: (options={}, addlOpts={})->
       super()
+
       if options.error
         throw new Error("instantiating survey with error parameter")
       @_initialParams = options
@@ -25,34 +27,57 @@ module.exports = do ->
       if (sname = @settings.get("name") or options.name)
         @set("name", sname)
 
+      $translationUtils.add_translation_list(options)
+
+      if addlOpts.current_translation
+        $translationUtils.change_order_by_code(options.translation_list, addlOpts.current_translation)
+        @current_translation = addlOpts.current_translation
+
       @newRowDetails = options.newRowDetails || $configs.newRowDetails
       @defaultsForType = options.defaultsForType || $configs.defaultsForType
+      _.assign options, $inputParser.parse(options)
 
       @surveyDetails = new $surveyDetail.SurveyDetails([], _parent: @).loadSchema(options.surveyDetailsSchema || $configs.surveyDetailSchema)
       @choices = new $choices.ChoiceLists([], _parent: @)
       $inputParser.loadChoiceLists(options.choices || [], @choices)
 
-      if options.translations
-        @translations = options.translations
-      else
-        @translations = [null]
+      @translations = options.translations
+      @translation_list = options.translation_list
+      @ordered_translations = _.sortBy(@translation_list, 'order')
 
-      if options['_active_translation_name']
-        @active_translation_name = options['_active_translation_name']
+      [@_translation_1_obj, @_translation_2_obj] = @ordered_translations
 
-      @_translation_1 = @translations[0]
-      @_translation_2 = @translations[1]
+      @_translation_1 = @_translation_1_obj?.name or @_translation_1_obj?.savename
+      @_translation_2 = @_translation_2_obj?.name
+
+      if not @translation_list
+        throw new Error('no translation list')
+
+      # shouldnt be necessary:
+      if @translations and @translations.length > 0 and @translations[0] instanceof Array
+        throw new Error('bad translation list')
+
+      @active_translation = _.find @translation_list, (tl)-> tl.active
+      @active_translation_name = @active_translation.active
 
       if options.survey
-        if !$inputParser.hasBeenParsed(options)
-          options.survey = $inputParser.parseArr(options.survey)
+        for translation in options.translation_list
+          if translation.active
+            @active_translation_name = translation.name
+
+        if @active_translation_name is undefined
+          throw new Error('no active translation zet')
+
         for r in options.survey
           if r.type in $configs.surveyDetailSchema.typeList()
             @surveyDetails.importDetail(r)
           else
             @rows.add r, collection: @rows, silent: true, _parent: @rows
       else
+        @translations = [null]
+        @_translation_1 = @_translation_2 = null
         @surveyDetails.importDefaults()
+
       @context =
         warnings: []
         errors: []
@@ -109,7 +134,7 @@ module.exports = do ->
           @rows.add(row.toJSON(), at: index_incr)
       ``
 
-    toFlatJSON: (stringify=false, spaces=4)->
+    toFlatJSON: ->
       obj = @toJSON()
 
       obj.survey = for row in obj.survey
@@ -129,10 +154,7 @@ module.exports = do ->
 
       obj.settings = [@settings.attributes]
 
-      if stringify
-        JSON.stringify(obj, null, spaces)
-      else
-        obj
+      obj
 
     toJSON: (stringify=false, spaces=4)->
       obj = {}
@@ -140,10 +162,7 @@ module.exports = do ->
       addlSheets =
         choices: new $choices.ChoiceLists()
 
-      if @active_translation_name
-        obj['#active_translation_name'] = @active_translation_name
-
-      obj.translations = [].concat(@translations)
+      obj.translation_list = JSON.parse(JSON.stringify(@translation_list))
 
       obj.survey = do =>
         out = []
@@ -294,23 +313,21 @@ module.exports = do ->
         sheeted.sheet shtName, csv(content)
       sheeted.toString()
 
-  Survey.load = (csv_repr, _usingSurveyLoadCsv=false)->
-    # log('switch to Survey.load.csv')  if !_usingSurveyLoadCsv
-    if _.isString(csv_repr) and not _is_csv(csv_repr)
-      throw Error("Invalid CSV passed to form builder")
-    _deserialized = $inputDeserializer.deserialize csv_repr
-    _parsed = $inputParser.parse _deserialized
-    new Survey(_parsed)
+  Survey.load = (_repr, additionalOpts={})->
+    if _.isString(_repr) and _is_csv(_repr)
+      throw Error("CSV passed to Survey.load")
+    new Survey(_repr, additionalOpts)
 
   Survey.load.csv = (csv_repr)->
-    Survey.load(csv_repr, true)
+    Survey.deserialize_and_load(csv_repr, true)
+
+  Survey.deserialize_and_load = (_repr)->
+    _deserialized = $inputDeserializer.deserialize _repr
+    Survey.load _deserialized
 
   Survey.load.md = (md)->
     sObj = $markdownTable.mdSurveyStructureToObject(md)
     new Survey(sObj)
-  Survey.loadDict = (obj)->
-    _parsed = $inputParser.parse obj
-    new Survey(_parsed)
 
   _is_csv = (csv_repr)->
     # checks that a string has a newline and a comma,

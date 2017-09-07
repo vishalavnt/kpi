@@ -40,7 +40,7 @@ module.exports = function (options) {
 
   var scssIncludePaths = ['',
     '~',
-    path.join(__dirname, '../jsapp/scss')
+    path.join(__dirname, '../jsapp/scss'),
   ];
 
   var autoprefixerOptions = {
@@ -183,7 +183,8 @@ module.exports = function (options) {
     resolve: {
       extensions: ['', '.jsx', '.js', '.es6', '.coffee'],
       alias: {
-        app: path.join(__dirname, '../app'),
+        js: path.join(__dirname, '../jsapp/js'),
+        xlform: path.join(__dirname, '../jsapp/xlform/src'),
         utils: path.join(__dirname, '../jsapp/js/utils'),
         test: path.join(__dirname, '../test'),
       }

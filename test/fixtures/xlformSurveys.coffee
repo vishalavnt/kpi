@@ -27,7 +27,7 @@ class SurveyFixture
 
 surveys = {}
 
-surveys.cascading =
+surveys.cascading = ()->
   choices: (_.object(["list_name", "name", "label", "state", "county"], x) \
                   for x in [
                     ["state", "texas", "Texas", null, null],

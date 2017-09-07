@@ -396,7 +396,7 @@ var surveyCompanionStore = Reflux.createStore({
   },
   addItemAtPosition ({position, survey, uid}) {
     stores.allAssets.whenLoaded(uid, function(asset){
-      var _s = dkobo_xlform.model.Survey.loadDict(asset.content)
+      var _s = dkobo_xlform.model.Survey.load(asset.content);
       survey.insertSurvey(_s, position);
     });
   }

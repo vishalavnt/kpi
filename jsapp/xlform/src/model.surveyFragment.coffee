@@ -272,7 +272,7 @@ module.exports = do ->
       $surveyDetail.SurveyDetail
     else if type is 'score'
       $row.Row
-    else if type in ['group', 'repeat']
+    else if type in ['group', 'repeat', 'kobomatrix']
       surveyFragment.Group
     else
       $row.Row

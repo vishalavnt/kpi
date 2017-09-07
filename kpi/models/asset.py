@@ -7,6 +7,7 @@ import copy
 import json
 import logging
 import StringIO
+import contextlib
 from collections import OrderedDict
 
 import xlwt
@@ -40,16 +41,6 @@ from ..utils.kobo_to_xlsform import (to_xlsform_structure,
                                      expand_rank_and_score_in_place,
                                      replace_with_autofields,
                                      remove_empty_expressions_in_place)
-from ..utils.asset_translation_utils import (
-        compare_translations,
-        # TRANSLATIONS_EQUAL,
-        TRANSLATIONS_OUT_OF_ORDER,
-        TRANSLATION_RENAMED,
-        TRANSLATION_DELETED,
-        TRANSLATION_ADDED,
-        TRANSLATION_CHANGE_UNSUPPORTED,
-        TRANSLATIONS_MULTIPLE_CHANGES,
-    )
 from ..utils.random_id import random_id
 from ..deployment_backends.mixin import DeployableMixin
 from kobo.apps.reports.constants import (SPECIFIC_REPORTS_KEY,
@@ -254,40 +245,6 @@ class FormpackXLSFormUtils(object):
 
     def _has_translations(self, content, min_count=1):
         return len(content.get('translations', [])) >= min_count
-
-    def update_translation_list(self, translation_list):
-        existing_ts = self.content.get('translations', [])
-        params = compare_translations(existing_ts,
-                                      translation_list)
-        if None in translation_list and translation_list[0] is not None:
-            raise ValueError('Unnamed translation must be first in '
-                             'list of translations')
-        if TRANSLATIONS_OUT_OF_ORDER in params:
-            self._reorder_translations(self.content, translation_list)
-        elif TRANSLATION_RENAMED in params:
-            _change = params[TRANSLATION_RENAMED]['changes'][0]
-            self._rename_translation(self.content, _change['from'],
-                                     _change['to'])
-        elif TRANSLATION_ADDED in params:
-            if None in existing_ts:
-                raise ValueError('cannot add translation if an unnamed translation exists')
-            self._prepend_translation(self.content, params[TRANSLATION_ADDED])
-        elif TRANSLATION_DELETED in params:
-            if params[TRANSLATION_DELETED] != existing_ts[-1]:
-                raise ValueError('you can only delete the last translation of the asset')
-            self._remove_last_translation(self.content)
-        else:
-            for chg in [
-                        TRANSLATIONS_MULTIPLE_CHANGES,
-                        TRANSLATION_CHANGE_UNSUPPORTED,
-                        ]:
-                if chg in params:
-                    raise ValueError(
-                        'Unsupported change: "{}": {}'.format(
-                            chg,
-                            params[chg]
-                            )
-                    )
 
     def _prioritize_translation(self, content, translation_name, is_new=False):
         _translations = content.get('translations')
@@ -559,6 +516,16 @@ class Asset(ObjectPermissionMixin,
         if _title is not None:
             self.name = _title
 
+    @classmethod
+    @contextlib.contextmanager
+    def disable_date_modified(kls):
+        field = filter(lambda f: f.name == 'date_modified',
+                       kls._meta.fields)[0]
+        original_auto_now = field.auto_now
+        field.auto_now = False
+        yield
+        field.auto_now = original_auto_now
+
     def save(self, *args, **kwargs):
         if self.content is None:
             self.content = {}
@@ -582,8 +549,12 @@ class Asset(ObjectPermissionMixin,
         self._populate_report_styles()
 
         _create_version = kwargs.pop('create_version', True)
-        super(Asset, self).save(*args, **kwargs)
 
+        if kwargs.pop('update_timestamp', True):
+            super(Asset, self).save(*args, **kwargs)
+        else:
+            with Asset.disable_date_modified():
+                super(Asset, self).save(*args, **kwargs)
         if _create_version:
             self.asset_versions.create(name=self.name,
                                        version_content=self.content,
@@ -654,6 +625,10 @@ class Asset(ObjectPermissionMixin,
     def deployed_versions(self):
         return self.asset_versions.filter(deployed=True).order_by(
                                           '-date_modified')
+
+    @property
+    def media_files(self):
+        return self.summary.get('media_files', [])
 
     @property
     def latest_deployed_version(self):

@@ -46,6 +46,9 @@ import FormLanding from './components/formLanding';
 import FormSubScreens from './components/formSubScreens';
 import FormViewTabs from './components/formViewTabs';
 import Modal from './components/modal';
+import {FormJson} from './components/formJson'
+import FormView from './formView/containers/App';
+
 import {ChangePassword, AccountSettings} from './components/accountSettings';
 
 import {
@@ -141,42 +144,16 @@ reactMixin(App.prototype, Reflux.connect(stores.pageState, 'pageState'));
 reactMixin(App.prototype, hotkey.Mixin('handleHotkey'));
 reactMixin(App.prototype, mixins.contextRouter);
 
-class FormJson extends React.Component {
-  constructor (props) {
-    super(props);
-    this.state = {
-      assetcontent: false
-    };
-    autoBind(this);
-  }
-  componentDidMount () {
-    this.listenTo(stores.asset, this.assetStoreTriggered);
-    actions.resources.loadAsset({id: this.props.params.assetid});
-
-  }
+class FormJson2 extends FormJson {
   assetStoreTriggered (data, uid) {
+    console.log("%c"+"data[uid]", "text-decoration:underline", data[uid]);
     this.setState({
-      assetcontent: data[uid].content
+      assetcontent: data[uid].xcontent,
     });
   }
-  render () {
-    return (
-        <ui.Panel>
-          <bem.FormView>
-            <pre>
-            <code>
-              { this.state.assetcontent ?
-                JSON.stringify(this.state.assetcontent, null, 4)
-             : null }
-            </code>
-            </pre>
-          </bem.FormView>
-        </ui.Panel>
-      );
-  }
-};
+}
 
-reactMixin(FormJson.prototype, Reflux.ListenerMixin);
+// reactMixin(FormJson.prototype, Reflux.ListenerMixin);
 
 class FormXform extends React.Component {
   constructor (props) {
@@ -256,9 +233,10 @@ var routes = (
       <Route path="new" component={AddToLibrary} />
       <Route path="/library/:assetid">
         {/*<Route name="library-form-download" path="download" handler={FormDownload} />,*/}
-        <Route path="json" component={FormJson} />,
-        <Route path="xform" component={FormXform} />,
+        <Route path="json" component={FormJson} />
+        <Route path="xform" component={FormXform} />
         <Route path="edit" component={LibraryPage} />
+        <Route path="view" component={FormView} />
       </Route>
       <IndexRoute component={LibrarySearchableList} />
     </Route>
@@ -270,8 +248,11 @@ var routes = (
       <Route path="/forms/:assetid"> 
         {/*<Route name="form-download" path="download" component={FormDownload} />*/}
         <Route path="json" component={FormJson} />
+        <Route path="view" component={FormView} />
+        <Route path="xjson" component={FormJson2} />
         <Route path="xform" component={FormXform} />
         <Route path="edit" component={FormPage} />
+        <Route path="edit/:tx_id" component={FormPage} />
 
         <Route path="landing">
           <IndexRoute component={FormLanding} />
@@ -306,14 +287,10 @@ var routes = (
   </Route>
 );
 
-class RunRoutes extends React.Component {
-  render() {
-    return (
-      <Router history={hashHistory}>
-        {routes}
-      </Router>
-    );
-  }
-}
-
-export default RunRoutes;
+export default (props) => {
+  return (
+    <Router history={hashHistory}>
+      {routes}
+    </Router>
+  );
+};

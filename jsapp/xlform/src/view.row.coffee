@@ -376,6 +376,9 @@ module.exports = do ->
         @model._scoreRows.add([label: 'Enter your question'])
         @render(fixScroll: true)
 
+  class KoboMatrixView extends RankScoreView
+    className: "survey__row survey__row--kobomatrix"
+
   class RankView extends RankScoreView
     className: "survey__row survey__row--rank"
     _renderRow: (args...)->
@@ -507,5 +510,6 @@ module.exports = do ->
 
   RowView: RowView
   ScoreView: ScoreView
+  KoboMatrixView: KoboMatrixView
   GroupView: GroupView
   RankView: RankView

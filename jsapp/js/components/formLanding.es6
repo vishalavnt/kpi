@@ -15,6 +15,7 @@ import ui from '../ui';
 import mixins from '../mixins';
 import DocumentTitle from 'react-document-title';
 import CopyToClipboard from 'react-copy-to-clipboard';
+import AutosizeInput from 'react-input-autosize';
 import icons from '../../xlform/src/view.icons';
 import $ from 'jquery';
 
@@ -49,6 +50,46 @@ export class FormLanding extends React.Component {
       type: 'enketo-preview',
       assetid: this.state.uid
     });
+  }
+  langChange (evt) {
+    var langList = this.state.langList;
+    var langName = evt.target.getAttribute('data-langName') || evt.target.value;
+    var index = evt.target.getAttribute('data-index');
+    var langCode = evt.target.getAttribute('data-langCode') || evt.target.value;
+
+    langList[index] = {
+      code: langCode, 
+      name: langName
+    }
+    this.setState({
+      langList: langList
+    });
+
+    clearTimeout(typingTimer);
+
+    typingTimer = setTimeout(() => { 
+      if (!langName && !langCode) {
+        alertify.error(t('The language name or code cannot be empty.'));
+      } else {
+        var content = this.state.content;
+        langList.map((l, n) => {
+          content.translations[n] = `${l.name} (${l.code})`;
+        });
+
+        actions.resources.updateAsset(
+          this.state.uid, {
+            translations: JSON.stringify(content.translations)
+          }
+        );
+      }
+    }, 1000);
+
+  }
+  nameValidate(e) {
+    if (e.key.replace(/[^\w\s\-.]/g,'')=='') e.preventDefault();
+  }
+  codeValidate(e) {
+    if (e.key.replace(/[^\w\-.]/g,'')=='') e.preventDefault();
   }
   renderFormInfo () {
     var dvcount = this.state.deployed_versions.count;
@@ -90,21 +131,66 @@ export class FormLanding extends React.Component {
         </bem.FormView__cell>
       );
   }
+  setActiveLanguage (evt) {
+    var el = $(evt.target).closest('[data-language]').get(0);
+    var language = el.getAttribute('data-language');
+    // var content = this.state.content;
+    // hashHistory.push(`/forms/${asset.uid}/edit`);
+  }
   renderFormLanguages () {
     return (
       <bem.FormView__cell m={['padding', 'bordertop', 'languages']}>
-        {t('Languages')}
-        {this.state.summary.languages.map((l, i)=>{
+        <bem.FormView__group m={["headings", "items"]}>
+          <bem.FormView__label m='language-name'>{t('Language')}</bem.FormView__label>
+          <bem.FormView__label m='code'>{t('Language code')}</bem.FormView__label>
+          <bem.FormView__label m='progress'>{t('Translation Progress')}</bem.FormView__label>
+          <bem.FormView__label m='buttons'></bem.FormView__label>
+        </bem.FormView__group>
+        {this.state.langList &&
+          this.state.langList.map((l, n) => {
           return (
-              <bem.FormView__cell key={`lang-${i}`} m='langButton' 
-                className={this.state.questionLanguageIndex == i ? 'active' : ''}
-                onClick={this.updateQuestionListLanguage}
-                data-index={i}>
-                {l}
-              </bem.FormView__cell>
-            );
-        })}
+            <bem.FormView__group m="items" key={n} >
+              <bem.FormView__label m='language-name'>
+                <AutosizeInput type="text"
+                      data-index={n}
+                      data-langCode={l.code}
+                      name="langName"
+                      value={l.name}
+                      onKeyPress={this.nameValidate}
+                      onChange={this.langChange}
+                />
 
+                { n < 1 &&
+                  <bem.FormView__cell m='highlighted'>
+                    {t('Source')}
+                  </bem.FormView__cell>
+                }
+
+              </bem.FormView__label>
+              <bem.FormView__label m='code'>
+                <AutosizeInput type="text"
+                      data-index={n}
+                      data-langName={l.name}
+                      name="langCode"
+                      value={l.code}
+                      onKeyPress={this.codeValidate}
+                      onChange={this.langChange}
+                />
+              </bem.FormView__label>
+              <bem.FormView__label m='progress'>
+                
+              </bem.FormView__label>
+              <bem.FormView__label m='buttons'>
+                <bem.FormView__link m='edit'
+                    data-tip={t('Edit this translation')}
+                    data-language={`${l.name} (${l.code})`}
+                    onClick={this.setActiveLanguage}>
+                  <i className="k-icon-edit" />
+                </bem.FormView__link>
+              </bem.FormView__label>
+            </bem.FormView__group>
+          );
+        })}
       </bem.FormView__cell>
     );
   }
@@ -144,7 +230,7 @@ export class FormLanding extends React.Component {
                   <bem.FormView__label m='version'>
                     {`v${dvcount-n}`}
                     {item.uid === this.state.deployed_version_id && this.state.deployment__active && 
-                      <bem.FormView__cell m='deployed'>
+                      <bem.FormView__cell m='highlighted'>
                         {t('Deployed')}
                       </bem.FormView__cell>
                     }

@@ -43,6 +43,9 @@ from .filters import KpiAssignedObjectPermissionsFilter
 from .filters import AssetOwnerFilterBackend
 from .filters import KpiObjectPermissionsFilter, RelatedAssetPermissionsFilter
 from .filters import SearchFilter
+from .utils.standardize_content import (on_retrieve_asset_content,
+                                        asset_lists_to_dicts,
+                                        )
 from .highlighters import highlight_xform
 from hub.models import SitewideMessage
 from .models import (
@@ -585,7 +588,6 @@ class AssetVersionViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
 
 class AssetViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     """
-    * Assign a asset to a collection <span class='label label-warning'>partially implemented</span>
     * Run a partial update of a asset <span class='label label-danger'>TODO</span>
     """
     # Filtering handled by KpiObjectPermissionsFilter.filter_queryset()
@@ -661,6 +663,22 @@ class AssetViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED,
                         headers=headers)
 
+    '''
+    def get_object(self, *args, **kwargs):
+        asset = super(AssetViewSet, self).get_object()
+        changed = on_retrieve_asset_content(asset.content)
+        if changed:
+            asset.save(adjust_content=False,
+                       create_version=False,
+                       update_timestamp=False,
+                       )
+        asset_lists_to_dicts(asset.content)
+        if 'translations' in asset.content:
+            del asset.content['translations']
+        if 'translated' in asset.content:
+            del asset.content['translated']
+        return asset
+    '''
     @detail_route(renderer_classes=[renderers.JSONRenderer])
     def content(self, request, uid):
         asset = self.get_object()

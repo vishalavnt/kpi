@@ -13,6 +13,7 @@ import json
 import string
 import inspect
 from copy import deepcopy
+from kpi.utils.standardize_content import _tlist_from_name
 
 
 def test_expand_twice():
@@ -21,6 +22,7 @@ def test_expand_twice():
                                              'hint::English': 'hint',
                                              }]})
     a1.adjust_content_on_save()
+    assert 'translation_list' in a1.content
     assert 'translations' in a1.content
     assert len(a1.content['translations']) > 0
     assert 'translated' in a1.content
@@ -279,6 +281,7 @@ def test_save_transformations():
     a1._autoname(content)
     assert 'schema' in content
     assert content['translations'] == [None]
+    assert 'translation_list' not in content
     assert form_title == 'color picker'
     assert content['settings'] == {'id_string': 'colorpik'}
     # save complete!
@@ -316,6 +319,22 @@ def test_sluggify_arabic():
 
     ll = sluggify_label(u'بالعالم')
     assert ll == '_'
+
+
+def test_extract_lang_code():
+    for equiv_translation in [
+            'English(en)',
+            'English (en)',
+            'English  (en)',
+            'English (en) ',
+            '  English   (en)  ',
+                              ]:
+        tt = _tlist_from_name((0, equiv_translation))
+        assert tt['name'] == 'English'
+        assert tt['code'] == 'en'
+    tt = _tlist_from_name((5, 'English'))
+    assert tt['name'] == 'English'
+    assert tt['code'] == 't6'
 
 
 def test_rank_to_xlsform_structure():

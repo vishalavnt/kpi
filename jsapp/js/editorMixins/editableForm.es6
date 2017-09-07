@@ -419,7 +419,7 @@ export default assign({
       saveButtonText,
     } = this.buttonStates();
 
-    let translations = this.state.translations || [];
+    let translation_names = (this.state.ordered_translations || []).map((tl) => tl.name || tl.savename );
 
     return (
         <bem.FormBuilderHeader>
@@ -520,15 +520,15 @@ export default assign({
             </bem.FormBuilderHeader__cell>
             <bem.FormBuilderHeader__cell m="translations">
               {
-                (translations.length < 2) ?
+                (translation_names.length < 2) ?
                 <p>
-                  {translations[0]}
+                  {translation_names[0]}
                 </p>
                 :
                 <p>
-                  {translations[0]}
+                  {translation_names[0]}
                   <small>
-                    {translations[1]}
+                    {translation_names[1]}
                   </small>
                 </p>
               }
@@ -612,18 +612,19 @@ export default assign({
     if (_state.name) {
       _state.savedName = _state.name;
     }
-
-      let isEmptySurvey = (
-          survey &&
-          Object.keys(survey.settings).length === 0 &&
-          survey.survey.length === 0
-        );
+    let isEmptySurvey = (
+        survey &&
+        Object.keys(survey.settings).length === 0 &&
+        survey.survey.length === 0
+      );
 
     try {
       if (!survey) {
         survey = dkobo_xlform.model.Survey.create();
       } else {
-        survey = dkobo_xlform.model.Survey.loadDict(survey);
+        survey = dkobo_xlform.model.Survey.load(survey, {
+          current_translation: _state.current_translation,
+        });
         if (isEmptySurvey) {
           survey.surveyDetails.importDefaults();
         }
@@ -644,6 +645,7 @@ export default assign({
         stateStore: stores.surveyState,
         ngScope: skp,
       });
+      _state.ordered_translations = survey.ordered_translations;
       this.app.$el.appendTo(ReactDOM.findDOMNode(this.refs['form-wrap']));
       this.app.render();
       survey.rows.on('change', this.onSurveyChange);

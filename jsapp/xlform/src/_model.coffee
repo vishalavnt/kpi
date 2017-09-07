@@ -21,6 +21,7 @@ module.exports = do ->
   model._keys = _.keys(model)
   model.rowDetailsSkipLogic = $rowDetailsSkipLogic
   model.utils = $utils
+  model.translationUtils = require './model.translationUtils'
   model.configs = $configs
 
   model

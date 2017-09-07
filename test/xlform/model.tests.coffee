@@ -3,9 +3,10 @@ _ = require('underscore')
 
 $model = require("../../jsapp/xlform/src/_model")
 
+
 xlform_survey_model = ($model)->
   beforeEach ->
-    @pizzaSurvey = $model.Survey.load(PIZZA_SURVEY)
+    @getPizzaSurvey = -> $model.Survey.load.csv(PIZZA_SURVEY)
     @createSurveyCsv = (survey=[],choices=[])->
       choiceSheet = if choices.length is 0 then "" else """
       choices,,,
@@ -19,7 +20,7 @@ xlform_survey_model = ($model)->
       #{choiceSheet}
       """
     @createSurvey = (survey=[],choices=[])=>
-      $model.Survey.load @createSurveyCsv survey, choices
+      $model.Survey.load.csv @createSurveyCsv survey, choices
     @firstRow = (s)-> s.rows.at(0)
     @compareCsvs = (x1, x2)->
       x1r = x1.split("\n")
@@ -41,24 +42,27 @@ xlform_survey_model = ($model)->
     expect(xlf.get("name")).toBe("Sample")
 
   it "ensures every node has access to the parent survey", ->
-    @pizzaSurvey.getSurvey
+    @getPizzaSurvey().getSurvey
 
   it "can append a survey to another", ->
+    pizza_survey = @getPizzaSurvey()
     dead_simple = @createSurvey(['text,q1,Question1,q1hint', 'text,q2,Question2,q2hint'])
     expect(dead_simple.rows.length).toBe(2)
-    expect(@pizzaSurvey.rows.length).toBe(1)
-    dead_simple.insertSurvey(@pizzaSurvey)
+    expect(pizza_survey.rows.length).toBe(1)
+    dead_simple.insertSurvey(pizza_survey)
 
     expect(dead_simple.rows.length).toBe(3)
     expect(dead_simple.rows.at(2).getValue("name")).toBe("likes_pizza")
 
   it "can import from csv_repr", ->
-    expect(@pizzaSurvey.rows.length).toBe(1)
-    firstRow = @pizzaSurvey.rows.at(0)
+    pizza_survey = @getPizzaSurvey()
+    expect(pizza_survey.rows.length).toBe(1)
+    firstRow = pizza_survey.rows.at(0)
     expect(firstRow.getValue("name")).toEqual("likes_pizza")
 
   describe "with simple survey", ->
     beforeEach ->
+      @pizzaSurvey = @getPizzaSurvey()
       @firstRow = @pizzaSurvey.rows.at(0)
     describe "lists", ->
       it "iterates over every row", ->
@@ -134,7 +138,7 @@ xlform_survey_model = ($model)->
         #{choiceSheet}
         """
       @createSurvey = (survey=[],choices=[])=>
-        $model.Survey.load @createSurveyCsv survey, choices
+        $model.Survey.load.csv @createSurveyCsv survey, choices
       @firstRow = (s)-> s.rows.at(0)
       @compareCsvs = (x1, x2)->
         x1r = x1.split("\n")
@@ -162,7 +166,7 @@ xlform_survey_model = ($model)->
 
     it "reflects correct required value", ->
       processed_required = (val)->
-        $model.Survey.loadDict({
+        $model.Survey.load({
           survey: [
               {type: 'text',
               name: 'nm',
@@ -189,7 +193,7 @@ xlform_survey_model = ($model)->
 
 
     it "captures required values", ->
-      srv = $model.Survey.loadDict({
+      srv = $model.Survey.load({
           survey: [
             {
               type: 'text',
@@ -200,6 +204,12 @@ xlform_survey_model = ($model)->
               type: 'text',
               name: 'q2',
               required: false
+            }
+          ],
+          translation_list: [
+            {
+              name: null
+              active: true
             }
           ]
         })
@@ -252,6 +262,8 @@ xlform_survey_model = ($model)->
       # expect(setToInvalidList).toThrow()
       ``
   describe "groups", ->
+    beforeEach ->
+      @pizzaSurvey = @getPizzaSurvey()
     it "cannot add a group by adding a row type=group", ->
       @pizzaSurvey.addRow type: "text", name: "pizza", hint: "pizza", label: "pizza"
       expect(@pizzaSurvey.rows.last() instanceof $model.Row).toBe(true)
@@ -299,6 +311,7 @@ xlform_survey_model = ($model)->
   describe "lists", ->
     it "can change a list for a question", ->
       # add a new list. "yes, no, maybe"
+      @pizzaSurvey = @getPizzaSurvey()
       @pizzaSurvey.choices.add(name: "yes_no_maybe")
       ynm = @pizzaSurvey.choices.get("yes_no_maybe")
       expect(ynm).toBeDefined()
@@ -326,6 +339,7 @@ xlform_survey_model = ($model)->
       expect(firstRow.getList()?.get("name")).toBe("no_yes")
 
     it "can change options for a list", ->
+      @pizzaSurvey = @getPizzaSurvey()
       yn = @pizzaSurvey.choices.get("yes_no")
       expect(yn.options).toBeDefined()
 
@@ -340,7 +354,7 @@ xlform_survey_model = ($model)->
 
   describe "census xlform", ->
     beforeEach ->
-      @census = $model.Survey.load(CENSUS_SURVEY)
+      @census = $model.Survey.load.csv(CENSUS_SURVEY)
     it "looks good", ->
       expect(@census).toBeDefined()
 

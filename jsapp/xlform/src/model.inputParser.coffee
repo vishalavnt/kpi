@@ -1,22 +1,11 @@
 _ = require 'underscore'
 $aliases = require './model.aliases'
+$translationUtils = require './model.translationUtils'
+
+rowGrouper = require('js/model/utils/rowGrouper').rowGrouper
 
 module.exports = do ->
   inputParser = {}
-
-  class ParsedStruct
-    constructor: (@type, @atts={})->
-      @contents = []
-    push: (item)->
-      @contents.push(item)
-      ``
-    export: ->
-      arr = []
-      for item in @contents
-        if item instanceof ParsedStruct
-          item = item.export()
-        arr.push(item)
-      _.extend({}, @atts, {type: @type, __rows: arr})
 
   hasBeenParsed = (obj)->
     for row in obj
@@ -28,10 +17,13 @@ module.exports = do ->
   inputParser.hasBeenParsed = hasBeenParsed
 
   flatten_translated_fields = (item, translations)->
+    if translations and translations.length is 0
+      return item
     for key, val of item
       if _.isArray(val)
         delete item[key]
-        _.map(translations, (_t, i)->
+        _.map(translations, (translation_obj, i)->
+          _t = translation_obj.name
           _translated_val = val[i]
           if _t
             lang_str = "#{key}::#{_t}"
@@ -42,93 +34,37 @@ module.exports = do ->
     item
 
   parseArr = (type='survey', sArr, translations=false)->
-    counts = {
-      open: {}
-      close: {}
-    }
-    count_att = (opn_cls, att)->
-      counts[opn_cls][att]?=0
-      counts[opn_cls][att]++
-      ``
-    grpStack = [new ParsedStruct(type)]
+    rows = sArr.map((item)->
+        flatten_translated_fields(item, translations)
+      )
+    rowGrouper(rows)
 
-    _pushGrp = (type='group', item)->
-      count_att('open', type)
-      grp = new ParsedStruct(type, item)
-      _curGrp().push(grp)
-      grpStack.push(grp)
-
-    _popGrp = (closedByAtts, type)->
-      count_att('close', type)
-      _grp = grpStack.pop()
-      if _grp.type isnt closedByAtts.type
-        throw new Error("mismatched group/repeat tags")
-      ``
-
-    _curGrp = ->
-      _l = grpStack.length
-      if _l is 0
-        throw new Error("unmatched group/repeat")
-      grpStack[_l-1]
-
-    for item in sArr
-      _groupAtts = $aliases.q.testGroupable(item.type)
-
-      if translations and translations.length > 0
-        item = flatten_translated_fields(item, translations)
-
-      if _groupAtts
-        if _groupAtts.begin
-          _pushGrp(_groupAtts.type, item)
-        else
-          _popGrp(_groupAtts, item.type)
-      else
-        _curGrp().push(item)
-
-    if grpStack.length isnt 1
-      throw new Error(JSON.stringify({
-          message: "unclosed groupable set",
-          counts: counts 
-        }))
-
-    _curGrp().export().__rows
 
   inputParser.parseArr = parseArr
+
   inputParser.parse = (o)->
-    translations = o.translations
-    if o['#active_translation_name']
-      _existing_active_translation_name = o['#active_translation_name']
-      delete o['#active_translation_name']
+    $translationUtils.add_translation_list o
+    $translationUtils.rename_first_translation_to_null o.translation_list
 
-    if translations
-      if translations.indexOf(null) is -1 # there is no unnamed translation
-        if _existing_active_translation_name
-          throw new Error('active translation set, but cannot be found')
-        o._active_translation_name = translations[0]
-        translations[0] = null
-      else if translations.indexOf(null) > 0
-        throw new Error("""
-                        unnamed translation must be the first (primary) translation
-                        translations need to be reordered or unnamed translation needs
-                        to be given a name
-                        """)
-      else if _existing_active_translation_name # there is already an active null translation
-        o._active_translation_name = _existing_active_translation_name
-    else
-      translations = [null]
 
-    # sorts groups and repeats into groups and repeats (recreates the structure)
+    if o.translations and not o.translation_list
+      console.error('translations with no translation_list')
+    if not o.translation_list
+      throw new Error('no translations')
+
+    t_list = o.translation_list
+
     if o.survey
-      o.survey = parseArr('survey', o.survey, translations)
+      o.survey = parseArr('survey', o.survey, t_list)
 
     if o.choices
-      o.choices = parseArr('choices', o.choices, translations)
+      o.choices = parseArr('choices', o.choices, t_list)
 
     # settings is sometimes packaged as an array length=1
     if o.settings and _.isArray(o.settings) and o.settings.length is 1
       o.settings = o.settings[0]
 
-    o.translations = translations
+    o.translation_list = t_list
 
     o
 

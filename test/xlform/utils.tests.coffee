@@ -1,5 +1,8 @@
 {expect} = require('../helper/fauxChai')
 $utils = require("../../jsapp/xlform/src/model.utils")
+_ = require("underscore")
+
+$translationUtils = require("../../jsapp/xlform/src/model.translationUtils")
 
 pasted = [
             ["list_name", "name", "label", "state", "county"],
@@ -164,4 +167,134 @@ do ->
           [str, additionals] = inps
           _out = $utils.sluggifyLabel(str, additionals)
           expect(_out).toBe(exps)
- 
+
+describe 'model.translationUtils', ->
+  fn = $translationUtils._tx_string_to_object
+
+  it 'converts translation list to objects', ->
+    expect(['English', 'French', 'Spanish'].map(fn)).toEqual(
+      [
+        {
+          name: 'English'
+          code: 't1'
+          order: 0
+        }
+        {
+          name: 'French'
+          code: 't2'
+          order: 1
+        }
+        {
+          name: 'Spanish'
+          code: 't3'
+          order: 2
+        }
+      ])
+
+  it 'extracts codes', ->
+    expect(fn('English(en)', 0)).toEqual(
+        name: 'English'
+        code: 'en'
+        order: 0
+      )
+
+  it 'sets $uid', ->
+    item = {
+      name: 'xx'
+      code: 'yy'
+    }
+
+    item2 = $translationUtils.set_tx_id(item)
+    expect(Object.keys(item2)).toEqual(['name', 'code', '$uid'])
+    expect(item2['$uid']).toBeDefined()
+
+    existing_item = {
+      name: 'xx'
+      code: 'yy'
+      '$uid': 'abcdef'
+    }
+    item3 = $translationUtils.set_tx_id(existing_item)
+    expect(Object.keys(item3)).toEqual(['name', 'code', '$uid'])
+    expect(item3['$uid']).toEqual('abcdef')
+
+
+  describe 'reorders translated fields', ->
+    copy_obj = (obj)->
+      JSON.parse(JSON.stringify(obj))
+
+    surv = ->
+      {
+        survey: [
+          {
+            label: ['Lang1', 'Lang2']
+            type: 'select_one'
+            select_from_list_name: 'cl1'
+            name: 'somename'
+          }
+        ]
+        choices: [
+          {
+            list_name: 'cl1'
+            label: ['L1C1', 'L2C1']
+          }
+          {
+            list_name: 'cl1'
+            label: ['L1C2', 'L2C2']
+          }
+        ]
+        translations: ['Lang1', 'Lang2']
+        translated: ['label']
+      }
+
+    it 'rearranges list by changing order', ->
+      items = [
+        {
+          name: 'Lang1',
+          order: 0,
+        }
+        {
+          name: 'Lang2',
+          order: 1,
+        }
+      ]
+      expect(_.pluck(items, 'order')).toEqual([0, 1])
+      $translationUtils.change_order_by_name(items, 'Lang2')
+      expect(_.pluck(items, 'order')).toEqual([1, 0])
+    it 'renames first translation to null when asked to do so', ->
+      tls = [
+        {
+          name: 'Lang1',
+          order: 2,
+        }
+        {
+          name: 'Lang2',
+          order: 1,
+        }
+        {
+          name: 'Lang3',
+          order: 0,
+        }
+      ]
+      expect(_.pluck(tls, 'name')).toEqual(['Lang1', 'Lang2', 'Lang3'])
+      $translationUtils.rename_first_translation_to_null(tls)
+      expect(_.pluck(tls, 'name')).toEqual(['Lang1', 'Lang2', null])
+      expect(_.pluck(tls, 'savename')).toEqual([undefined, undefined, 'Lang3'])
+    it 'moves existing null translation', ->
+      tls = [
+        {
+          name: 'Lang1',
+          order: 2,
+        }
+        {
+          name: null,
+          order: 1,
+        }
+        {
+          name: 'Lang3',
+          order: 0,
+        }
+      ]
+      expect(_.pluck(tls, 'name')).toEqual(['Lang1', null, 'Lang3'])
+      $translationUtils.rename_first_translation_to_null(tls)
+      expect(_.pluck(tls, 'name')).toEqual(['Lang1', 'NOT_NAMED', null])
+      expect(_.pluck(tls, 'savename')).toEqual([undefined, null, 'Lang3'])

@@ -1,3 +1,4 @@
+'''
 import json
 
 TRANSLATIONS_EQUAL = 'equal'
@@ -64,3 +65,4 @@ def compare_translations(t1, t2):
     return {
         TRANSLATION_CHANGE_UNSUPPORTED: True
     }
+'''

@@ -521,7 +521,7 @@ mixins.contextRouter = {
     if (this.context.router.isActive(`/library/${assetid}/edit`))
       return true;
 
-    return this.context.router.isActive(`/forms/${assetid}/edit`);
+    return !!this.props.location.pathname.match(/\/forms\/.*\/edit/);
   },
 
 }

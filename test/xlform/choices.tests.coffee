@@ -29,7 +29,8 @@ module.exports = do ->
               name: 'no',
               label: 'No'
             }
-          ]
+          ],
+          translation_list: [{name: null, active: true}]
         })
       @choices = @survey.choices
       @yesno = @choices.get('yes_no')
@@ -65,7 +66,7 @@ module.exports = do ->
 
     describe 'model.choices--CASCADES', ->
       it 'cascade choice list utility methods work', ->
-        survey = $survey.Survey.load($surveyFixtures.cascading)
+        survey = $survey.Survey.load($surveyFixtures.cascading())
         expect(survey.choices.models.map((cl)->
             cl.get('name')
           )).toEqual(['state', 'county', 'city'])
@@ -121,7 +122,7 @@ module.exports = do ->
           ])
 
       it 'imports a survey with a cascading choice list', ->
-        survey = $survey.Survey.load($surveyFixtures.cascading)
+        survey = $survey.Survey.load($surveyFixtures.cascading())
         _city_choicelist = survey.choices.get('city')
         for choiceList in survey.choices.models
           expect(choiceList._has_corresponding_row()).toEqual(false)

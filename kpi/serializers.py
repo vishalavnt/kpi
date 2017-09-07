@@ -2,6 +2,7 @@
 import datetime
 import json
 import pytz
+from copy import deepcopy
 from collections import OrderedDict
 
 from django.contrib.auth.models import User, Permission
@@ -35,6 +36,11 @@ from .models import OneTimeAuthenticationKey
 from .forms import USERNAME_REGEX, USERNAME_MAX_LENGTH
 from .forms import USERNAME_INVALID_MESSAGE
 from .utils.gravatar_url import gravatar_url
+from .utils.standardize_content import (
+                                        on_retrieve_asset_content,
+                                        asset_lists_to_dicts,
+                                        separate_meta_fields,
+                                        )
 
 from .deployment_backends.kc_access.utils import get_kc_profile_data
 from .deployment_backends.kc_access.utils import set_kc_require_auth
@@ -421,6 +427,7 @@ class AssetSerializer(serializers.HyperlinkedModelSerializer):
     asset_type = serializers.ChoiceField(choices=ASSET_TYPES)
     settings = WritableJSONField(required=False, allow_blank=True)
     content = WritableJSONField(required=False)
+    xcontent = serializers.SerializerMethodField()
     report_styles = WritableJSONField(required=False)
     xls_link = serializers.SerializerMethodField()
     summary = serializers.ReadOnlyField()
@@ -467,6 +474,7 @@ class AssetSerializer(serializers.HyperlinkedModelSerializer):
                   'asset_type',
                   'date_created',
                   'summary',
+                  'xcontent',
                   'date_modified',
                   'version_id',
                   'version_count',
@@ -505,13 +513,6 @@ class AssetSerializer(serializers.HyperlinkedModelSerializer):
         _req_data = self.context['request'].data
         _has_translations = 'translations' in _req_data
         _has_content = 'content' in _req_data
-        if _has_translations and not _has_content:
-            translations_list = json.loads(_req_data['translations'])
-            try:
-                asset.update_translation_list(translations_list)
-            except ValueError as err:
-                raise serializers.ValidationError(err.message)
-            validated_data['content'] = asset_content
         return super(AssetSerializer, self).update(asset, validated_data)
 
     def get_fields(self, *args, **kwargs):
@@ -561,6 +562,24 @@ class AssetSerializer(serializers.HyperlinkedModelSerializer):
             _reverse_lookup_format('xls'),
             _reverse_lookup_format('xform'),
         ]
+
+    def get_xcontent(self, asset):
+        _content = deepcopy(asset.content)
+        changed = on_retrieve_asset_content(_content)
+        if changed:
+            asset.content = _content
+            asset.save(adjust_content=False,
+                       create_version=False,
+                       update_timestamp=False,
+                       )
+        asset_lists_to_dicts(_content)
+        separate_meta_fields(_content)
+        if 'translations' in _content:
+            del _content['translations']
+        if 'translated' in _content:
+            del _content['translated']
+        _content['schema'] = 2
+        return _content
 
     def get_downloads(self, obj):
         def _reverse_lookup_format(fmt):
@@ -857,9 +876,9 @@ class CurrentUserSerializer(serializers.ModelSerializer):
         if not rep['extra_details']:
             rep['extra_details'] = {}
         # `require_auth` needs to be read from KC every time
-        if settings.KOBOCAT_URL and settings.KOBOCAT_INTERNAL_URL:
-            rep['extra_details']['require_auth'] = get_kc_profile_data(
-                obj.pk).get('require_auth', False)
+        # if settings.KOBOCAT_URL and settings.KOBOCAT_INTERNAL_URL:
+        #     rep['extra_details']['require_auth'] = get_kc_profile_data(
+        #         obj.pk).get('require_auth', False)
 
         # Count the number of dkobo SurveyDrafts to determine migration status
         from kpi.management.commands.import_survey_drafts_from_dkobo import \

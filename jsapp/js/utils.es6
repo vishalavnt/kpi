@@ -17,6 +17,10 @@ export function notify(msg, atype='success') {
   alertify.notify(msg, atype);
 }
 
+export function isObject (item) {
+  return (typeof item === "object") && (item !== null);
+}
+
 export function formatTime(timeStr) {
   var _m = moment(timeStr);
   return _m.calendar(null, {sameElse: 'LL'});

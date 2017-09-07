@@ -27,7 +27,11 @@ class SearchBox extends React.Component {
     var value = this.props.value;
     return (
         <input type="text" ref='inp' className="k-search__input" value={value}
-            onKeyUp={this.props.onKeyUp} onChange={this.props.onChange} id={elemId} placeholder={this.props.placeholder}/>
+          onKeyUp={this.props.onKeyUp}
+          onChange={this.props.onChange}
+          id={elemId}
+          placeholder={this.props.placeholder}
+        />
       );
   }
 };
