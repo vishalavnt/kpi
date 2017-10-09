@@ -116,6 +116,13 @@ module.exports = do ->
       grouping: "r4"
       id: "calculate"
     ,
+    
+    # r6
+      label: _t("Timed Grid")
+      faClass: "clock-o"
+      grouping: "r6"
+      id: "timed_grid"
+    ,
     ]
 
   class QtypeIcon extends Backbone.Model

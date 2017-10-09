@@ -167,6 +167,9 @@ module.exports = do ->
     acknowledge:
       label:
         value: "Acknowledge"
+    timed_grid:
+      label:
+        value: "Timed Grid"
 
   configs.columns = ["type", "name", "label", "hint", "required", "relevant", "default", "constraint"]
 
@@ -193,7 +196,8 @@ module.exports = do ->
       ["score__row", "Score Row"],
       ["rank", "Rank"],
       ["rank__level", "Rank Level"],
-      ["select_multiple", "Multiple choice", orOtherOption: true, specifyChoice: true]
+      ["select_multiple", "Multiple choice", orOtherOption: true, specifyChoice: true],
+      ["timed_grid", "Timed Grid"],
     ]
 
     class Type
