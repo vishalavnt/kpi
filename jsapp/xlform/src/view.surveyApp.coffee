@@ -128,9 +128,11 @@ module.exports = do ->
       @ngScope = options.ngScope
       @surveyStateStore = options.stateStore || {trigger:$.noop, setState:$.noop}
 
+      # if a timedGrid was added trigger this event and set the state 
       @survey.on 'add-timed-grid', () =>
         @surveyStateStore.setState({
-          timerGrid: {
+          timedGrid: {
+            # TODO add support for cancelling timerGrid
             show: true,
             flash: 30,
             enumeratorHelpText: '',

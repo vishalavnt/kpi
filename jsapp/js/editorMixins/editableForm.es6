@@ -636,6 +636,15 @@ export default assign({
       enketopreviewError: false,
     });
   },
+  cancelTimedGrid () {
+    const timedGrid = this.state.timedGrid;
+    // TODO support cancelling timerGrid
+    // timerGrid.cancel = true;
+    timedGrid.show = false;
+    this.setState({
+      timedGrid
+    });
+  },
   render () {
     var isSurvey = this.app && !isLibrary(this.context.router);
     var docTitle = this.state.name || t('Untitled');
@@ -686,9 +695,9 @@ export default assign({
               </ui.Modal>
 
             : null}
-
-            {this.state.showTimerWidgetPopup ?
-              <ui.Modal open title={t('Timed Grid')}>
+            
+            {this.state.timedGrid && this.state.timedGrid.show ?
+              <ui.Modal open onClose={this.cancelTimedGrid} title={t('Timed Grid')}>
                 <ui.Modal.Body>
                   
                 </ui.Modal.Body>
