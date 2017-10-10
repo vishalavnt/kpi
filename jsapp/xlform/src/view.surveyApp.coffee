@@ -128,6 +128,18 @@ module.exports = do ->
       @ngScope = options.ngScope
       @surveyStateStore = options.stateStore || {trigger:$.noop, setState:$.noop}
 
+      @survey.on 'add-timed-grid', () =>
+        @surveyStateStore.setState({
+          timerGrid: {
+            show: true,
+            flash: 30,
+            enumeratorHelpText: '',
+            studentDialogueText: '',
+            gridItems: '',
+            created: false
+          }
+        })
+        
       $(document).on 'click', @deselect_rows
 
       @survey.settings.on 'change:form_id', (model, value) =>

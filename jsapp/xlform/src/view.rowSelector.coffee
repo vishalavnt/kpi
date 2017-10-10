@@ -104,10 +104,16 @@ module.exports = do ->
 
       rowDetails =
         type: rowType
-
+      
       if rowType is 'calculate'
-
         rowDetails.calculation = value
+      else if rowType is 'timedGrid'
+        @options.survey.trigger('add-timed-grid')
+        rowDetails.type = 'select_multiple'
+        rowDetails.appearance = 'literacy'
+        rowDetails.label = value
+        rowDetails.flash = 30
+        rowDetails.name = 'literacy'
       else
         rowDetails.label = value
 
@@ -124,6 +130,7 @@ module.exports = do ->
       @hide()
       @options.surveyView.reset().then () =>
         view = @options.surveyView.getViewForRow(newRow)
+        # console.log(view)
         $.scrollTo view.$el, 200, offset: -300
 
   viewRowSelector

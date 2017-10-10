@@ -687,6 +687,15 @@ export default assign({
 
             : null}
 
+            {this.state.showTimerWidgetPopup ?
+              <ui.Modal open title={t('Timed Grid')}>
+                <ui.Modal.Body>
+                  
+                </ui.Modal.Body>
+              </ui.Modal>
+
+            : null}
+
           </ui.Panel>
         </DocumentTitle>
       );

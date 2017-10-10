@@ -121,7 +121,7 @@ module.exports = do ->
       label: _t("Timed Grid")
       faClass: "clock-o"
       grouping: "r6"
-      id: "timed_grid"
+      id: "timedGrid"
     ,
     ]
 
