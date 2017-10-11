@@ -80,7 +80,7 @@ export default class TimedGridModal extends Component {
       <ui.Modal open onClose={this.cancelTimedGrid} title={t('Timed Grid')}>
         <ui.Modal.Body>
           {this.state.step == 1 &&
-            <div>
+            <div style={{zIndex: 9999}}>
               <bem.FormModal__item>
                 <p>This is a tool used to evaluate the level of early grade students in different subject areas by capturing their responses un test sessions and using that response data to help assess educational needs</p>
                 {this.state.displayExample && <img src={'../../img/timedGridExample.png'} /> }
@@ -92,21 +92,27 @@ export default class TimedGridModal extends Component {
                   <i className='k-icon-dropdown-arrow'/>
                 </button>
               </bem.FormModal__item>
-
-              <bem.FormModal__item>
+              
+              <bem.FormModal__item style={{position: 'relative'}}>
                 <label>
                   {t('Enumerator help')}
                 </label>
+                <bem.FormView__link m='information'  data-tip={t('Lorem Ipsum')} style={{position: 'absolute', right: 0, top: 10}}>
+                  <i className="k-icon-information" />
+                </bem.FormView__link>
                 <input 
                   type='text' 
                   value={this.state.enumeratorHelpText} 
                   onChange={this.setEnumeratorHelpText}/>
               </bem.FormModal__item>
 
-              <bem.FormModal__item>
+              <bem.FormModal__item style={{position: 'relative'}}>
                 <label>
                   {t('Student dialogue')}
                 </label>
+                <bem.FormView__link m='information'  data-tip={t('Lorem Ipsum')} style={{position: 'absolute', right: 0, top: 10}}>
+                  <i className="k-icon-information" />
+                </bem.FormView__link>
                 <input 
                   type='text' 
                   value={this.state.studentDialogueText} 
@@ -130,10 +136,13 @@ export default class TimedGridModal extends Component {
                 <p>All assessments have a 600 second countdown timer.</p>
               </bem.FormModal__item>
 
-              <bem.FormModal__item>
+              <bem.FormModal__item style={{position: 'relative'}}>
                 <label>
                   {t('Grid items')}
                 </label>
+                <bem.FormView__link m='information'  data-tip={t('Lorem Ipsum')} style={{position: 'absolute', right: 0, top: -8}}>
+                  <i className="k-icon-information" />
+                </bem.FormView__link>
                 <div 
                   className='word-spans-wrapper'
                   style={{
