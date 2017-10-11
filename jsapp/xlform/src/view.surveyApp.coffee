@@ -129,17 +129,14 @@ module.exports = do ->
       @surveyStateStore = options.stateStore || {trigger:$.noop, setState:$.noop}
 
       # if a timedGrid was added trigger this event and set the state 
-      @survey.on 'add-timed-grid', () =>
+      @survey.on 'show-timed-grid', () =>
         @surveyStateStore.setState({
-          timedGrid: {
-            # TODO add support for cancelling timerGrid
-            show: true,
-            flash: 30,
-            enumeratorHelpText: '',
-            studentDialogueText: '',
-            gridItems: '',
-            created: false
-          }
+          showTimedGrid: true
+        })
+      
+      @survey.on 'hide-timed-grid', () =>
+        @surveyStateStore.setState({
+          showTimedGrid: false
         })
         
       $(document).on 'click', @deselect_rows

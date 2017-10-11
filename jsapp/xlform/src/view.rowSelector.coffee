@@ -94,6 +94,14 @@ module.exports = do ->
           .removeClass("expanded")
           .addClass("survey-editor__null-top-row--hidden")
 
+    updateRowWhereLabel: (label, r)->
+      @options.survey.rows.models.map (item) => 
+        if item.attributes.label.attributes.value == label
+          item.attributes['flash']['attributes']['value'] = r.flash
+          item.attributes['enumeratorHelpText']['attributes']['value'] = r.enumeratorHelpText
+          item.attributes['studentDialogueText']['attributes']['value'] = r.studentDialogueText
+          item.attributes['words']['attributes']['value'] = r.words
+
     selectMenuItem: (evt)->
       @question_name = @line.find('input').val()
       $rowSelect = $('select.skiplogic__rowselect')
@@ -108,15 +116,23 @@ module.exports = do ->
       if rowType is 'calculate'
         rowDetails.calculation = value
       else if rowType is 'timedGrid'
-        @options.survey.trigger('add-timed-grid')
         rowDetails.type = 'select_multiple'
         rowDetails.appearance = 'literacy'
         rowDetails.label = value
-        rowDetails.flash = 30
-        rowDetails.name = 'literacy'
+        rowDetails.flash = ''
+        rowDetails.words = []
+        rowDetails.enumeratorHelpText = ''
+        rowDetails.studentDialogueText = ''
+        @options.survey.trigger('show-timed-grid')
+        @options.survey.on 'timed-grid-created', (timedGridState, row = rowDetails) =>
+          row.flash = timedGridState.flash
+          row.enumeratorHelpText = timedGridState.enumeratorHelpText
+          row.studentDialogueText = timedGridState.studentDialogueText
+          row.words = timedGridState.wordsAsArray
+          @options.survey.trigger('hide-timed-grid')
+          @updateRowWhereLabel(rowDetails.label, row)
       else
         rowDetails.label = value
-
       options = {}
       if (rowBefore = @options.spawnedFromView?.model)
         options.after = rowBefore

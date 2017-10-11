@@ -29,6 +29,7 @@ import stores from '../stores';
 import actions from '../actions';
 import dkobo_xlform from '../../xlform/src/_xlform.init';
 import {dataInterface} from '../dataInterface';
+import TimedGridModal from '../models/timedGridModal.es6';
 
 import hotkey from 'react-hotkey';
 
@@ -635,16 +636,7 @@ export default assign({
     this.setState({
       enketopreviewError: false,
     });
-  },
-  cancelTimedGrid () {
-    const timedGrid = this.state.timedGrid;
-    // TODO support cancelling timerGrid
-    // timerGrid.cancel = true;
-    timedGrid.show = false;
-    this.setState({
-      timedGrid
-    });
-  },
+  },  
   render () {
     var isSurvey = this.app && !isLibrary(this.context.router);
     var docTitle = this.state.name || t('Untitled');
@@ -696,13 +688,8 @@ export default assign({
 
             : null}
             
-            {this.state.timedGrid && this.state.timedGrid.show ?
-              <ui.Modal open onClose={this.cancelTimedGrid} title={t('Timed Grid')}>
-                <ui.Modal.Body>
-                  
-                </ui.Modal.Body>
-              </ui.Modal>
-
+            {this.state.showTimedGrid ?
+              <TimedGridModal survey={this.app.survey} show={this.state.showTimedGrid}/>
             : null}
 
           </ui.Panel>
