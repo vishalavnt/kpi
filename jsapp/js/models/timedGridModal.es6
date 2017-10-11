@@ -35,9 +35,6 @@ export default class TimedGridModal extends Component {
   }
   cancelTimedGrid () {
     this.props.survey.trigger('hide-timed-grid')
-    // this.setState({
-    //   'show': false
-    // })
   }
   toggleDisplayExample () {
     this.setState({
@@ -76,9 +73,6 @@ export default class TimedGridModal extends Component {
   }
   createTimedGrid () {
     this.props.survey.trigger('timed-grid-created', this.state)
-    // this.setState({
-    //   'show': false
-    // }, () => )
   }
   // END TIMED GRID SPECIFIC FUNCTIONS =======>
   render () {

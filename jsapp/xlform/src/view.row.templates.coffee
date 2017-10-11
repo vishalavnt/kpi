@@ -232,6 +232,16 @@ module.exports = do ->
     <span class="card__buttons__multioptions js-toggle-row-multioptions js-cancel-select-row"><i class='right-and-down-caret' /></span>
     """
 
+  literacyQuestion = () ->
+    """
+    <div class="card--selectquestion__expansion row__multioptions js-cancel-sort" style="padding-bottom: 70px">
+      <div class="list-view">
+        <ul></ul>
+      </div>
+      <button class='mdl-button mdl-button--raised mdl-button--colored pull-right' style="margin: 10px 10px 0px">#{_t("Edit")}</button>
+    </div>
+    """
+
   rowErrorView = (atts)->
     """
     <div class="card card--error">
@@ -250,3 +260,4 @@ module.exports = do ->
   rankView: rankView
   groupSettingsView: groupSettingsView
   rowSettingsView: rowSettingsView
+  literacyQuestion: literacyQuestion

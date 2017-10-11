@@ -13,7 +13,10 @@ module.exports = do ->
       @list = @model
       @row = @rowView.model
       # prevent expansion if type is literacy
-      if @row.attributes.appearance.attributes.value != 'literacy'
+      if @row.attributes.appearance.attributes.value == 'literacy'
+        $($.parseHTML $viewTemplates.row.literacyQuestion()).insertAfter @rowView.$('.card__header')
+        # TODO change the way this is displayed 
+      else
         $($.parseHTML $viewTemplates.row.selectQuestionExpansion()).insertAfter @rowView.$('.card__header')
       @$el = @rowView.$(".list-view")
       @ulClasses = @$("ul").prop("className")
@@ -23,37 +26,40 @@ module.exports = do ->
         cardText.prepend $.parseHTML($viewTemplates.row.expandChoiceList())
       @$el.html (@ul = $("<ul>", class: @ulClasses))
       _ts = @model.getSurvey().translations
-      if @row.get("type").get("rowType").specifyChoice
-        for option, i in @model.options.models
-          new OptionView(model: option, cl: @model, translations: _ts).render().$el.appendTo @ul
-        if i == 0
-          while i < 2
-            @addEmptyOption("Option #{++i}")
-
-        @$el.removeClass("hidden")
+      if @row.attributes.appearance.attributes.value == 'literacy'
+        
       else
-        @$el.addClass("hidden")
-      @ul.sortable({
-          axis: "y"
-          cursor: "move"
-          distance: 5
-          items: "> li"
-          placeholder: "option-placeholder"
-          opacity: 0.9
-          scroll: false
-          deactivate: =>
-            if @hasReordered
-              @reordered()
-            true
-          change: => @hasReordered = true
-        })
-      btn = $($viewTemplates.$$render('xlfListView.addOptionButton'))
-      btn.click ()=>
-        i = @model.options.length
-        @addEmptyOption("Option #{i+1}")
+        if @row.get("type").get("rowType").specifyChoice 
+          for option, i in @model.options.models
+            new OptionView(model: option, cl: @model, translations: _ts).render().$el.appendTo @ul
+          if i == 0
+            while i < 2
+              @addEmptyOption("Option #{++i}")
 
-      @$el.append(btn)
-      @
+          @$el.removeClass("hidden")
+        else
+          @$el.addClass("hidden")
+        @ul.sortable({
+            axis: "y"
+            cursor: "move"
+            distance: 5
+            items: "> li"
+            placeholder: "option-placeholder"
+            opacity: 0.9
+            scroll: false
+            deactivate: =>
+              if @hasReordered
+                @reordered()
+              true
+            change: => @hasReordered = true
+          })
+        btn = $($viewTemplates.$$render('xlfListView.addOptionButton'))
+        btn.click ()=>
+          i = @model.options.length
+          @addEmptyOption("Option #{i+1}")
+
+        @$el.append(btn)
+        @
     addEmptyOption: (label)->
       emptyOpt = new $choices.Option(label: label)
       @model.options.add(emptyOpt)

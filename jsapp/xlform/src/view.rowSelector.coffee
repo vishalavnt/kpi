@@ -3,6 +3,7 @@ Backbone = require 'backbone'
 $baseView = require './view.pluggedIn.backboneView'
 $viewTemplates = require './view.templates'
 $icons = require './view.icons'
+$choices = require './model.choices'
 
 module.exports = do ->
   viewRowSelector = {}
@@ -87,52 +88,16 @@ module.exports = do ->
       @line.animate height: "0"
       if @reversible
         @button.removeClass('btn--hidden')
+
     hide: ->
       @button.removeClass('btn--hidden')
       @line.empty().removeClass("expanded").css "height": 0
       @line.parents(".survey-editor__null-top-row")
           .removeClass("expanded")
           .addClass("survey-editor__null-top-row--hidden")
-
-    updateRowWhereLabel: (label, r)->
-      @options.survey.rows.models.map (item) => 
-        if item.attributes.label.attributes.value == label
-          item.attributes['flash']['attributes']['value'] = r.flash
-          item.attributes['enumeratorHelpText']['attributes']['value'] = r.enumeratorHelpText
-          item.attributes['studentDialogueText']['attributes']['value'] = r.studentDialogueText
-          item.attributes['words']['attributes']['value'] = r.words
-
-    selectMenuItem: (evt)->
-      @question_name = @line.find('input').val()
-      $rowSelect = $('select.skiplogic__rowselect')
-      if $rowSelect.data('select2')
-        $rowSelect.select2('destroy')
-      rowType = $(evt.target).closest('.questiontypelist__item').data("menuItem")
-      value = (@question_name || 'New Question').replace(/\t/g, ' ')
-
-      rowDetails =
-        type: rowType
-      
-      if rowType is 'calculate'
-        rowDetails.calculation = value
-      else if rowType is 'timedGrid'
-        rowDetails.type = 'select_multiple'
-        rowDetails.appearance = 'literacy'
-        rowDetails.label = value
-        rowDetails.flash = ''
-        rowDetails.words = []
-        rowDetails.enumeratorHelpText = ''
-        rowDetails.studentDialogueText = ''
-        @options.survey.trigger('show-timed-grid')
-        @options.survey.on 'timed-grid-created', (timedGridState, row = rowDetails) =>
-          row.flash = timedGridState.flash
-          row.enumeratorHelpText = timedGridState.enumeratorHelpText
-          row.studentDialogueText = timedGridState.studentDialogueText
-          row.words = timedGridState.wordsAsArray
-          @options.survey.trigger('hide-timed-grid')
-          @updateRowWhereLabel(rowDetails.label, row)
-      else
-        rowDetails.label = value
+    
+    # Adding a new Question to the Survey
+    addQuestionToSurvey: (rowDetails) ->
       options = {}
       if (rowBefore = @options.spawnedFromView?.model)
         options.after = rowBefore
@@ -146,7 +111,56 @@ module.exports = do ->
       @hide()
       @options.surveyView.reset().then () =>
         view = @options.surveyView.getViewForRow(newRow)
-        # console.log(view)
         $.scrollTo view.$el, 200, offset: -300
+    
+    # Setting up the literacy required attributes 
+    setUpLiteracyQuestion: (rowDetails, cb) ->
+      rowDetails.type = 'select_multiple words'
+      rowDetails.appearance = 'literacy'
+      rowDetails.name = 'literacy'
+      @options.survey.trigger('show-timed-grid')
+      @options.survey.on 'timed-grid-created', (timedGridState, newRowDtl = rowDetails) =>
+        newRowDtl['flash'] = timedGridState.flash
+        newRowDtl['enumeratorHelpText'] = timedGridState.enumeratorHelpText
+        newRowDtl['studentDialogueText'] = timedGridState.studentDialogueText
+        # The list of the words as array
+        # TODO this needs to converted into the choices. 
+        newRowDtl['literacy:words'] = timedGridState.wordsAsArray
+        newRowDtl['wordsAsArray'] = timedGridState.wordsAsArray
+        newRowDtl['words'] = timedGridState.words
+        # trying to grab the id 
+        # choiceName = @options.survey.choices.models[0].attributes.name
+        # console.log choiceName
+        # newChoiceLists = new $choices.ChoiceLists(timedGridState.wordsAsArray, choiceName)
+        # console.log newChoiceLists
+
+        @options.survey.trigger('hide-timed-grid')
+        # This callback is used to add the question once the literacy question is set up
+        cb(newRowDtl)
+
+    selectMenuItem: (evt)->
+      @question_name = @line.find('input').val()
+      $rowSelect = $('select.skiplogic__rowselect')
+      if $rowSelect.data('select2')
+        $rowSelect.select2('destroy')
+      rowType = $(evt.target).closest('.questiontypelist__item').data("menuItem")
+      value = (@question_name || 'New Question').replace(/\t/g, ' ')
+
+      rowDetails =
+        type: rowType
+      
+      switch rowType
+        when 'calculate'
+          rowDetails.calculation = value
+          @addQuestionToSurvey(rowDetails)
+        when 'timedGrid'
+          rowDetails.label = value
+          # The literacy Question requires specific attributes
+          @setUpLiteracyQuestion(rowDetails, (updatedRow) =>
+            @addQuestionToSurvey(updatedRow)
+          )
+        else
+          rowDetails.label = value
+          @addQuestionToSurvey(rowDetails)
 
   viewRowSelector
