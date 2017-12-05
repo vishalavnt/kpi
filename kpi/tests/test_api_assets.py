@@ -134,6 +134,27 @@ class AssetsDetailApiTests(APITestCase):
         self.assertEqual(response2.data.get('deployment__active'), True)
         self.assertEqual(response2.data['has_deployment'], True)
 
+    def test_asset_deployment_submissions(self):
+        deployment_url = reverse('asset-deployment',
+                                 kwargs={'uid': self.asset_uid})
+        self.client.post(deployment_url, {
+            'backend': 'mock',
+            'active': True,
+        })
+
+        # http://testserver/asset/xyz
+        expected_asset_submissions_url = self.asset_url + 'submissions/'
+
+        #                  /asset/xyz
+        asset_submissions_url = reverse('submission-list',
+                                        kwargs={'parent_lookup_asset':
+                                                self.asset_uid})
+        url_substring = -1 * len(asset_submissions_url)
+        self.assertEqual(asset_submissions_url, expected_asset_submissions_url[url_substring:])
+
+        resp = self.client.get(asset_submissions_url)
+        self.assertEquals(resp.status_code, 200)
+
     def test_can_clone_asset(self):
         response = self.client.post(reverse('asset-list'),
                                     format='json',

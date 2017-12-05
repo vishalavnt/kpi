@@ -66,6 +66,7 @@ export class DataTable extends React.Component {
 
   _prepColumns(data) {
 		var uniqueKeys = Object.keys(data.reduce(function(result, obj) {
+      console.log("%c"+"result, obj", "text-decoration:underline", result, obj);
 		  return Object.assign(result, obj);
 		}, {}))
 
@@ -83,13 +84,22 @@ export class DataTable extends React.Component {
           {t('Open')}
         </span>
       )
+    }, {
+      Header: 'Validation status',
+      accessor: 'sub-inklay',
+      index: '__2',
+      Cell: row => (
+        <p>ValStatGozeHear</p>
+      )
     }];
     var excludes = ['_xform_id_string', '_attachments', '_notes', '_bamboo_dataset_id', '_status',
-                    'formhub/uuid', '_tags', '_geolocation', '_submitted_by', 'meta/instanceID'];
+                    'formhub/uuid', '_tags', '_geolocation', '_submitted_by', 'meta/instanceID',
+                    'validation_status'];
 
     let survey = this.props.asset.content.survey;
     let choices = this.props.asset.content.choices;
 
+    console.log(uniqueKeys);
     uniqueKeys.forEach(function(key){
       if (excludes.includes(key)) 
         return false;

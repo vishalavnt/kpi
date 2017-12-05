@@ -553,6 +553,7 @@ class SubmissionViewSet(NestedViewSetMixin, viewsets.ViewSet,
     '''
     parent_model = Asset
 
+
 class AssetVersionViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
     model = AssetVersion
     lookup_field = 'uid'
@@ -584,10 +585,6 @@ class AssetVersionViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
 
 
 class AssetViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
-    """
-    * Assign a asset to a collection <span class='label label-warning'>partially implemented</span>
-    * Run a partial update of a asset <span class='label label-danger'>TODO</span>
-    """
     # Filtering handled by KpiObjectPermissionsFilter.filter_queryset()
     queryset = Asset.objects.select_related(
         'owner', 'parent'

@@ -483,18 +483,11 @@ class KobocatDataProxyViewSetMixin(object):
         return self.retrieve(kpi_request, None, *args, **kwargs)
 
     def retrieve(self, kpi_request, pk, *args, **kwargs):
-        deployment = self._get_deployment(kpi_request)
-        if pk is None:
-            kc_url = deployment.submission_list_url
-        else:
-            kc_url = deployment.get_submission_detail_url(pk)
-        kc_request = requests.Request(
-            method='GET',
-            url=kc_url,
-            params=kpi_request.GET
-        )
-        kc_response = self._kobocat_request(kpi_request, kc_request)
-        return self._requests_response_to_django_response(kc_response)
+        asset_uid = self.get_parents_query_dict()['asset']
+        asset = get_object_or_404(self.parent_model, uid=asset_uid)
+        contents = [instance.to_table_json() \
+                    for instance in asset.instances.all()]
+        return HttpResponse(json.dumps(contents))
 
     def delete(self, kpi_request, pk, *args, **kwargs):
         deployment = self._get_deployment(kpi_request)
