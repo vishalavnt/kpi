@@ -71,7 +71,9 @@ def build_formpack(asset, submission_stream=None):
             version_ids_newest_first.append(v.uid)
             if v.uid_aliases:
                 version_ids_newest_first.extend(v.uid_aliases)
-    pack = FormPack(versions=reversed(schemas), title=asset.name, id_string=asset.uid)
+
+    # schemas must be sorted from newest to oldest
+    pack = FormPack(versions=schemas, title=asset.name, id_string=asset.uid)
 
     # Find the AssetVersion UID for each deprecated reversion ID
     _reversion_ids = dict([
