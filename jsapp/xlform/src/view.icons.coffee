@@ -128,7 +128,7 @@ module.exports = do ->
   class QtypeIconCollection extends Backbone.Collection
     model: QtypeIcon
     grouped: ()->
-      unless @_groups
+      unless @_zipped
         @_groups = []
         grp_keys = []
         @each (model)=>
@@ -137,6 +137,7 @@ module.exports = do ->
           ii = grp_keys.indexOf(grping)
           @_groups[ii] or @_groups[ii] = []
           @_groups[ii].push model
-      _.zip.apply(null, @_groups)
+        @_zipped = _.zip.apply(null, @_groups).map((arr)=>arr.filter((xx)=>xx isnt undefined))
+      @_zipped
 
   new QtypeIconCollection(iconDetails)

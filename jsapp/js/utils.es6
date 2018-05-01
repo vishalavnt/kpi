@@ -112,8 +112,14 @@ if (window.gettext) {
     return s;
   };
 }
+
 export function t(str) {
   return _gettext(str);
+};
+
+export function _t(str) {
+  console.error('use utils.t');
+  return t(str);
 };
 
 
