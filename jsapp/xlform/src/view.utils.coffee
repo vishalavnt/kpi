@@ -1,10 +1,8 @@
 _ = require 'underscore'
 jQuery = require 'jquery'
-Validator = require './view.utils.validator'
 
 module.exports = do ->
   viewUtils = {}
-  viewUtils.Validator = Validator
 
   viewUtils.makeEditable = (that, model, selector, {property, transformFunction, options, edit_callback}) ->
     if !(selector instanceof jQuery)

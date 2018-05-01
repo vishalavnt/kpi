@@ -1,12 +1,8 @@
 _ = require 'underscore'
-$skipLogicParser = require './model.skipLogicParser'
-$validationLogicParser = require './model.validationLogicParser'
 
 module.exports = do ->
 
-  utils =
-    skipLogicParser: $skipLogicParser
-    validationLogicParser: $validationLogicParser
+  utils = {}
 
   _trim = (str)->
     str.replace(/^[\s\t\uFEFF\xA0]+|[\s\t\uFEFF\xA0]+$/g, '')
@@ -49,29 +45,6 @@ module.exports = do ->
       else if c is 'n'
         Math.floor(r*10)
     o.toLowerCase()
-
-  utils.parseHelper =
-    parseSkipLogic: (collection, value, parent_row) ->
-      collection.meta.set("rawValue", value)
-      try
-        parsedValues = $skipLogicParser(value)
-        collection.reset()
-        collection.parseable = true
-        for crit in parsedValues.criteria
-          opts = {
-            name: crit.name
-            expressionCode: crit.operator
-          }
-          if crit.operator is "multiplechoice_selected"
-            opts.criterionOption = collection.getSurvey().findRowByName(crit.name).getList().options.get(crit.response_value)
-          else
-            opts.criterion = crit.response_value
-          collection.add(opts, silent: true, _parent: parent_row)
-        if parsedValues.operator
-          collection.meta.set("delimSelect", parsedValues.operator.toLowerCase())
-        ``
-      catch e
-        collection.parseable = false
 
   utils.sluggifyLabel = (str, other_names=[])->
     utils.sluggify(str, {

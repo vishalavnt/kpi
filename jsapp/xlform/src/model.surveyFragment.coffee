@@ -7,7 +7,6 @@ $aliases = require './model.aliases'
 $utils = require './model.utils'
 $configs = require './model.configs'
 $surveyDetail = require './model.surveyDetail'
-$skipLogicHelpers = require './mv.skipLogicHelpers'
 
 module.exports = do ->
   _t = require("utils").t
@@ -70,7 +69,6 @@ module.exports = do ->
       @rows
 
     _isSelectQuestion: -> false
-    get_type: -> $skipLogicHelpers.question_types['default']
     _beginEndKey: ->
       'kobomatrix'
 
@@ -260,7 +258,6 @@ module.exports = do ->
         row._parent = row.collection = @rows
 
     _isSelectQuestion: -> false
-    get_type: -> $skipLogicHelpers.question_types['default']
 
     initialize: ->
       grpDefaults = $configs.newGroupDetails

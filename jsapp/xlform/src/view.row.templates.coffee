@@ -17,12 +17,10 @@ module.exports = do ->
         <ul class="card__settings__tabs">
           <li class="heading"><i class="fa fa-cog"></i> #{_t("Settings")}</li>
           <li data-card-settings-tab-id="all" class="card__settings__tabs__tab--active">#{_t("All group settings")}</li>
-          <li data-card-settings-tab-id="skip-logic" class="">#{_t("Skip Logic")}</li>
         </ul>
         <div class="card__settings__content">
           <div class="card__settings__fields card__settings__fields--active card__settings__fields--all">
           </div>
-          <div class="card__settings__fields card__settings__fields--skip-logic"></div>
         </div>
       </section>
     """
@@ -33,20 +31,11 @@ module.exports = do ->
         <ul class="card__settings__tabs">
           <li class="heading"><i class="fa fa-cog"></i> #{_t("Settings")}</li>
           <li data-card-settings-tab-id="question-options" class="card__settings__tabs__tab--active">#{_t("Question Options")}</li>
-          <li data-card-settings-tab-id="skip-logic" class="">#{_t("Skip Logic")}</li>
-          <li data-card-settings-tab-id="validation-criteria" class="">#{_t("Validation Criteria")}</li>
           <li data-card-settings-tab-id="response-type" class="card__settings__tab--response-type">#{_t("Response Type")}</li>
         </ul>
         <div class="card__settings__content">
           <ul class="card__settings__fields card__settings__fields--active card__settings__fields--question-options">
           </ul>
-
-          <ul class="card__settings__fields card__settings__fields--skip-logic">
-          </ul>
-
-          <ul class="card__settings__fields card__settings__fields--validation-criteria">
-          </ul>
-
           <ul class="card__settings__fields card__settings__fields--response-type">
           </ul>
         </div>

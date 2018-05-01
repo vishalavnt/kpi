@@ -6,7 +6,6 @@ $viewUtils = require './view.utils'
 $icons = require './view.icons'
 $hxl = require './view.rowDetail.hxlDict'
 
-$viewRowDetailSkipLogic = require './view.rowDetail.SkipLogic'
 $viewTemplates = require './view.templates'
 _t = require('utils').t
 
@@ -166,58 +165,6 @@ module.exports = do ->
       viewRowDetail.Templates.textbox @cid, @model.key, _t("Question hint"), 'text'
     afterRender: ->
       @listenForInputChange()
-
-  viewRowDetail.DetailViewMixins.constraint_message =
-    html: ->
-      @$el.addClass("card__settings__fields--active")
-      viewRowDetail.Templates.textbox @cid, @model.key, _t("Error Message"), 'text'
-    insertInDOM: (rowView)->
-      @_insertInDOM rowView.cardSettingsWrap.find('.card__settings__fields--validation-criteria').eq(0)
-    afterRender: ->
-      @listenForInputChange()
-
-  viewRowDetail.DetailViewMixins.relevant =
-    html: ->
-      @$el.addClass("card__settings__fields--active")
-      """
-      <div class="card__settings__fields__field relevant__editor">
-      </div>
-      """
-
-    afterRender: ->
-      @$el.find(".relevant__editor").html("""
-        <div class="skiplogic__main"></div>
-        <p class="skiplogic__extras">
-        </p>
-      """)
-
-      @target_element = @$('.skiplogic__main')
-
-      @model.facade.render @target_element
-
-    insertInDOM: (rowView) ->
-      @_insertInDOM rowView.cardSettingsWrap.find('.card__settings__fields--skip-logic').eq(0)
-
-  viewRowDetail.DetailViewMixins.constraint =
-    html: ->
-      @$el.addClass("card__settings__fields--active")
-      """
-      <div class="card__settings__fields__field constraint__editor">
-      </div>
-      """
-    afterRender: ->
-      @$el.find(".constraint__editor").html("""
-        <div class="skiplogic__main"></div>
-        <p class="skiplogic__extras">
-        </p>
-      """)
-
-      @target_element = @$('.skiplogic__main')
-
-      @model.facade.render @target_element
-
-    insertInDOM: (rowView) ->
-      @_insertInDOM rowView.cardSettingsWrap.find('.card__settings__fields--validation-criteria')
 
   viewRowDetail.DetailViewMixins.name =
     html: ->

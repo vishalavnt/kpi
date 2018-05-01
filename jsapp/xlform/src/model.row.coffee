@@ -10,7 +10,6 @@ $surveyDetail = require './model.surveyDetail'
 $aliases = require './model.aliases'
 $rowDetail = require './model.rowDetail'
 $choices = require './model.choices'
-$skipLogicHelpers = require './mv.skipLogicHelpers'
 _t = require('utils').t
 
 module.exports = do ->
@@ -107,8 +106,6 @@ module.exports = do ->
     getTypeId: -> @get('type')
     linkUp: ->
     _isSelectQuestion: ()-> false
-    get_type: ->
-      $skipLogicHelpers.question_types[@getTypeId()] || $skipLogicHelpers.question_types['default']
     getValue: (which)-> @get(which)
 
   class RankRow extends SimpleRow
@@ -427,9 +424,6 @@ module.exports = do ->
         label = @getValue("label")
         @get("name").set("value", $utils.sluggifyLabel(label, names))
       @
-
-    get_type: ->
-      $skipLogicHelpers.question_types[@getTypeId()] || $skipLogicHelpers.question_types['default']
 
     _isSelectQuestion: ->
       # TODO [ald]: pull this from $aliases

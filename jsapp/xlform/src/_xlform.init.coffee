@@ -34,13 +34,10 @@ DAMAGE.
 
 $model = require './_model'
 $view = require './_view'
-$skipLogicHelpers = require './mv.skipLogicHelpers'
 
 module.exports = do ->
   XLF =
     model: $model
     view: $view
-    helper:
-      skipLogic: $skipLogicHelpers
 
   XLF
