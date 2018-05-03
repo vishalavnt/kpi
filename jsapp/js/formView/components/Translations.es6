@@ -2,7 +2,7 @@ import React from 'react';
 import Select from 'react-select';
 import autoBind from 'react-autobind';
 
-import { bemComponents } from 'js/libs/reactBemComponents';
+import bemComponents from 'js/libs/reactBemComponents';
 import { t } from 'js/utils';
 
 import { LANGUAGES } from 'js/static/languages';

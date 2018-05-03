@@ -92,7 +92,7 @@ const reactCreateBemElement = function(base, el='div'){
   return c;
 };
 
-export function bemComponents (obj) {
+export default function bemComponents (obj) {
   let keys = Object.keys(obj);
   return Object.freeze(keys.reduce(function(hsh, key){
     let val = obj[key];

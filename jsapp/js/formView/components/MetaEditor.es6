@@ -3,7 +3,7 @@ import ImmutablePureComponent from 'react-immutable-pure-component';
 import deepFreeze from 'deep-freeze';
 import autoBind from 'react-autobind';
 
-import {bemComponents} from 'js/libs/reactBemComponents';
+import bemComponents from 'js/libs/reactBemComponents';
 import {t} from 'js/utils';
 
 /*

@@ -1,8 +1,7 @@
 from copy import deepcopy
 import re
 
-from formpack.utils.replace_aliases import replace_aliases
-from formpack.utils.aliases import META_TYPES
+from formpack.utils.replace_aliases import replace_aliases, META_TYPES
 from formpack.utils.expand_content import expand_content, SCHEMA_VERSION
 from .random_id import random_id
 

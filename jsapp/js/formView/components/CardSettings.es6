@@ -4,7 +4,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 
-import { bemComponents } from 'js/libs/reactBemComponents';
+import bemComponents from 'js/libs/reactBemComponents';
 import { t } from 'js/utils';
 
 const bem = bemComponents({
