@@ -1,7 +1,7 @@
 import re
 from collections import OrderedDict
 
-from formpack.utils.aliases import META_TYPES, GEO_TYPES
+from formpack.utils.replace_aliases import META_TYPES, GEO_TYPES
 # from formpack.utils.replace_aliases import META_TYPES, GEO_TYPES
 
 MEDIA_TYPES = [
