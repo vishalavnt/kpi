@@ -1,5 +1,5 @@
 import React from 'react';
-import bemComponents from 'js/libs/reactBemComponents';
+import bemComponents from 'js/libs/bem-components';
 
 import RowCard from '../containers/RowCard';
 import GroupCard from '../containers/GroupCard';

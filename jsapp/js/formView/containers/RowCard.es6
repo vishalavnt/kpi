@@ -1,7 +1,7 @@
 import React from 'react';
 import autoBind from 'react-autobind';
 import { connect } from 'react-redux'
-import bemComponents from 'js/libs/reactBemComponents';
+import bemComponents from 'js/libs/bem-components';
 
 import TypeIcon from '../components/TypeIcon';
 import CardSettings from '../components/CardSettings';
