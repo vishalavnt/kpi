@@ -1,6 +1,6 @@
-Thanks for signing up with KoBoToolbox!
+Thanks for signing up with agrisk.insure!
 
-Confirming your account will give you full access to KoBoToolbox applications. Please visit the following url to finish activation of your new account.
+Confirming your account will give you full access to agrisk.insure applications. Please visit the following url to finish activation of your new account.
 
 {{user}}
 
@@ -9,4 +9,4 @@ Confirming your account will give you full access to KoBoToolbox applications. P
 Please visit http://support.kobotoolbox.org to find information on how to get started. There you can also post questions to the community (recommended) or to us directly.
 
 Best,
-KoBoToolbox
+agrisk.insure

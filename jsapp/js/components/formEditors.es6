@@ -254,7 +254,7 @@ export class ProjectSettings extends React.Component {
                   onChange={this.shareMetadataChange}
                 />
               <label htmlFor="share-metadata">
-                {t('Help KoboToolbox improve this product by sharing the sector and country where this project will be deployed.')}
+                {t('Help agrisk.insure improve this product by sharing the sector and country where this project will be deployed.')}
                 &nbsp;
                 {t('All the information is submitted anonymously, and will not include the project name or description listed above.')}
               </label>
@@ -588,7 +588,7 @@ export class ProjectDownloads extends React.Component {
     let dvcount = this.props.asset.deployed_versions.count;
     var docTitle = this.props.asset.name || t('Untitled');
     return (
-      <DocumentTitle title={`${docTitle} | KoboToolbox`}>
+      <DocumentTitle title={`${docTitle} | agrisk.insure`}>
         <bem.FormView m='form-data-downloads'>
           <bem.FormView__row>
               <bem.FormView__cell m='label'>

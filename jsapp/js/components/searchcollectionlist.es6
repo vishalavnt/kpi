@@ -191,7 +191,7 @@ class SearchCollectionList extends Reflux.Component {
       docTitle = t('Library');
     }
     return (
-      <DocumentTitle title={`${docTitle} | KoboToolbox`}>
+      <DocumentTitle title={`${docTitle} | agrisk.insure`}>
         <bem.List m={display} onScroll={this.handleScroll}>
           {
             (()=>{
