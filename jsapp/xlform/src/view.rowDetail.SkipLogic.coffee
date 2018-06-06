@@ -63,6 +63,7 @@ module.exports = do ->
     className: 'skiplogic__criterion'
 
     render: () ->
+      console.log('render criterion', @)
       @question_picker_view.render()
       if !@alreadyRendered
         @$el.append $("""<i class="skiplogic__deletecriterion fa fa-trash-o" data-criterion-id="#{@model.cid}"></i>""")
@@ -202,15 +203,22 @@ module.exports = do ->
         minimumResultsForSearch: -1
         data: do () =>
           operators = []
-          _.each @operators, (operator) ->
-            operators.push id: operator.id, text: operator.label + (if operator.id != 1 then ' (' + operator.symbol[operator.parser_name[0]] + ')' else '')
-            operators.push id: '-' + operator.id, text: operator.negated_label + (if operator.id != 1 then ' (' + operator.symbol[operator.parser_name[1]] + ')' else '')
+          _.each(@operators, (operator) ->
+            operators.push({
+              id: operator.id,
+              text: operator.label + (if operator.id != 1 then ' (' + operator.symbol[operator.parser_name[0]] + ')' else '')
+            })
+            operators.push({
+              id: '-' + operator.id,
+              text: operator.negated_label + (if operator.id != 1 then ' (' + operator.symbol[operator.parser_name[1]] + ')' else '')
+            })
+          )
 
-          operators
+          return operators
       })
 
       if @value
-        @val @value
+        @val(@value)
       else
         @value = @$el.select2('val')
 
@@ -279,18 +287,20 @@ module.exports = do ->
       @model.bind 'validated:invalid', @show_invalid_view
       @model.bind 'validated:valid', @clear_invalid_view
       @$input = @$el.find('input')
-      @
+      return @
+
     show_invalid_view: (model, errors) =>
       if @$input.val()
         @$el.addClass('textbox--invalid')
         @$error_message.html(errors.value)
         @$input.focus()
+
     clear_invalid_view: (model, errors) =>
       @$el.removeClass('textbox--invalid')
       @$error_message.html('')
 
     bind_event: (handler) ->
-      @$input.on 'change', handler
+      @$input.on('change', handler)
 
     val: (value) =>
       if value?

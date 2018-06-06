@@ -348,7 +348,7 @@ module.exports = do ->
 
     serialize: () ->
       serialized = _.map @presenters, (presenter) -> (presenter.serialize())
-      _.filter(serialized, (crit) -> crit).join(' ' + @view.criterion_delimiter + ' ')
+      return _.filter(serialized, (crit) -> crit).join(' ' + @view.criterion_delimiter + ' ')
 
     add_empty: () ->
       presenter = @builder.build_empty_criterion()
