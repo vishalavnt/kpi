@@ -70,39 +70,44 @@ module.exports = do ->
       return
 
     bind_question_picker: () ->
-      console.log('bind_question_picker', @$question_picker.val())
+      console.log('bind_question_picker', @$question_picker.val(), typeof @$question_picker.val())
       @mark_question_specified(Number(@$question_picker.val()) != -1)
 
       @$question_picker.on('change', (e) =>
-        @mark_question_specified(e.val != -1)
-        # @presenter.change_question @$question_picker.val()
-        # replaced with e.val because of select2
-        @presenter.change_question(e.val)
+        numValue = Number(e.val)
+
+        console.log('question_picker on change', numValue);
+
+        if numValue is -1
+          console.error('Changing question to -1 should not happen!')
+
+        @mark_question_specified(numValue isnt -1)
+        @presenter.change_question(numValue)
         return
       )
       return
 
     bind_operator_picker: () ->
-      @$operator_picker.on 'change', () =>
-        @operator_picker_view.value = @$operator_picker.select2 'val'
-        @presenter.change_operator @operator_picker_view.value
+      @$operator_picker.on('change', () =>
+        @operator_picker_view.value = @$operator_picker.select2('val')
+        @presenter.change_operator(@operator_picker_view.value)
         return
+      )
       return
 
     bind_response_value: () ->
       @response_value_view.bind_event(() =>
-        @presenter.change_response @response_value_view.val()
+        @presenter.change_response(@response_value_view.val())
         return
       )
       return
 
     response_value_handler: () ->
-      @presenter.change_response @response_value_view.val()
+      @presenter.change_response(@response_value_view.val())
       return
 
     change_operator: (@operator_picker_view) ->
       @operator_picker_view.render()
-
       @$operator_picker = @operator_picker_view.$el
       return
 
@@ -135,7 +140,12 @@ module.exports = do ->
       @attach_response()
       return super
 
-    constructor: (@question_picker_view, @operator_picker_view, @response_value_view, @presenter) ->
+    constructor: (
+      @question_picker_view,
+      @operator_picker_view,
+      @response_value_view,
+      @presenter
+    ) ->
       super()
       return
 
@@ -166,7 +176,8 @@ module.exports = do ->
   class viewRowDetailSkipLogic.OperatorPicker extends $viewWidgets.Base
     tagName: 'div'
     className: 'skiplogic__expressionselect'
-    render: () ->
+
+    render: ->
       return @
 
     attach_to: (target) ->
@@ -189,28 +200,36 @@ module.exports = do ->
       else
         @value = @$el.select2('val')
 
-      @$el.on 'select2-close', () => @_set_style()
+      @$el.on('select2-close', () => @_set_style())
 
     val: (value) ->
       if value?
-        @$el.select2 'val', value
+        @$el.select2('val', value)
         @_set_style()
-        @value = value
+        return @value = value
       else
         return @$el.val()
 
     _set_style: () -> #violates LSP
-      @$el.toggleClass 'skiplogic__expressionselect--no-response-value', +@$el.val() in [-1, 1]
-      absolute_value = if @$el.val() >= 0 then +@$el.val() else -@$el.val()
+      console.log('_set_style')
+      @$el.toggleClass('skiplogic__expressionselect--no-response-value', +@$el.val() in [-1, 1])
+
+      if @$el.val() >= 0
+        absolute_value = +@$el.val()
+      else
+        absolute_value = -@$el.val()
+
       if absolute_value == 0
         return
 
-      operator = _.find @operators, (operator) ->
-        operator.id == absolute_value
+      operator = _.find(@operators, (operator) ->
+        return operator.id == absolute_value
+      )
 
       abbreviated_label = operator['abbreviated_' + (if +@$el.val() < 0 then 'negated_' else '') + 'label']
       chosen_element = @$el.parents('.skiplogic__criterion').find('.select2-container.skiplogic__expressionselect .select2-chosen')
       chosen_element.text(abbreviated_label)
+      return
 
     constructor: (@operators) ->
       super()
@@ -294,8 +313,12 @@ module.exports = do ->
 
   class viewRowDetailSkipLogic.SkipLogicViewFactory
     constructor: (@survey) ->
+      return
+
     create_question_picker: (target_question) ->
+      console.log('create_question_picker', target_question)
       model = new $viewWidgets.DropDownModel()
+
       set_options = () =>
         options = _.map target_question.selectableRows(), (row) ->
           value: row.cid
@@ -308,12 +331,14 @@ module.exports = do ->
         model.set 'options', options
 
       set_options()
-      @survey.on 'sortablestop', set_options
+      @survey.on('sortablestop', set_options)
 
-      new viewRowDetailSkipLogic.QuestionPicker model
+      return new viewRowDetailSkipLogic.QuestionPicker(model)
+
     create_operator_picker: (question_type) ->
       operators = if question_type? then _.filter($skipLogicHelpers.operator_types, (op_type) -> op_type.id in question_type.operators) else []
-      new viewRowDetailSkipLogic.OperatorPicker operators
+      return new viewRowDetailSkipLogic.OperatorPicker(operators)
+
     create_response_value_view: (question, question_type, operator_type) ->
       if !question?
         type = 'empty'
@@ -323,25 +348,41 @@ module.exports = do ->
         type = question_type.response_type
 
       switch type
-        when 'empty' then new viewRowDetailSkipLogic.SkipLogicEmptyResponse()
-        when 'text' then new viewRowDetailSkipLogic.SkipLogicTextResponse
-        when 'dropdown' then new viewRowDetailSkipLogic.SkipLogicDropDownResponse question.getList().options
-        when 'integer', 'decimal' then new viewRowDetailSkipLogic.SkipLogicTextResponse
-        else null
-    create_criterion_view: (question_picker_view, operator_picker_view, response_value_view, presenter) ->
-      return new viewRowDetailSkipLogic.SkipLogicCriterion question_picker_view, operator_picker_view, response_value_view, presenter
-    create_criterion_builder_view: () ->
+        when 'empty' then return new viewRowDetailSkipLogic.SkipLogicEmptyResponse()
+        when 'text' then return new viewRowDetailSkipLogic.SkipLogicTextResponse()
+        when 'dropdown' then return new viewRowDetailSkipLogic.SkipLogicDropDownResponse(question.getList().options)
+        when 'integer', 'decimal' then return new viewRowDetailSkipLogic.SkipLogicTextResponse()
+        else return null
+
+    create_criterion_view: (
+      question_picker_view,
+      operator_picker_view,
+      response_value_view,
+      presenter
+    ) ->
+      return new viewRowDetailSkipLogic.SkipLogicCriterion(
+        question_picker_view,
+        operator_picker_view,
+        response_value_view,
+        presenter
+      )
+
+    create_criterion_builder_view: ->
       return new viewRowDetailSkipLogic.SkipLogicCriterionBuilderView()
+
     create_textarea: (text, className) ->
-      return new $viewWidgets.TextArea text, className
+      return new $viewWidgets.TextArea(text, className)
+
     create_button: (text, className) ->
-      return new $viewWidgets.Button text, className
+      return new $viewWidgets.Button(text, className)
+
     create_textbox: (text, className='', placeholder='') ->
-      return new $viewWidgets.TextBox text, className, placeholder
+      return new $viewWidgets.TextBox(text, className, placeholder)
+
     create_label: (text, className) ->
-      return new $viewWidgets.Label text, className
-    create_empty: () ->
+      return new $viewWidgets.Label(text, className)
+
+    create_empty: ->
       return new $viewWidgets.EmptyView()
 
-
-  viewRowDetailSkipLogic
+  return viewRowDetailSkipLogic

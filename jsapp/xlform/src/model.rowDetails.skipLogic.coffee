@@ -61,12 +61,6 @@ class rowDetailsSkipLogic.SkipLogicCriterion extends Backbone.Model
     old_question_type = @_get_question()?.get_type?() or { name: null }
     @set('question_cid', cid)
 
-    console.log('change_quesiton bug', cid, @_get_question())
-
-    # selected empty question → clear data and stop the function
-    if Number(cid) is -1
-      return
-
     # reset to first operator if previouse one not available in new question
     question_type = @_get_question().get_type()
     if @get('operator').get_id() not in question_type.operators
