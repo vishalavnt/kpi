@@ -169,7 +169,7 @@ module.exports = do ->
 
     render: (@destination) ->
       @view.question_picker_view.detach()
-      @view.question_picker_view = @view_factory.create_question_picker @current_question
+      @view.question_picker_view = @view_factory.create_question_picker(@current_question)
       @view.render()
       @view.question_picker_view.val @model.get('question_cid')
       @view.operator_picker_view.val @model.get('operator').get_value()
@@ -239,7 +239,7 @@ module.exports = do ->
         response_value_view
       )
       criterion_view.model = criterion_model
-      return @helper_factory.create_presenter criterion_model, criterion_view
+      return @helper_factory.create_presenter(criterion_model, criterion_view)
 
     build_criterion: () =>
       question = @_get_question()

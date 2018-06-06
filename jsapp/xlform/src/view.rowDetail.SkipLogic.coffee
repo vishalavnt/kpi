@@ -5,6 +5,8 @@ $viewWidgets = require './view.widgets'
 $skipLogicHelpers = require './mv.skipLogicHelpers'
 _t = require('utils').t
 
+PLACEHOLDER_VALUE = 'placeholderVal'
+
 module.exports = do ->
   viewRowDetailSkipLogic = {}
 
@@ -70,19 +72,17 @@ module.exports = do ->
       return
 
     bind_question_picker: () ->
-      console.log('bind_question_picker', @$question_picker.val(), typeof @$question_picker.val())
-      @mark_question_specified(Number(@$question_picker.val()) != -1)
+      console.log('bind_question_picker', @$question_picker.val())
+      @mark_question_specified(@$question_picker.val() isnt PLACEHOLDER_VALUE)
 
       @$question_picker.on('change', (e) =>
-        numValue = Number(e.val)
+        console.log('question_picker on change', e.val);
 
-        console.log('question_picker on change', numValue);
-
-        if numValue is -1
+        if e.val is PLACEHOLDER_VALUE
           console.error('Changing question to -1 should not happen!')
 
-        @mark_question_specified(numValue isnt -1)
-        @presenter.change_question(numValue)
+        @mark_question_specified(e.val isnt PLACEHOLDER_VALUE)
+        @presenter.change_question(e.val)
         return
       )
       return
@@ -160,6 +160,7 @@ module.exports = do ->
     render: () ->
       super()
       @$el.on('change', () =>
+        console.log('on change disable first', @$el.children(':first'))
         @$el.children(':first').prop('disabled', true)
         return
       )
@@ -211,22 +212,26 @@ module.exports = do ->
         return @$el.val()
 
     _set_style: () -> #violates LSP
-      console.log('_set_style')
-      @$el.toggleClass('skiplogic__expressionselect--no-response-value', +@$el.val() in [-1, 1])
+      numValue = Number(@$el.val())
 
-      if @$el.val() >= 0
-        absolute_value = +@$el.val()
-      else
-        absolute_value = -@$el.val()
+      console.log('_set_style', numValue)
 
-      if absolute_value == 0
+      @$el.toggleClass('skiplogic__expressionselect--no-response-value', numValue in [-1, 1])
+
+      absolute_value = Math.abs(numValue)
+
+      if absolute_value is 0
         return
 
       operator = _.find(@operators, (operator) ->
         return operator.id == absolute_value
       )
 
-      abbreviated_label = operator['abbreviated_' + (if +@$el.val() < 0 then 'negated_' else '') + 'label']
+      if numValue < 0
+        abbreviated_label = operator['abbreviated_negated_label']
+      else
+        abbreviated_label = operator['abbreviated_label']
+
       chosen_element = @$el.parents('.skiplogic__criterion').find('.select2-container.skiplogic__expressionselect .select2-chosen')
       chosen_element.text(abbreviated_label)
       return
@@ -320,15 +325,23 @@ module.exports = do ->
       model = new $viewWidgets.DropDownModel()
 
       set_options = () =>
-        options = _.map target_question.selectableRows(), (row) ->
-          value: row.cid
-          text: row.getValue("label")
+        options = _.map(target_question.selectableRows(), (row) ->
+          return {
+            value: row.cid
+            text: row.getValue("label")
+          }
+        )
 
+        # add placeholder message/option
         options.unshift({
-          value: -1,
+          disabled: true
+          value: PLACEHOLDER_VALUE
           text: _t('Select question from list')
         })
-        model.set 'options', options
+
+        console.log('set_options', options)
+
+        model.set('options', options)
 
       set_options()
       @survey.on('sortablestop', set_options)

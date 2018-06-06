@@ -79,23 +79,40 @@ module.exports = do ->
 
   class viewWidgets.DropDown extends viewWidgets.Base
     tagName: 'select'
+
     constructor: (@options) ->
       super
       _options = @options
+
+      console.log('viewWidgets.DropDown options', _options)
+
       if !(@options instanceof viewWidgets.DropDownModel)
         @options = new viewWidgets.DropDownModel()
-        @options.set 'options', _options
-      @options.on 'change:options', @render.bind(@)
+        @options.set('options', _options)
+
+      @options.on('change:options', () =>
+        console.log('on change:options')
+        @render.bind(@)
+      )
+
     render: () =>
       options_html = ''
-      _.each @options.get('options'), (option) ->
-        options_html += '<option value="' + option.value + '">' + option.text + '</option>'
+      console.log('render options', @options.get('options'))
+      _.each(@options.get('options'), (option) ->
+        additionalAttrs = ''
+        if option.disabled
+          additionalAttrs = 'disabled'
 
-      @$el.html options_html
-      @
+        options_html += "<option value=\"#{option.value}\" #{additionalAttrs}>#{option.text}</option>"
+        return
+      )
+      console.log('render viewWidgets.DropDown', options_html)
+
+      @$el.html(options_html)
+      return @
 
     attach_to: (target) ->
       super(target)
       @$el.select2({ minimumResultsForSearch: -1 })
 
-  viewWidgets
+  return viewWidgets
