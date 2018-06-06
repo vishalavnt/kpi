@@ -70,10 +70,11 @@ module.exports = do ->
       return
 
     bind_question_picker: () ->
+      console.log('bind_question_picker', @$question_picker.val())
       @mark_question_specified(Number(@$question_picker.val()) != -1)
 
-        @mark_question_specified true
       @$question_picker.on('change', (e) =>
+        @mark_question_specified(e.val != -1)
         # @presenter.change_question @$question_picker.val()
         # replaced with e.val because of select2
         @presenter.change_question(e.val)

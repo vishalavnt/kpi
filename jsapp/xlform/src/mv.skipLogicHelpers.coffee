@@ -64,6 +64,10 @@ module.exports = do ->
       if @survey
         update_choice_list = (cid) =>
           question = @model._get_question()
+
+          console.log('update_choice_list bug', question)
+          # BUG?
+
           if question._isSelectQuestion() && question.getList().cid == cid
 
             current_response_value = @model.get('response_value').get('cid')
