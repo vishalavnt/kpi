@@ -45,15 +45,18 @@ module.exports = do ->
 
     addCriterion: (evt) =>
       @facade.add_empty()
+      return
 
     deleteCriterion: (evt) ->
       $target = $(evt.target)
       modelId = $target.data("criterionId")
       @facade.remove modelId
       $target.parent().remove()
+      return
 
     markChangedDelimSelector: (evt) ->
       @criterion_delimiter = evt.target.value
+      return
 
   class viewRowDetailSkipLogic.SkipLogicCriterion extends $viewWidgets.Base
     tagName: 'div'
@@ -64,11 +67,9 @@ module.exports = do ->
       if !@alreadyRendered
         @$el.append $("""<i class="skiplogic__deletecriterion fa fa-trash-o" data-criterion-id="#{@model.cid}"></i>""")
 
-      @change_operator @operator_picker_view
-      @change_response @response_value_view
-
+      @change_operator(@operator_picker_view)
+      @change_response(@response_value_view)
       @alreadyRendered = true
-
       return @
 
     mark_question_specified: (is_specified=false) ->
@@ -76,14 +77,15 @@ module.exports = do ->
       return
 
     bind_question_picker: () ->
-      console.log('bind_question_picker', @$question_picker.val())
-      @mark_question_specified(@$question_picker.val() isnt PLACEHOLDER_VALUE)
+      questionVal = @$question_picker.val()
+
+      if questionVal isnt PLACEHOLDER_VALUE
+        @mark_question_specified(true)
+        @question_picker_view.disable_placeholder_option()
 
       @$question_picker.on('change', (e) =>
-        console.log('question_picker on change', e.val);
-
         if e.val is PLACEHOLDER_VALUE
-          console.error('Changing question to -1 should not happen!')
+          console.error("Changing question to #{PLACEHOLDER_VALUE} should not happen!")
 
         @mark_question_specified(e.val isnt PLACEHOLDER_VALUE)
         @presenter.change_question(e.val)
@@ -163,12 +165,19 @@ module.exports = do ->
 
     render: () ->
       super()
-      @$el.on('change', () =>
-        console.log('on change disable first', @$el.children(':first'))
-        @$el.children(':first').prop('disabled', true)
-        return
-      )
+
+      # HACK disable placeholder option on load and after change
+      if @$el.val() isnt PLACEHOLDER_VALUE
+        @disable_placeholder_option()
+      @$el.on('change', @disable_placeholder_option.bind(@))
+
       return @
+
+    disable_placeholder_option: ->
+      $firstChild = @$el.children(':first')
+      if $firstChild.val() is PLACEHOLDER_VALUE
+        $firstChild.prop('disabled', true)
+      return
 
     attach_to: (target) ->
       target.find('.skiplogic__rowselect').remove()
@@ -217,8 +226,6 @@ module.exports = do ->
 
     _set_style: () -> #violates LSP
       numValue = Number(@$el.val())
-
-      console.log('_set_style', numValue)
 
       @$el.toggleClass('skiplogic__expressionselect--no-response-value', numValue in [-1, 1])
 
@@ -325,7 +332,6 @@ module.exports = do ->
       return
 
     create_question_picker: (target_question) ->
-      console.log('create_question_picker', target_question)
       model = new $viewWidgets.DropDownModel()
 
       set_options = () =>
@@ -338,12 +344,9 @@ module.exports = do ->
 
         # add placeholder message/option
         options.unshift({
-          disabled: true
           value: PLACEHOLDER_VALUE
           text: _t('Select question from list')
         })
-
-        console.log('set_options', options)
 
         model.set('options', options)
 

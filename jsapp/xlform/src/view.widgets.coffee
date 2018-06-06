@@ -81,32 +81,22 @@ module.exports = do ->
     tagName: 'select'
 
     constructor: (@options) ->
-      super
+      super()
       _options = @options
-
-      console.log('viewWidgets.DropDown options', _options)
 
       if !(@options instanceof viewWidgets.DropDownModel)
         @options = new viewWidgets.DropDownModel()
         @options.set('options', _options)
 
-      @options.on('change:options', () =>
-        console.log('on change:options')
-        @render.bind(@)
-      )
+      @options.on('change:options', @render.bind(@))
+      return
 
     render: () =>
       options_html = ''
-      console.log('render options', @options.get('options'))
       _.each(@options.get('options'), (option) ->
-        additionalAttrs = ''
-        if option.disabled
-          additionalAttrs = 'disabled'
-
-        options_html += "<option value=\"#{option.value}\" #{additionalAttrs}>#{option.text}</option>"
+        options_html += "<option value=\"#{option.value}\">#{option.text}</option>"
         return
       )
-      console.log('render viewWidgets.DropDown', options_html)
 
       @$el.html(options_html)
       return @

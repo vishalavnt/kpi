@@ -100,10 +100,7 @@ module.exports = do ->
       return
 
     change_question: (question_name) ->
-      console.log('AAA change_question 1', question_name, @model)
       @model.change_question(question_name)
-
-      console.log('AAA change_question 2', question_name, @model._get_question())
 
       @question = @model._get_question()
       question_type = @question.get_type()
@@ -201,7 +198,7 @@ module.exports = do ->
           )
         , (item) -> !!item)
         if criteria.length == 0
-          criteria.push @build_empty_criterion()
+          criteria.push(@build_empty_criterion())
 
       catch e
         Raven?.captureException new Error('could not parse skip logic. falling back to hand-coded'), extra:
@@ -264,14 +261,15 @@ module.exports = do ->
       response_value_view.val(response_value)
 
       return presenter
+
     _get_question: () ->
-      @survey.findRowByName @criterion.name
+      return @survey.findRowByName(@criterion.name)
 
     build_empty_criterion: () =>
-      operator_picker_view = @view_factory.create_operator_picker null
-      response_value_view = @view_factory.create_response_value_view null
+      operator_picker_view = @view_factory.create_operator_picker(null)
+      response_value_view = @view_factory.create_response_value_view(null)
 
-      return @build_criterion_logic @model_factory.create_operator('empty'), operator_picker_view, response_value_view
+      return @build_criterion_logic(@model_factory.create_operator('empty'), operator_picker_view, response_value_view)
 
     questions: () ->
       @selectable = @current_question.selectableRows() || @selectable
@@ -286,10 +284,12 @@ module.exports = do ->
     render: (@destination) ->
       if @destination?
         @destination.empty()
-        @state.render @destination
+        @state.render(@destination)
       return
+
     serialize: () ->
       return @state.serialize()
+
     use_criterion_builder_helper: () ->
       @builder ?= @helper_factory.create_builder()
       presenters = @builder.build_criterion_builder(@state.serialize())
@@ -298,17 +298,20 @@ module.exports = do ->
         @state = null
       else
         @state = new skipLogicHelpers.SkipLogicCriterionBuilderHelper(presenters[0], presenters[1], @builder, @view_factory, @)
-        @render @destination
+        @render(@destination)
       return
+
     use_hand_code_helper: () ->
       @state = new skipLogicHelpers.SkipLogicHandCodeHelper(@state.serialize(), @builder, @view_factory, @)
-      @render @destination
+      @render(@destination)
       return
+
     use_mode_selector_helper : () ->
       @helper_factory.survey.off null, null, @state
       @state = new skipLogicHelpers.SkipLogicModeSelectorHelper(@view_factory, @)
-      @render @destination
+      @render(@destination)
       return
+
     constructor: (@model_factory, @view_factory, @helper_factory, serialized_criteria) ->
       @state = serialize: () -> return serialized_criteria
       if !serialized_criteria? || serialized_criteria == ''
@@ -320,6 +323,7 @@ module.exports = do ->
       if !@state?
         @state = serialize: () -> return serialized_criteria
         @use_hand_code_helper()
+      return
 
   class skipLogicHelpers.SkipLogicCriterionBuilderHelper
     determine_criterion_delimiter_visibility: ->
