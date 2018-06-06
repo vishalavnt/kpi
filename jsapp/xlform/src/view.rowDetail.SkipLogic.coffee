@@ -52,8 +52,8 @@ module.exports = do ->
   class viewRowDetailSkipLogic.SkipLogicCriterion extends $viewWidgets.Base
     tagName: 'div'
     className: 'skiplogic__criterion'
-    render: () ->
 
+    render: () ->
       @question_picker_view.render()
       if !@alreadyRendered
         @$el.append $("""<i class="skiplogic__deletecriterion fa fa-trash-o" data-criterion-id="#{@model.cid}"></i>""")
@@ -63,36 +63,47 @@ module.exports = do ->
 
       @alreadyRendered = true
 
-      @
+      return @
 
     mark_question_specified: (is_specified=false) ->
       @$el.toggleClass("skiplogic__criterion--unspecified-question", not is_specified)
+      return
 
     bind_question_picker: () ->
-      @mark_question_specified +@$question_picker.val() != -1
+      @mark_question_specified(Number(@$question_picker.val()) != -1)
 
-      @$question_picker.on 'change', (e) =>
         @mark_question_specified true
+      @$question_picker.on('change', (e) =>
         # @presenter.change_question @$question_picker.val()
         # replaced with e.val because of select2
-        @presenter.change_question e.val
+        @presenter.change_question(e.val)
+        return
+      )
+      return
 
     bind_operator_picker: () ->
       @$operator_picker.on 'change', () =>
         @operator_picker_view.value = @$operator_picker.select2 'val'
         @presenter.change_operator @operator_picker_view.value
+        return
+      return
 
     bind_response_value: () ->
-      @response_value_view.bind_event () =>
+      @response_value_view.bind_event(() =>
         @presenter.change_response @response_value_view.val()
+        return
+      )
+      return
 
     response_value_handler: () ->
       @presenter.change_response @response_value_view.val()
+      return
 
     change_operator: (@operator_picker_view) ->
       @operator_picker_view.render()
 
       @$operator_picker = @operator_picker_view.$el
+      return
 
     change_response: (response_value_view) ->
       @response_value_view.detach()
@@ -100,10 +111,12 @@ module.exports = do ->
       @response_value_view.render()
 
       @$response_value = @response_value_view.$el
+      return
 
     attach_operator: () ->
-      @operator_picker_view.attach_to @$el
+      @operator_picker_view.attach_to(@$el)
       @bind_operator_picker()
+      return
 
     attach_response: () ->
       if @$('.skiplogic__responseval-wrapper').length > 0
@@ -111,17 +124,19 @@ module.exports = do ->
 
       @response_value_view.attach_to(@$el)
       @bind_response_value()
+      return
 
     attach_to: (element) ->
-      @question_picker_view.attach_to @$el
+      @question_picker_view.attach_to(@$el)
       @$question_picker = @question_picker_view.$el
       @bind_question_picker()
       @attach_operator()
       @attach_response()
-      super
+      return super
 
     constructor: (@question_picker_view, @operator_picker_view, @response_value_view, @presenter) ->
       super()
+      return
 
   ###----------------------------------------------------------------------------------------------------------###
   #-- View.RowDetail.SkipLogic.QuestionPickerView.coffee
@@ -132,14 +147,16 @@ module.exports = do ->
     className: 'skiplogic__rowselect'
 
     render: () ->
-      super
-      @$el.on 'change', () =>
+      super()
+      @$el.on('change', () =>
         @$el.children(':first').prop('disabled', true)
-      @
+        return
+      )
+      return @
 
     attach_to: (target) ->
       target.find('.skiplogic__rowselect').remove()
-      super(target)
+      return super(target)
 
   ###----------------------------------------------------------------------------------------------------------###
   #-- View.RowDetail.SkipLogic.OperatorPickerView.coffee
@@ -149,7 +166,7 @@ module.exports = do ->
     tagName: 'div'
     className: 'skiplogic__expressionselect'
     render: () ->
-      @
+      return @
 
     attach_to: (target) ->
       target.find('.skiplogic__expressionselect').remove()
@@ -283,7 +300,10 @@ module.exports = do ->
           value: row.cid
           text: row.getValue("label")
 
-        options.unshift value: -1, text: _t('Select question from list')
+        options.unshift({
+          value: -1,
+          text: _t('Select question from list')
+        })
         model.set 'options', options
 
       set_options()

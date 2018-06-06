@@ -13,12 +13,31 @@ module.exports = do ->
 
   class skipLogicHelpers.SkipLogicHelperFactory
     constructor: (@model_factory, @view_factory, @survey, @current_question, @serialized_criteria) ->
+      return
+
     create_presenter: (criterion_model, criterion_view) ->
-      return new skipLogicHelpers.SkipLogicPresenter criterion_model, criterion_view, @current_question, @survey, @view_factory
+      return new skipLogicHelpers.SkipLogicPresenter(
+        criterion_model,
+        criterion_view,
+        @current_question,
+        @survey,
+        @view_factory
+      )
     create_builder: () ->
-      return new skipLogicHelpers.SkipLogicBuilder @model_factory, @view_factory, @survey, @current_question, @
+      return new skipLogicHelpers.SkipLogicBuilder(
+        @model_factory,
+        @view_factory,
+        @survey,
+        @current_question,
+        @
+      )
     create_context: () ->
-      return new skipLogicHelpers.SkipLogicHelperContext @model_factory, @view_factory, @, @serialized_criteria
+      return new skipLogicHelpers.SkipLogicHelperContext(
+        @model_factory,
+        @view_factory,
+        @,
+        @serialized_criteria
+      )
 
   ###----------------------------------------------------------------------------------------------------------###
   #-- Facades.RowDetail.coffee
@@ -63,44 +82,53 @@ module.exports = do ->
               @view.response_value_view.$el.trigger('change')
               @model.change_response current_response_value
 
-        @survey.on 'choice-list-update', update_choice_list, @
+        @survey.on('choice-list-update', update_choice_list, @)
 
-        @survey.on 'remove-option', update_choice_list, @
+        @survey.on('remove-option', update_choice_list, @)
 
-        @survey.on 'row-detail-change', (row, key) =>
+        @survey.on('row-detail-change', (row, key) =>
           if @destination
             if key == 'label'
               @render(@destination)
-        , @
+        , @)
       else
         console.error "this.survey is not yet available"
+      return
 
     change_question: (question_name) ->
-      @model.change_question question_name
+      console.log('AAA change_question 1', question_name, @model)
+      @model.change_question(question_name)
+
+      console.log('AAA change_question 2', question_name, @model._get_question())
 
       @question = @model._get_question()
       question_type = @question.get_type()
-      @question.on 'remove', () =>
-        @dispatcher.trigger 'remove:presenter', @model.cid
+      @question.on('remove', () =>
+        @dispatcher.trigger('remove:presenter', @model.cid)
+        return
+      )
 
-      @view.change_operator @view_factory.create_operator_picker question_type
-      @view.operator_picker_view.val @model.get('operator').get_value()
+      @view.change_operator(@view_factory.create_operator_picker(question_type))
+      @view.operator_picker_view.val(@model.get('operator').get_value())
       @view.attach_operator()
 
       @change_response_view question_type, @model.get('operator').get_type()
 
       @finish_changing()
+      return
 
     change_operator: (operator_id) ->
       @model.change_operator operator_id
 
-      @change_response_view @model._get_question().get_type(), @model.get('operator').get_type()
+      @change_response_view(@model._get_question().get_type(), @model.get('operator').get_type())
 
       @finish_changing()
+      return
 
     change_response: (response_text) ->
       @model.change_response response_text
       @finish_changing()
+      return
 
     change_response_view: (question_type, operator_type) ->
       response_view = @view_factory.create_response_value_view @model._get_question(), question_type, operator_type
@@ -121,9 +149,9 @@ module.exports = do ->
       @view.response_value_view.val response_value
       response_view.$el.trigger('change')
 
-
     finish_changing: () ->
-      @dispatcher.trigger 'changed:model', @
+      @dispatcher.trigger('changed:model', @)
+      return
 
     is_valid: () ->
       if !@model._get_question()

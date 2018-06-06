@@ -20,11 +20,21 @@ module.exports = do ->
     postInitialize: ()->
       # TODO: get skip logic factories connected
       survey = @getSurvey()
-      model_factory = new $modelRowDetailsSkipLogic.SkipLogicFactory survey
-      view_factory = new $viewRowDetailSkipLogic.SkipLogicViewFactory survey
-      helper_factory = new $skipLogicHelpers.SkipLogicHelperFactory model_factory, view_factory, survey, @_parent, @.get('value')
+      model_factory = new $modelRowDetailsSkipLogic.SkipLogicFactory(survey)
+      view_factory = new $viewRowDetailSkipLogic.SkipLogicViewFactory(survey)
+      helper_factory = new $skipLogicHelpers.SkipLogicHelperFactory(
+        model_factory,
+        view_factory,
+        survey,
+        @_parent,
+        @.get('value')
+      )
 
-      @facade = new $skipLogicHelpers.SkipLogicPresentationFacade model_factory, helper_factory, view_factory
+      @facade = new $skipLogicHelpers.SkipLogicPresentationFacade(
+        model_factory,
+        helper_factory,
+        view_factory
+      )
 
     serialize: ()->
       # @hidden = false

@@ -13,24 +13,29 @@ rowDetailsSkipLogic = {}
 class rowDetailsSkipLogic.SkipLogicFactory
   create_operator: (type, symbol, id) ->
     switch type
-      when 'text' then operator = new rowDetailsSkipLogic.TextOperator symbol
-      when 'date' then operator = new rowDetailsSkipLogic.DateOperator symbol
-      when 'basic' then operator = new rowDetailsSkipLogic.SkipLogicOperator symbol
-      when 'existence' then operator = new rowDetailsSkipLogic.ExistenceSkipLogicOperator symbol
-      when 'select_multiple' then operator = new rowDetailsSkipLogic.SelectMultipleSkipLogicOperator symbol
+      when 'text' then operator = new rowDetailsSkipLogic.TextOperator(symbol)
+      when 'date' then operator = new rowDetailsSkipLogic.DateOperator(symbol)
+      when 'basic' then operator = new rowDetailsSkipLogic.SkipLogicOperator(symbol)
+      when 'existence' then operator = new rowDetailsSkipLogic.ExistenceSkipLogicOperator(symbol)
+      when 'select_multiple' then operator = new rowDetailsSkipLogic.SelectMultipleSkipLogicOperator(symbol)
       when 'empty' then return new rowDetailsSkipLogic.EmptyOperator()
-    operator.set 'id', id
-    operator
+    operator.set('id', id)
+    return operator
+
   create_criterion_model: () ->
-    new rowDetailsSkipLogic.SkipLogicCriterion(@, @survey)
+    return new rowDetailsSkipLogic.SkipLogicCriterion(@, @survey)
+
   create_response_model: (type) ->
     model = null
     switch type
-      when 'integer' then model = new rowDetailsSkipLogic.IntegerResponseModel
-      when 'decimal' then model = new rowDetailsSkipLogic.DecimalResponseModel
+      when 'integer' then model = new rowDetailsSkipLogic.IntegerResponseModel()
+      when 'decimal' then model = new rowDetailsSkipLogic.DecimalResponseModel()
       else model = new rowDetailsSkipLogic.ResponseModel(type)
-    model.set 'type', type
+    model.set('type', type)
+    return model
+
   constructor: (@survey) ->
+    return
 
 class rowDetailsSkipLogic.SkipLogicCriterion extends Backbone.Model
   serialize: () ->
@@ -42,9 +47,9 @@ class rowDetailsSkipLogic.SkipLogicCriterion extends Backbone.Model
       return @get('operator').serialize(questionName, response_model.get('value'))
     else
       return ''
-  _get_question: () ->
-    @survey.findRowByCid(this.get('question_cid'), { includeGroups: true })
 
+  _get_question: () ->
+    return @survey.findRowByCid(this.get('question_cid'), { includeGroups: true })
 
   change_question: (cid) ->
     # old_question_type = this._get_question()?.get_type() or { name: null }
@@ -55,15 +60,28 @@ class rowDetailsSkipLogic.SkipLogicCriterion extends Backbone.Model
     # old_question_type = (if `this._get_question()` then this._get_question().get_type()) or { name: null }
     old_question_type = @_get_question()?.get_type?() or { name: null }
     @set('question_cid', cid)
+
+
+    # reset to first operator if previouse one not available in new question
     question_type = @_get_question().get_type()
-
     if @get('operator').get_id() not in question_type.operators
-      @change_operator question_type.operators[0]
+      @change_operator(question_type.operators[0])
     else if old_question_type.name != question_type.name
-      @change_operator @get('operator').get_value()
+      @change_operator(@get('operator').get_value())
 
-    if !@get('operator').get_type().response_type? && @_get_question().response_type != @get('response_value')?.get_type()
-      return `this.change_response((response_model = this.get('response_value')) != null ? this._get_question()._isSelectQuestion() ? response_model.get('cid') : response_model.get('value') : '')`
+    if (
+      !@get('operator').get_type().response_type? &&
+      @_get_question().response_type != @get('response_value')?.get_type()
+    )
+      response_model = @get('response_value')
+      if response_model is null
+        @change_response('')
+      else if @_get_question()._isSelectQuestion()
+        @change_response(response_model.get('cid'))
+      else
+        @change_response(response_model.get('value'))
+    return
+
   change_operator: (operator) ->
     operator = +operator
     is_negated = false
@@ -89,6 +107,7 @@ class rowDetailsSkipLogic.SkipLogicCriterion extends Backbone.Model
       # +           this._get_question()._isSelectQuestion() ? _ref1.get('cid') : _ref1.get('value')
       # +             : void 0) || '');
       @change_response @get('response_value')?.get(if @_get_question()._isSelectQuestion() then 'cid' else 'value') or ''
+
   get_correct_type: () ->
     @get('operator').get_type().response_type || @_get_question().get_type().response_type
 
@@ -129,6 +148,7 @@ class rowDetailsSkipLogic.SkipLogicCriterion extends Backbone.Model
         response_model.set_value choices[0].cid
     else
       response_model.set_value(value)
+
   constructor: (@factory, @survey) ->
     super()
 
