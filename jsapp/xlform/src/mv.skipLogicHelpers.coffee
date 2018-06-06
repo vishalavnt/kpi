@@ -322,13 +322,15 @@ module.exports = do ->
         @use_hand_code_helper()
 
   class skipLogicHelpers.SkipLogicCriterionBuilderHelper
-    determine_criterion_delimiter_visibility: () ->
+    determine_criterion_delimiter_visibility: ->
       if @presenters.length < 2
         @$criterion_delimiter.hide()
       else
         @$criterion_delimiter.show()
+      return
+
     render: (destination) ->
-      @view.render().attach_to destination
+      @view.render().attach_to(destination)
       @$criterion_delimiter = @view.$(".skiplogic__delimselect")
       @$add_new_criterion_button = @view.$('.skiplogic__addcriterion')
 
@@ -336,33 +338,38 @@ module.exports = do ->
 
       @destination = @view.$('.skiplogic__criterialist')
 
-      _.each @presenters, (presenter) =>
-        presenter.render @destination
+      _.each(@presenters, (presenter) =>
+        presenter.render(@destination)
+      )
 
     serialize: () ->
-      serialized = _.map @presenters, (presenter) ->
-        presenter.serialize()
+      serialized = _.map @presenters, (presenter) -> (presenter.serialize())
       _.filter(serialized, (crit) -> crit).join(' ' + @view.criterion_delimiter + ' ')
+
     add_empty: () ->
       presenter = @builder.build_empty_criterion()
       presenter.dispatcher = @dispatcher
-      presenter.serialize_all = _.bind @serialize, @
-      @presenters.push presenter
-      presenter.render @destination
+      presenter.serialize_all = _.bind(@serialize, @)
+      @presenters.push(presenter)
+      presenter.render(@destination)
       @determine_criterion_delimiter_visibility()
+      return
+
     remove: (id) ->
-      _.each @presenters, (presenter, index) =>
+      _.each(@presenters, (presenter, index) =>
         if presenter? && presenter.model.cid == id
           presenter = @presenters.splice(index, 1)[0]
           presenter.view.$el.remove()
           @builder.survey.off null, null, presenter
           @determine_add_new_criterion_visibility()
+      )
 
       if @presenters.length == 0
         @context.use_mode_selector_helper()
+      return
 
     determine_add_new_criterion_visibility: () ->
-      if @all_presenters_are_valid()
+      if @are_all_presenters_valid()
         action = 'show()'
         @$add_new_criterion_button?.show()
       else
@@ -371,48 +378,51 @@ module.exports = do ->
 
       if !@$add_new_criterion_button
         Raven?.captureException("@$add_new_criterion_button is not defined. cannot call #{action} [inside of determine_add_new_criterion_visibility]")
+      return
 
     constructor: (@presenters, separator, @builder, @view_factory, @context) ->
       @view = @view_factory.create_criterion_builder_view()
       @view.criterion_delimiter = (separator || 'and').toLowerCase()
       @view.facade = @
-      @dispatcher = _.clone Backbone.Events
-      @dispatcher.on 'remove:presenter', (cid) =>
-        @remove cid
-
-
-      @dispatcher.on 'changed:model', (presenter) =>
+      @dispatcher = _.clone(Backbone.Events)
+      @dispatcher.on('remove:presenter', (cid) =>
+        @remove(cid)
+      )
+      @dispatcher.on('changed:model', (presenter) =>
         @determine_add_new_criterion_visibility()
-
-      @dispatcher.on 'rendered', (presenter) =>
+      )
+      @dispatcher.on('rendered', (presenter) =>
         @determine_add_new_criterion_visibility()
+      )
 
-      removeInvalidPresenters = () =>
+      removeInvalidPresenters = =>
         questions = @builder.questions()
         presenters_to_be_removed = []
-        _.each @presenters, (presenter) ->
+        _.each(@presenters, (presenter) ->
           if presenter.model._get_question() && !(presenter.model._get_question() in questions)
-            presenters_to_be_removed.push presenter.model.cid
+            presenters_to_be_removed.push(presenter.model.cid)
+        )
 
         for presenter in presenters_to_be_removed
-          @remove presenter
+          @remove(presenter)
 
         if @presenters.length == 0
           @context.use_mode_selector_helper()
 
-      @builder.survey.on 'sortablestop', removeInvalidPresenters, @
+      @builder.survey.on('sortablestop', removeInvalidPresenters, @)
 
       removeInvalidPresenters()
 
-      _.each @presenters, (presenter) =>
+      _.each(@presenters, (presenter) =>
         presenter.dispatcher = @dispatcher
-        presenter.serialize_all = _.bind @serialize, @
+        presenter.serialize_all = _.bind(@serialize, @)
+      )
 
-    all_presenters_are_valid: () ->
-        return !_.find @presenters, (presenter) -> !presenter.is_valid()
+    are_all_presenters_valid: ->
+      return !_.find(@presenters, (presenter) -> !presenter.is_valid())
 
-    switch_editing_mode: () ->
-      @builder.build_hand_code_criteria @serialize()
+    switch_editing_mode: ->
+      @builder.build_hand_code_criteria(@serialize())
 
   class skipLogicHelpers.SkipLogicHandCodeHelper
     render: ($destination) ->
@@ -420,8 +430,10 @@ module.exports = do ->
       @textarea.render().attach_to @$parent
       @button.render().attach_to @$parent
       @button.bind_event 'click', () => @context.use_mode_selector_helper()
+
     serialize: () ->
       @textarea.$el.val() || @criteria
+
     constructor: (@criteria, @builder, @view_factory, @context) ->
       @$parent = $('<div>')
       @textarea = @view_factory.create_textarea @criteria, 'skiplogic__handcode-edit'
@@ -439,25 +451,29 @@ module.exports = do ->
 
     serialize: () ->
       return ''
+
     constructor: (view_factory, @context) ->
       @criterion_builder_button = view_factory.create_button '<i class="fa fa-plus"></i> ' + _t("Add a condition"), 'skiplogic__button skiplogic__select-builder'
       @handcode_button = view_factory.create_button '<i>${}</i> ' + _t("Manually enter your skip logic in XLSForm code"), 'skiplogic__button skiplogic__select-handcode'
       ###@view = @view_factory.create_skip_logic_picker_view(context)###
+
     switch_editing_mode: () -> return
 
-  operators =
+  operators = {
     EXISTENCE: 1
     EQUALITY: 2
     GREATER_THAN: 3
     GREATER_THAN_EQ: 4
-  ops =
+  }
+  ops = {
     EX: operators.EXISTENCE
     EQ: operators.EQUALITY
     GT: operators.GREATER_THAN
     GE: operators.GREATER_THAN_EQ
+  }
 
-  skipLogicHelpers.question_types =
-    default:
+  skipLogicHelpers.question_types = {
+    default: {
       operators: [
         ops.EX #1
         ops.EQ #2
@@ -465,7 +481,8 @@ module.exports = do ->
       equality_operator_type: 'text'
       response_type: 'text'
       name: 'default'
-    select_one:
+    }
+    select_one: {
       operators: [
         ops.EQ #2
         ops.EX #1
@@ -473,7 +490,8 @@ module.exports = do ->
       equality_operator_type: 'text'
       response_type: 'dropdown'
       name: 'select_one'
-    select_multiple:
+    }
+    select_multiple: {
       operators: [
         ops.EQ #2
         ops.EX #1
@@ -481,7 +499,8 @@ module.exports = do ->
       equality_operator_type: 'select_multiple'
       response_type: 'dropdown'
       name: 'select_multiple'
-    integer:
+    }
+    integer: {
       operators: [
         ops.GT #3
         ops.EX #1
@@ -491,6 +510,7 @@ module.exports = do ->
       equality_operator_type: 'basic'
       response_type: 'integer'
       name: 'integer'
+    }
 
     # rank:
     #   operators: [
@@ -526,7 +546,7 @@ module.exports = do ->
     #   response_type: 'dropdown'
     #   name: 'score_row'
 
-    barcode:
+    barcode: {
       operators: [
         ops.GT #3
         ops.EX #1
@@ -536,7 +556,8 @@ module.exports = do ->
       equality_operator_type: 'text'
       response_type: 'text'
       name: 'barcode'
-    decimal:
+    }
+    decimal: {
       operators: [
         ops.EX #1
         ops.EQ #2
@@ -546,42 +567,50 @@ module.exports = do ->
       equality_operator_type: 'basic'
       response_type: 'decimal'
       name: 'decimal'
-    geopoint:
+    }
+    geopoint: {
       operators: [
         ops.EX #1
       ]
       name: 'geopoint'
-    geotrace:
+    }
+    geotrace: {
       operators: [
         ops.EX #1
       ]
       name: 'geotrace'
-    geoshape:
+    }
+    geoshape: {
       operators: [
         ops.EX #1
       ]
       name: 'geoshape'
-    image:
+    }
+    image: {
       operators: [
         ops.EX #1
       ]
       name: 'image'
-    audio:
+    }
+    audio: {
       operators: [
         ops.EX #1
       ]
       name: 'audio'
-    video:
+    }
+    video: {
       operators: [
         ops.EX #1
       ]
       name: 'video'
-    acknowledge:
+    }
+    acknowledge: {
       operators: [
         ops.EX #1
       ]
       name: 'acknowledge'
-    date:
+    }
+    date: {
       operators: [
         ops.EQ #2
         ops.GT #3
@@ -590,7 +619,8 @@ module.exports = do ->
       equality_operator_type: 'date'
       response_type: 'text'
       name: 'date'
-
+    }
+  }
 
   skipLogicHelpers.operator_types = [
     {
@@ -650,4 +680,4 @@ module.exports = do ->
     }
   ]
 
-  skipLogicHelpers
+  return skipLogicHelpers

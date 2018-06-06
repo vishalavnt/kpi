@@ -15,12 +15,15 @@ module.exports = do ->
   ###----------------------------------------------------------------------------------------------------------###
 
   class viewRowDetailSkipLogic.SkipLogicCriterionBuilderView extends $viewWidgets.Base
-    events:
+    events: {
       "click .skiplogic__deletecriterion": "deleteCriterion"
       "click .skiplogic__addcriterion": "addCriterion"
       "change .skiplogic__delimselect": "markChangedDelimSelector"
-    render: () ->
+    }
+
+    render: ->
       tempId = _.uniqueId("skiplogic_expr")
+
       @$el.html("""
         <p>
           #{_t('This question will only be displayed if the following conditions apply')}
@@ -38,11 +41,12 @@ module.exports = do ->
       delimSelect = @$(".skiplogic__delimselect").val(@criterion_delimiter)
       delimSelect.children('[value=' + @criterion_delimiter + ']').attr('selected', 'selected')
 
-      @
+      return @
 
     addCriterion: (evt) =>
       @facade.add_empty()
-    deleteCriterion: (evt)->
+
+    deleteCriterion: (evt) ->
       $target = $(evt.target)
       modelId = $target.data("criterionId")
       @facade.remove modelId
