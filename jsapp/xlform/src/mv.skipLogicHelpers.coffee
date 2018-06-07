@@ -184,13 +184,21 @@ module.exports = do ->
       @model.serialize()
 
   class skipLogicHelpers.SkipLogicBuilder
-    constructor: (@model_factory, @view_factory, @survey, @current_question, @helper_factory) -> return
+    constructor: (
+      @model_factory,
+      @view_factory,
+      @survey,
+      @current_question,
+      @helper_factory
+    ) ->
+      return
+
     build_criterion_builder: (serialized_criteria) ->
       if serialized_criteria == ''
         return [[@build_empty_criterion()], 'and']
 
       try
-        parsed = @_parse_skip_logic_criteria serialized_criteria
+        parsed = @_parse_skip_logic_criteria(serialized_criteria)
 
         criteria = _.filter(_.map(parsed.criteria, (criterion) =>
             @criterion = criterion
@@ -201,18 +209,20 @@ module.exports = do ->
           criteria.push(@build_empty_criterion())
 
       catch e
-        Raven?.captureException new Error('could not parse skip logic. falling back to hand-coded'), extra:
-          criteria: serialized_criteria
+        Raven?.captureException(
+          new Error('could not parse skip logic. falling back to hand-coded'),
+          {extra: {criteria: serialized_criteria}}
+        )
         return false
       return [criteria, parsed.operator]
 
     _parse_skip_logic_criteria: (criteria) ->
-      return $skipLogicParser criteria
+      return $skipLogicParser(criteria)
 
     build_operator_logic: (question_type) =>
       return [
         @build_operator_model(question_type, @_operator_type().symbol[@criterion.operator]),
-        @view_factory.create_operator_picker question_type
+        @view_factory.create_operator_picker(question_type)
       ]
 
     build_operator_model: (question_type, symbol) ->
@@ -220,11 +230,13 @@ module.exports = do ->
       return @model_factory.create_operator(
         (if operator_type.type == 'existence' then 'existence' else question_type.equality_operator_type),
         symbol,
-        operator_type.id)
+        operator_type.id
+      )
 
-    _operator_type: () ->
-      return _.find skipLogicHelpers.operator_types, (op_type) =>
-          @criterion?.operator in op_type.parser_name
+    _operator_type: ->
+      return _.find(skipLogicHelpers.operator_types, (op_type) =>
+        return @criterion?.operator in op_type.parser_name
+      )
 
     build_criterion_logic: (operator_model, operator_picker_view, response_value_view) ->
       criterion_model = @model_factory.create_criterion_model()
@@ -238,7 +250,7 @@ module.exports = do ->
       criterion_view.model = criterion_model
       return @helper_factory.create_presenter(criterion_model, criterion_view)
 
-    build_criterion: () =>
+    build_criterion: =>
       question = @_get_question()
       if !question
         return false
@@ -248,16 +260,28 @@ module.exports = do ->
 
       question_type = question.get_type()
 
-      [operator_model, operator_picker_view] = @build_operator_logic question_type
+      [operator_model, operator_picker_view] = @build_operator_logic(question_type)
 
-      response_value_view = @view_factory.create_response_value_view question, question_type, @_operator_type()
+      response_value_view = @view_factory.create_response_value_view(question, question_type, @_operator_type())
 
-      presenter = @build_criterion_logic operator_model, operator_picker_view, response_value_view
-      presenter.model.change_question question.cid
+      presenter = @build_criterion_logic(
+        operator_model,
+        operator_picker_view,
+        response_value_view
+      )
+      presenter.model.change_question(question.cid)
 
       response_value = if question._isSelectQuestion() then _.find(question.getList().options.models, (option) => return option.get('name') == @criterion.response_value)?.cid else @criterion.response_value
-      presenter.model.change_response response_value || ''
-      response_value_view.model = presenter.model.get 'response_value'
+
+      if question._isSelectQuestion()
+        response_value = _.find(question.getList().options.models, (option) =>
+          return option.get('name') == @criterion.response_value
+        )?.cid
+      else
+        response_value = @criterion.response_value
+
+      presenter.model.change_response(response_value || '')
+      response_value_view.model = presenter.model.get('response_value')
       response_value_view.val(response_value)
 
       return presenter
@@ -269,7 +293,11 @@ module.exports = do ->
       operator_picker_view = @view_factory.create_operator_picker(null)
       response_value_view = @view_factory.create_response_value_view(null)
 
-      return @build_criterion_logic(@model_factory.create_operator('empty'), operator_picker_view, response_value_view)
+      return @build_criterion_logic(
+        @model_factory.create_operator('empty'),
+        operator_picker_view,
+        response_value_view
+      )
 
     questions: () ->
       @selectable = @current_question.selectableRows() || @selectable
@@ -287,33 +315,44 @@ module.exports = do ->
         @state.render(@destination)
       return
 
-    serialize: () ->
+    serialize: ->
       return @state.serialize()
 
-    use_criterion_builder_helper: () ->
+    use_criterion_builder_helper: ->
       @builder ?= @helper_factory.create_builder()
       presenters = @builder.build_criterion_builder(@state.serialize())
 
       if presenters == false
         @state = null
       else
-        @state = new skipLogicHelpers.SkipLogicCriterionBuilderHelper(presenters[0], presenters[1], @builder, @view_factory, @)
+        @state = new skipLogicHelpers.SkipLogicCriterionBuilderHelper(
+          presenters[0],
+          presenters[1],
+          @builder,
+          @view_factory,
+          @
+        )
         @render(@destination)
       return
 
     use_hand_code_helper: () ->
-      @state = new skipLogicHelpers.SkipLogicHandCodeHelper(@state.serialize(), @builder, @view_factory, @)
+      @state = new skipLogicHelpers.SkipLogicHandCodeHelper(
+        @state.serialize(),
+        @builder,
+        @view_factory,
+        @
+      )
       @render(@destination)
       return
 
     use_mode_selector_helper : () ->
-      @helper_factory.survey.off null, null, @state
+      @helper_factory.survey.off(null, null, @state)
       @state = new skipLogicHelpers.SkipLogicModeSelectorHelper(@view_factory, @)
       @render(@destination)
       return
 
     constructor: (@model_factory, @view_factory, @helper_factory, serialized_criteria) ->
-      @state = serialize: () -> return serialized_criteria
+      @state = {serialize: -> return serialized_criteria}
       if !serialized_criteria? || serialized_criteria == ''
         serialized_criteria = ''
         @use_mode_selector_helper()
@@ -321,7 +360,7 @@ module.exports = do ->
         @use_criterion_builder_helper()
 
       if !@state?
-        @state = serialize: () -> return serialized_criteria
+        @state = {serialize: () -> return serialized_criteria}
         @use_hand_code_helper()
       return
 
@@ -344,6 +383,7 @@ module.exports = do ->
 
       _.each(@presenters, (presenter) =>
         presenter.render(@destination)
+        return
       )
 
     serialize: () ->
@@ -364,7 +404,7 @@ module.exports = do ->
         if presenter? && presenter.model.cid == id
           presenter = @presenters.splice(index, 1)[0]
           presenter.view.$el.remove()
-          @builder.survey.off null, null, presenter
+          @builder.survey.off(null, null, presenter)
           @determine_add_new_criterion_visibility()
       )
 

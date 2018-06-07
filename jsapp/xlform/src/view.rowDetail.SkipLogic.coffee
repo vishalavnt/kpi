@@ -50,7 +50,7 @@ module.exports = do ->
     deleteCriterion: (evt) ->
       $target = $(evt.target)
       modelId = $target.data("criterionId")
-      @facade.remove modelId
+      @facade.remove(modelId)
       $target.parent().remove()
       return
 
@@ -114,11 +114,13 @@ module.exports = do ->
       return
 
     change_operator: (@operator_picker_view) ->
+      console.log('change_operator')
       @operator_picker_view.render()
       @$operator_picker = @operator_picker_view.$el
       return
 
     change_response: (response_value_view) ->
+      console.log('change_response')
       @response_value_view.detach()
       @response_value_view = response_value_view
       @response_value_view.render()
@@ -264,6 +266,7 @@ module.exports = do ->
 
   class viewRowDetailSkipLogic.SkipLogicEmptyResponse extends $viewWidgets.EmptyView
     className: 'skiplogic__responseval'
+
     attach_to: (target) ->
       target.find('.skiplogic__responseval').remove()
       super(target)
@@ -271,21 +274,21 @@ module.exports = do ->
   class viewRowDetailSkipLogic.SkipLogicTextResponse extends $viewWidgets.TextBox
     attach_to: (target) ->
       target.find('.skiplogic__responseval').remove()
-      super
+      super()
 
     bind_event: (handler) ->
-      @$el.on 'blur', handler
+      @$el.on('blur', handler)
 
     constructor: (text) ->
       super(text, "skiplogic__responseval", _t("response value"))
 
   class viewRowDetailSkipLogic.SkipLogicValidatingTextResponseView extends viewRowDetailSkipLogic.SkipLogicTextResponse
     render: () ->
-      super
+      super()
       @setElement('<div class="skiplogic__responseval-wrapper">' + @$el + '<div></div></div>')
       @$error_message = @$('div')
-      @model.bind 'validated:invalid', @show_invalid_view
-      @model.bind 'validated:valid', @clear_invalid_view
+      @model.bind('validated:invalid', @show_invalid_view)
+      @model.bind('validated:valid', @clear_invalid_view)
       @$input = @$el.find('input')
       return @
 
@@ -294,19 +297,22 @@ module.exports = do ->
         @$el.addClass('textbox--invalid')
         @$error_message.html(errors.value)
         @$input.focus()
+      return
 
     clear_invalid_view: (model, errors) =>
       @$el.removeClass('textbox--invalid')
       @$error_message.html('')
+      return
 
     bind_event: (handler) ->
       @$input.on('change', handler)
+      return
 
     val: (value) =>
       if value?
-        @$input.val(value)
+        return @$input.val(value)
       else
-        @$input.val()
+        return @$input.val()
 
   class viewRowDetailSkipLogic.SkipLogicDropDownResponse extends $viewWidgets.DropDown
     tagName: 'select'
@@ -317,21 +323,24 @@ module.exports = do ->
       super(target)
 
     bind_event: (handler) ->
-      super 'change', handler
+      super('change', handler)
 
     render: () ->
-      super
-      handle_model_cid_change = () =>
+      super()
+      handle_model_cid_change = =>
         @val(@model.get 'cid')
 
-      @model.off 'change:cid', handle_model_cid_change
-      @model.on 'change:cid', handle_model_cid_change
+      @model.off('change:cid', handle_model_cid_change)
+      @model.on('change:cid', handle_model_cid_change)
+      return
 
     constructor: (@responses, @model) ->
-      super(_.map @responses.models, (response) ->
-        text: response.get('label')
-        value: response.cid
-      )
+      super(_.map(@responses.models, (response) ->
+        return {
+          text: response.get('label')
+          value: response.cid
+        }
+      ))
 
   ###----------------------------------------------------------------------------------------------------------###
   #-- Factories.RowDetail.SkipLogic.coffee
@@ -359,6 +368,7 @@ module.exports = do ->
         })
 
         model.set('options', options)
+        return
 
       set_options()
       @survey.on('sortablestop', set_options)
