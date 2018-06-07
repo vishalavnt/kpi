@@ -12,8 +12,13 @@ module.exports = do ->
   ###----------------------------------------------------------------------------------------------------------###
 
   class skipLogicHelpers.SkipLogicHelperFactory
-    constructor: (@model_factory, @view_factory, @survey, @current_question, @serialized_criteria) ->
-      return
+    constructor: (
+      @model_factory,
+      @view_factory,
+      @survey,
+      @current_question,
+      @serialized_criteria
+    ) ->
 
     create_presenter: (criterion_model, criterion_view) ->
       return new skipLogicHelpers.SkipLogicPresenter(
@@ -470,17 +475,17 @@ module.exports = do ->
 
   class skipLogicHelpers.SkipLogicHandCodeHelper
     render: ($destination) ->
-      $destination.append @$parent
-      @textarea.render().attach_to @$parent
-      @button.render().attach_to @$parent
-      @button.bind_event 'click', () => @context.use_mode_selector_helper()
+      $destination.append(@$parent)
+      @textarea.render().attach_to(@$parent)
+      @button.render().attach_to(@$parent)
+      @button.bind_event('click', => @context.use_mode_selector_helper())
 
     serialize: () ->
-      @textarea.$el.val() || @criteria
+      return @textarea.$el.val() || @criteria
 
     constructor: (@criteria, @builder, @view_factory, @context) ->
       @$parent = $('<div>')
-      @textarea = @view_factory.create_textarea @criteria, 'skiplogic__handcode-edit'
+      @textarea = @view_factory.create_textarea(@criteria, 'skiplogic__handcode-edit')
       @button = @view_factory.create_button '<i class="fa fa-trash-o"></i>', 'skiplogic-handcode__cancel'
 
   class skipLogicHelpers.SkipLogicModeSelectorHelper

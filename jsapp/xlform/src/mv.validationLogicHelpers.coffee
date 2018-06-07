@@ -8,36 +8,60 @@ module.exports = do ->
 
   class validationLogicHelpers.ValidationLogicHelperFactory extends $skipLogicHelpers.SkipLogicHelperFactory
     create_presenter: (criterion_model, criterion_view) ->
-      return new validationLogicHelpers.ValidationLogicPresenter criterion_model, criterion_view, @current_question, @survey, @view_factory
-    create_builder: () ->
-      return new validationLogicHelpers.ValidationLogicBuilder @model_factory, @view_factory, @survey, @current_question, @
-    create_context: () ->
-      return new validationLogicHelpers.ValidationLogicHelperContext @model_factory, @view_factory, @, @serialized_criteria
+      return new validationLogicHelpers.ValidationLogicPresenter(
+        criterion_model,
+        criterion_view,
+        @current_question,
+        @survey,
+        @view_factory
+      )
+
+    create_builder: ->
+      return new validationLogicHelpers.ValidationLogicBuilder(
+        @model_factory,
+        @view_factory,
+        @survey,
+        @current_question,
+        @
+      )
+
+    create_context: ->
+      return new validationLogicHelpers.ValidationLogicHelperContext(
+        @model_factory,
+        @view_factory,
+        @,
+        @serialized_criteria
+      )
 
   class validationLogicHelpers.ValidationLogicPresenter extends $skipLogicHelpers.SkipLogicPresenter
-    change_question: () -> return
+    change_question: -> return
 
   class validationLogicHelpers.ValidationLogicBuilder extends $skipLogicHelpers.SkipLogicBuilder
     _parse_skip_logic_criteria: (criteria) ->
-      return $validationLogicParser criteria
+      return $validationLogicParser(criteria)
 
-    _get_question: () ->
-      @current_question
+    _get_question: ->
+      return @current_question
 
-    build_empty_criterion: () ->
-      operator_picker_view = @view_factory.create_operator_picker @current_question.get_type()
-
-      response_value_view = @view_factory.create_response_value_view @current_question, @current_question.get_type(), @_operator_type()
-
-      presenter = @build_criterion_logic @model_factory.create_operator('empty'), operator_picker_view, response_value_view
-
-      presenter.model.change_question @current_question.cid
-
+    build_empty_criterion: ->
+      operator_picker_view = @view_factory.create_operator_picker(@current_question.get_type())
+      response_value_view = @view_factory.create_response_value_view(
+        @current_question,
+        @current_question.get_type(),
+        @_operator_type()
+      )
+      presenter = @build_criterion_logic(
+        @model_factory.create_operator('empty'),
+        operator_picker_view,
+        response_value_view
+      )
+      presenter.model.change_question(@current_question.cid)
       return presenter
 
-    questions: () ->
-      [@current_question]
-    _operator_type: () ->
+    questions: ->
+      return [@current_question]
+
+    _operator_type: ->
       operator_type = super
       if !operator_type?
         operator_type_id = @current_question.get_type().operators[0]
@@ -45,22 +69,29 @@ module.exports = do ->
       return operator_type
 
   class validationLogicHelpers.ValidationLogicHelperContext extends $skipLogicHelpers.SkipLogicHelperContext
-    use_mode_selector_helper: () ->
-      @state = new validationLogicHelpers.ValidationLogicModeSelectorHelper @view_factory, @
-      @render @destination
-    use_hand_code_helper: () ->
-      @state = new validationLogicHelpers.ValidationLogicHandCodeHelper(@state.serialize(), @builder, @view_factory, @)
+    use_mode_selector_helper: ->
+      @state = new validationLogicHelpers.ValidationLogicModeSelectorHelper(@view_factory, @)
+      @render(@destination)
+
+    use_hand_code_helper: ->
+      @state = new validationLogicHelpers.ValidationLogicHandCodeHelper(
+        @state.serialize(),
+        @builder,
+        @view_factory,
+        @
+      )
       if @questionTypeHasNoValidationOperators()
         @state.button = @view_factory.create_empty()
-      @render @destination
-      return
+      @render(@destination)
+
     constructor: (@model_factory, @view_factory, @helper_factory, serialized_criteria) ->
-      @state = serialize: () -> return serialized_criteria
+      @state = {serialize: -> return serialized_criteria}
       if @questionTypeHasNoValidationOperators()
         @use_hand_code_helper()
       else
         super
-    questionTypeHasNoValidationOperators: () ->
+
+    questionTypeHasNoValidationOperators: ->
       typeId = @helper_factory.current_question.get('type').get('typeId')
       if !typeId
         return console.error('no type id found for question', @helper_factory.current_question)
@@ -71,20 +102,23 @@ module.exports = do ->
 
   class validationLogicHelpers.ValidationLogicModeSelectorHelper extends $skipLogicHelpers.SkipLogicModeSelectorHelper
     constructor: (view_factory, @context) ->
-      super
+      super()
       @handcode_button = view_factory.create_button '<i>${}</i> ' + _t("Manually enter your validation logic in XLSForm code"), 'skiplogic__button skiplogic__select-handcode'
 
   class validationLogicHelpers.ValidationLogicHandCodeHelper extends $skipLogicHelpers.SkipLogicHandCodeHelper
     render: ($destination) ->
       $destination.replaceWith(@$handCode)
-      @button.render().attach_to @$handCode
-      @button.bind_event 'click', () =>
+      @button.render().attach_to(@$handCode)
+      @button.bind_event('click', =>
         @$handCode.replaceWith($destination)
         @context.use_mode_selector_helper()
-    serialize: () ->
-      @textarea.val()
-    constructor: () ->
-      super
+      )
+
+    serialize: ->
+      return @textarea.val()
+
+    constructor: ->
+      super()
       @$handCode = $("""
         <div class="card__settings__fields__field">
           <label for="#{@context.helper_factory.current_question.cid}-handcode">#{_t("Validation Code:")}</label>
@@ -95,5 +129,4 @@ module.exports = do ->
       """)
       @textarea = @$handCode.find('#' + @context.helper_factory.current_question.cid + '-handcode')
 
-
-  validationLogicHelpers
+  return validationLogicHelpers
