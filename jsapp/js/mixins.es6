@@ -106,7 +106,7 @@ mixins.dmix = {
     }
     if (!asset.has_deployment) {
       // There's no existing deployment for this asset
-      let deployment_alert = alertify.warning(t('deploying to kobocat...'), 60);
+      let deployment_alert = alertify.warning(t('deploying...'), 60);
       actions.resources.deployAsset(asset, false, deployment_alert, {
         onComplete: () => {
           notify(t('deployed form'));
