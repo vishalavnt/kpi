@@ -14,6 +14,7 @@ from whoosh.query import Term, And
 
 from .models import Asset
 from .models.object_permission import get_objects_for_user, get_anonymous_user
+from .utils.query_parser import phil_magic
 
 
 class AssetOwnerFilterBackend(filters.BaseFilterBackend):
@@ -132,6 +133,9 @@ class SearchFilter(filters.BaseFilterBackend):
         except KeyError:
             return queryset
 
+        print "MAGICAL!"
+        return phil_magic(q, queryset)
+        '''
         # Short-circuit some commonly used queries
         COMMON_QUERY_TO_ORM_FILTER = {
             'asset_type:block': {'asset_type': 'block'},
@@ -221,7 +225,7 @@ class SearchFilter(filters.BaseFilterBackend):
             }
         filter_pks = results_pks.intersection(queryset_pks)
         return queryset.filter(pk__in=filter_pks)
-
+        '''
 
 class KpiAssignedObjectPermissionsFilter(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):

@@ -54,6 +54,7 @@ lxml
 oauthlib
 psycopg2
 pymongo
+pyparsing
 pytest-django
 python-dateutil
 pytz
