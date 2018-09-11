@@ -366,7 +366,7 @@ class ExportTask(ImportExportTask):
     last_submission_time = models.DateTimeField(null=True)
     result = PrivateFileField(upload_to=export_upload_to, max_length=380)
 
-    COPY_FIELDS = ('_id', '_uuid', '_submission_time')
+    COPY_FIELDS = ('_id', '_uuid', '_submission_time', '_validation_status')
     TIMESTAMP_KEY = '_submission_time'
     # Above 244 seems to cause 'Download error' in Chrome 64/Linux
     MAXIMUM_FILENAME_LENGTH = 240
@@ -463,6 +463,17 @@ class ExportTask(ImportExportTask):
                     self.last_submission_time = timestamp
             yield submission
 
+    @staticmethod
+    def _flatten_validation_status(submission_stream):
+        for submission in submission_stream:
+            try:
+                validation_status_uid = submission['_validation_status']['uid']
+            except KeyError:
+                pass
+            else:
+                submission['_validation_status'] = validation_status_uid
+            yield submission
+
     def _run_task(self, messages):
         '''
         Generate the export and store the result in the `self.result`
@@ -510,7 +521,8 @@ class ExportTask(ImportExportTask):
         # Wrap the submission stream in a generator that records the most
         # recent timestamp
         submission_stream = self._record_last_submission_time(
-            submission_stream)
+            self._flatten_validation_status(submission_stream)
+        )
 
         options = self._build_export_options(pack)
         export = pack.export(**options)
