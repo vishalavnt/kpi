@@ -1,0 +1,43 @@
+grammar Kobo.Query
+  
+  #// This is a canopy grammar. -- Docs: http://canopy.jcoglan.com/
+
+  #// To compile: 
+  #//   canopy 'grammar.peg' --lang python
+  #// One way to live-compile / watch during dev:
+  #//   chokidar 'kobo.peg' -c 'canopy {path} --lang python'
+
+  #// TODO
+  #// We'll have to implement the actions  (%action)
+  #// to customize the output at each step.
+  #// The nodes get passed from leafs to trunk,
+  #// or subexpression to root.
+  #// http://canopy.jcoglan.com/types.html, http://canopy.jcoglan.com/langs/python.html
+
+  #--------------------
+
+  query    <- _* exp? _*                              %query
+
+  #--------------------
+
+  exp      <- 
+      andexp (_+ "OR" _+ expr:andexp)*                %orexp
+
+  andexp   <- 
+      groupexp ((_+ "AND")? _+ !"OR" expr:groupexp)*  %andexp
+  
+  groupexp <- 
+       "(" _* exp _* ")"                              %parenexp
+      / "NOT" _+ exp                                  %notexp
+      / term
+
+  #----------------------
+
+  term      <- field:(name ":")? value:value   %term
+  value     <- string
+             / word
+  word      <-  [^\s():]+                      %word
+  string    <- '"' ("\\" . / [^"])* '"'        %string
+             / "'" ("\\" . / [^'])* "'"        %string
+  name      <- [a-zA-Z_] [a-zA-Z0-9\-_]*       %name
+  _ <- [\s]
