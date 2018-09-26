@@ -12,6 +12,9 @@ import actions from './actions';
 import {assign} from './utils';
 import assetParserUtils from './assetParserUtils';
 
+// const PAGE_LIMIT = 200;
+const PAGE_LIMIT = 5;
+
 const emptySearchState = {
   searchState: 'none',
   searchResults: false,
@@ -213,6 +216,7 @@ function SearchContext(opts={}) {
       if ('parentName' in searchParams) {
         delete searchParams.parentName;
       }
+      queryData.limit = PAGE_LIMIT;
       paramGroups = paramGroups.concat(_.values(searchParams));
       if (paramGroups.length > 1) {
         queryData.q = paramGroups.map(function(s){
@@ -276,6 +280,7 @@ function SearchContext(opts={}) {
     latestSearchData = {params: qData, dataObject: dataObject};
     var req = actions.search.assets(qData, {
       onComplete: function(searchData, response) {
+        console.log('search complete', response);
         search.completed(dataObject, response, {
           cacheAsDefaultSearch: _opts.cacheAsDefaultSearch,
         });
@@ -302,6 +307,7 @@ function SearchContext(opts={}) {
   search.refresh.listen(function(){
     actions.search.assets(latestSearchData.params, {
       onComplete: function(searchData, response) {
+        console.log('search complete', response);
         search.completed(latestSearchData.dataObject, response, {
           cacheAsDefaultSearch: false,
         });

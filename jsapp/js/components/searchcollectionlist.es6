@@ -36,6 +36,7 @@ class SearchCollectionList extends Reflux.Component {
     this.queryCollections();
   }
   searchChanged (searchStoreState) {
+    console.log('searchChanged', searchStoreState);
     this.setState(searchStoreState);
     if (searchStoreState.searchState === 'done') {
       this.queryCollections();
@@ -278,7 +279,14 @@ class SearchCollectionList extends Reflux.Component {
                 return false;
               })()
             }
+
+              {s.searchResultsList.length < s.searchResultsCount &&
+                <bem.AssetList__loadMore>
+                  {t('Load more')}
+                </bem.AssetList__loadMore>
+              }
             </bem.AssetList>
+
             <div className='dropzone-active-overlay'>
               <i className='k-icon-upload' />
               {t('Drop files to upload')}

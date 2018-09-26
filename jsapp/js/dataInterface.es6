@@ -247,8 +247,6 @@ var dataInterface;
       });
     },
     searchAssets (searchData) {
-      // override limit
-      searchData.limit = 200;
       return $.ajax({
         url: `${rootUrl}/assets/`,
         dataType: 'json',

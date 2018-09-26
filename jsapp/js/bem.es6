@@ -94,6 +94,7 @@ bem.List__heading = bem.List.__('heading');
 bem.List__subheading = bem.List.__('subheading');
 
 bem.AssetList = bem('asset-list');
+bem.AssetList__loadMore = bem.AssetList.__('load-more', '<button>');
 bem.AssetItems = bem('asset-items', '<ul>');
 
 bem.FormSidebar = bem('form-sidebar');
