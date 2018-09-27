@@ -283,9 +283,9 @@ class SearchCollectionList extends Reflux.Component {
               })()
             }
 
-              {s.defaultQueryResultsList && s.defaultQueryResultsList.length < s.defaultQueryCount &&
+              {s.defaultQueryNextPage &&
                 <bem.AssetList__loadMore
-                  onClick={this.onLoadMore}
+                  onClick={this.loadNextPage}
                 >
                   {t('Load more')}
                 </bem.AssetList__loadMore>

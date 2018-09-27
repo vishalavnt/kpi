@@ -39,6 +39,7 @@ const initialState = assign({
   defaultQueryResults: '',
   defaultQueryResultsList: [],
   defaultQueryCount: 0,
+  defaultQueryNextPage: null
 }, emptySearchState);
 
 function SearchContext(opts={}) {
@@ -52,6 +53,7 @@ function SearchContext(opts={}) {
       'failed',
       'cancel',
       'refresh',
+      'loadNextPage',
     ]
   });
 
@@ -335,7 +337,8 @@ function SearchContext(opts={}) {
         defaultQueryResults: data,
         defaultQueryResultsList: data.results,
         defaultQueryCount: count,
-        defaultQueryCategorizedResultsLists: splitResultsToCategorized(data.results)
+        defaultQueryCategorizedResultsLists: splitResultsToCategorized(data.results),
+        defaultQueryNextPage: data.next
       };
     } else {
       newState = {
@@ -372,6 +375,9 @@ function SearchContext(opts={}) {
     searchStore.update(assign({
       cleared: true
     }, emptySearchState));
+  });
+  search.loadNextPage.listen(function(){
+    console.log('loadNextPage');
   });
   this.mixin = {
     debouncedSearch: ( debounceTime ? _.debounce(search, debounceTime) : search ),
@@ -443,8 +449,8 @@ var commonMethods = {
   refreshSearch () {
     this.debouncedSearch();
   },
-  loadMoreResults () {
-    console.log('loadMoreResults');
+  loadNextPage () {
+    this.getSearchActions().search.loadNextPage();
   },
   searchClear () {
     this.searchStore.removeItem('searchString');
