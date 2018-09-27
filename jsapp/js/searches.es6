@@ -443,6 +443,9 @@ var commonMethods = {
   refreshSearch () {
     this.debouncedSearch();
   },
+  loadMoreResults () {
+    console.log('loadMoreResults');
+  },
   searchClear () {
     this.searchStore.removeItem('searchString');
     this.searchStore.removeItem('searchTags');

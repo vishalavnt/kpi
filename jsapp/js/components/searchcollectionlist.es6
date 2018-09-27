@@ -42,6 +42,9 @@ class SearchCollectionList extends Reflux.Component {
       this.queryCollections();
     }
   }
+  onLoadMore () {
+    this.loadMoreResults();
+  }
   queryCollections () {
     if (this.props.searchContext.store.filterTags !== 'asset_type:survey') {
       dataInterface.listCollections().then((collections)=>{
@@ -280,8 +283,10 @@ class SearchCollectionList extends Reflux.Component {
               })()
             }
 
-              {s.searchResultsList.length < s.searchResultsCount &&
-                <bem.AssetList__loadMore>
+              {s.defaultQueryResultsList && s.defaultQueryResultsList.length < s.defaultQueryCount &&
+                <bem.AssetList__loadMore
+                  onClick={this.onLoadMore}
+                >
                   {t('Load more')}
                 </bem.AssetList__loadMore>
               }
