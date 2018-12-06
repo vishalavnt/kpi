@@ -357,14 +357,14 @@ export default class RESTServicesForm extends React.Component {
 
   renderFieldsSelector() {
     const inputProps = {
-      placeholder: t('Add field(s)'),
+      placeholder: t('Add question name'),
       id: 'subset-fields-input'
     };
 
     return (
       <bem.FormModal__item>
         <label htmlFor='subset-fields-input'>
-          {t('Select fields subset')}
+          {t('Select subset of questions (leave blank for all)')}
         </label>
 
         <TagsInput
@@ -434,7 +434,7 @@ export default class RESTServicesForm extends React.Component {
                 id='email-checkbox'
                 onChange={this.handleEmailNotificationChange.bind(this)}
                 checked={this.state.emailNotification}
-                label={t('Receive emails notifications')}
+                label={t('Receive email notification of failures')}
               />
             </bem.FormModal__item>
 
