@@ -692,7 +692,7 @@ module.exports = do ->
           viewModel = view.model
           viewParent = viewModel._parent
           insert_index = afterThisRowViewModelParent.models.indexOf(afterThisRowViewModel) + row_idx + 1
-          viewModel.getSurvey().insert_row.call viewParent._parent, viewModel, insert_index
+          viewModel.getSurvey().insert_row.call afterThisRowViewModelParent._parent, viewModel, insert_index
 
     duplicateSelectedRows: () ->
       rows = @selectedRows()
