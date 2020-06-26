@@ -466,7 +466,7 @@ class XlsExportable(object):
                 for surveyCol in self.surveyCols:
                     if surveyCol not in survey_col:
                         if 'translated' in content.keys() and surveyCol in content['translated']:
-                            survey_col[surveyCol] = [u'']
+                            survey_col[surveyCol] = [u''] * len(content['translations'])
                         else:
                             survey_col[surveyCol] = u''
 
@@ -491,7 +491,7 @@ class XlsExportable(object):
             cols = OrderedDict()
             for surveyCol in self.surveyCols:
                 if 'translated' in content.keys() and surveyCol in content['translated']:
-                    cols[surveyCol] = [u'']
+                    cols[surveyCol] = [u''] * len(content['translations'])
                 else:
                     cols[surveyCol] = u''
             content['survey'].append(cols)
@@ -553,12 +553,15 @@ class XlsExportable(object):
 
                 for choicesCol in self.choicesCols:
                     if choicesCol not in choices_col:
-                        choices_col[choicesCol] = ''
+                        if 'translated' in content.keys() and choicesCol in content['translated']:
+                            choices_col[choicesCol] = [u''] * len(content['translations'])
+                        else:
+                            choices_col[choicesCol] = u''
         else:
             cols = OrderedDict()
             for choicesCol in self.choicesCols:
                 if 'translated' in content.keys() and choicesCol in content['translated']:
-                    cols[choicesCol] = [u'']
+                    cols[choicesCol] = [u''] * len(content['translations'])
                 else:
                     cols[choicesCol] = u''
             content[u'choices'] = []
