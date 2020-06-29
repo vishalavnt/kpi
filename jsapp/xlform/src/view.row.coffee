@@ -439,12 +439,6 @@ module.exports = do ->
             questionType: questionType
           }).render().insertInDOM(@)
 
-      if questionType is 'file'
-        @acceptedFilesView = new $acceptedFilesView.AcceptedFilesView({
-          rowView: @,
-          acceptedFiles: @model.getAcceptedFiles()
-        }).render().insertInDOM(@)
-
       return @
 
     hideMultioptions: ->
