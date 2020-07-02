@@ -428,7 +428,7 @@ module.exports = do ->
           ui.item.before(elements_before)
         if elements_after.length > 0
           ui.item.after(elements_after)
-        ui.item.siblings('.survey__row--selected.hidden').removeClass('hidden')
+        ui.item.closest('.survey-editor__list').find('.survey__row--selected.hidden').removeClass('hidden')
         for el in elements
           row_id = $(el).attr('data-row-id')
           $row = $("li.survey__row--selected:not('.hidden')[data-row-id='#{row_id}']")
@@ -444,11 +444,16 @@ module.exports = do ->
           item.addClass('survey__row--selected')
           item.data('is_multi_select', false)
         selected_elements = item.closest('.survey-editor__list').find('.survey__row--selected:not(".hidden")').clone()
+        selected_row_ids = _.map(selected_elements, (el) => $(el).attr('data-row-id'))
+        selected_in_group_row_ids = []
         for el in selected_elements
           row_id = $(el).attr('data-row-id')
           $row = $("li[data-row-id='#{row_id}']")
           if $row.attr('data-row-id') != item.attr('data-row-id')
             $row.addClass("hidden")
+          parent_row_id = $row.parents('.survey__row--group').attr('data-row-id')
+          selected_in_group_row_ids.push(row_id) if parent_row_id in selected_row_ids
+        selected_elements = _.filter(selected_elements, (el) => $(el).attr('data-row-id') not in selected_in_group_row_ids)
         item.data('sortable_elements', selected_elements)
         helper = $('<ul/>')
         helper.append item.data('sortable_elements')
