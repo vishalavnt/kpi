@@ -603,7 +603,6 @@ module.exports = do ->
       else
         model_set_value = select_width_value
       
-      console.log 'end model_set_value', model_set_value
       @model.set 'value', model_set_value
 
     group_inputs_change_handler: () ->
@@ -649,7 +648,7 @@ module.exports = do ->
 
     is_same_screen_in_model_value: () ->
       modelValue = @model.get 'value'
-      modelValue.indexOf @fieldListStr > -1
+      (modelValue.indexOf @fieldListStr) > -1
 
     get_width_from_model_value: () ->
       modelValue = @model.get 'value'
