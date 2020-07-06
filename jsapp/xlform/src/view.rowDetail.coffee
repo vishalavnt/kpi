@@ -555,7 +555,7 @@ module.exports = do ->
     model_get_parent_group: () ->
       perent_group = null
       if @model._parent._parent._parent? and @model._parent._parent._parent.constructor.key == 'group'
-        parent_group = parent_group = @model._parent._parent._parent
+        parent_group = @model._parent._parent._parent
       parent_group
 
     model_get_parent_group_appearance: () ->
