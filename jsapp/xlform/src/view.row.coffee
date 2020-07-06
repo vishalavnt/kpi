@@ -384,19 +384,6 @@ module.exports = do ->
         if key in ["name", "_isRepeat", "appearance", "relevant"] or key.match(/^.+::.+/)
           new $viewRowDetail.DetailView(model: val, rowView: @).render().insertInDOM(@)
 
-      @model.on 'add', (row) =>
-        if row.constructor.key == 'group'
-          $appearanceField = @$('.xlf-dv-appearance').eq(0)
-          $appearanceField.hide()
-          $appearanceField.find('input:checkbox').prop('checked', false)
-          appearanceModel = @model.get('appearance')
-          appearanceModelValue = appearanceModel.getValue()
-          hasSameScreenOnNestedGroups = false
-          hasSameScreenOnNestedGroups = true if (appearanceModelValue.indexOf 'field-list') > -1
-          if hasSameScreenOnNestedGroups
-            alertify.warning(_t("You can't display nested groups on the same screen - the setting has been removed from the parent group"))
-          appearanceModel.set('value', appearanceModelValue.split('field-list').join('').trim())
-
       @model.on 'remove', (row) =>
         if row.constructor.key == 'group' && !@hasNestedGroups()
           @$('.xlf-dv-appearance').eq(0).show()
