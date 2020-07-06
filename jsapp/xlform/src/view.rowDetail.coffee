@@ -555,7 +555,7 @@ module.exports = do ->
     model_get_parent_group: () ->
       perent_group = null
       if @model._parent._parent._parent? and @model._parent._parent._parent.constructor.key == 'group'
-        parent_group = parent_group = @model._parent._parent._parent
+        parent_group = @model._parent._parent._parent
       parent_group
 
     model_get_parent_group_appearance: () ->
@@ -598,7 +598,8 @@ module.exports = do ->
       select_width_value = @$select_width.val()
       select_width_value = @select_width_default_value if select_width_value == 'select'
       if model_set_value != ''
-        model_set_value += " #{select_width_value}"
+        if select_width_value != ''
+          model_set_value += " #{select_width_value}"
       else
         model_set_value = select_width_value
       
@@ -647,20 +648,34 @@ module.exports = do ->
 
     is_same_screen_in_model_value: () ->
       modelValue = @model.get 'value'
-      modelValue.indexOf @fieldListStr > -1
+      (modelValue.indexOf @fieldListStr) > -1
 
     get_width_from_model_value: () ->
       modelValue = @model.get 'value'
       model_width = null
       for width_option in @width_options
-        model_width = width_option if (modelValue.indexOf width_option) > -1
+        model_width = width_option if ((modelValue.indexOf width_option) > -1)
       model_width
 
     get_select_value_from_model_value: () ->
       modelValue = @model.get 'value'
       select_value = null
+      select_values = []
       for type in @getTypes()
-        select_value = type if (modelValue.indexOf type) > -1
+        select_values.push(type) if ((modelValue.indexOf type) > -1)
+
+      if select_values.length > 0
+        if select_values.length == 1
+          select_value = select_values[0]
+        else
+          for value in select_values
+            if ((modelValue.indexOf value) > -1)
+              if select_value?
+                if select_value.length < value.length
+                  select_value = value
+              else
+                select_value = value
+
       select_value
 
     afterRender: ->
