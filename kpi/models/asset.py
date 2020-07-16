@@ -419,6 +419,7 @@ class XlsExportable(object):
         content = OrderedDict(content)
         self._survey_column_oc_adjustments(content)
         self._settings_ensure_form_id(content)
+        self._settings_ensure_required_columns(content)
         self._settings_maintain_key_order(content)
         self._choices_column_oc_adjustments(content)
         self._xlsform_structure(content, ordered=True, kobo_specific=kobo_specific_types)
@@ -522,6 +523,24 @@ class XlsExportable(object):
                 settings['form_id'] = settings['id_string']
                 del settings['id_string']
     
+    def _settings_ensure_required_columns(self, content):
+        if 'settings' in content:
+            settings = content['settings']
+
+            try:
+                form_title = self.name
+            except Exception as e:
+                form_title = "Form Title"
+
+            settings.update(
+                {
+                    'form_title': form_title,
+                    'crossform_references': '',
+                    'namespaces': 'oc="http://openclinica.org/xforms" , OpenClinica="http://openclinica.com/odm"',
+                    'Read Me - Form template created by OpenClinica Form Designer': ''
+                }
+            )
+
     def _settings_maintain_key_order(self, content):
         if 'settings' in content:
             settings = content['settings']
@@ -593,14 +612,6 @@ class XlsExportable(object):
         if versioned:
             append = kwargs['append'] = kwargs.get('append', {})
             append_settings = append['settings'] = append.get('settings', {})
-            append_settings.update(
-                {
-                    'form_title': self.name,
-                    'crossform_references': '',
-                    'namespaces': 'oc="http://openclinica.org/xforms" , OpenClinica="http://openclinica.com/odm"',
-                    'Read Me - Form template created by OpenClinica Form Designer': ''
-                }
-            )
         try:
             def _add_contents_to_sheet(sheet, contents):
                 cols = []
@@ -1146,6 +1157,7 @@ class AssetSnapshot(models.Model, XlsExportable, FormpackXLSFormUtils):
         self._expand_kobo_qs(source_copy)
         self._populate_fields_with_autofields(source_copy)
         self._strip_kuids(source_copy)
+        self._settings_ensure_required_columns(source_copy)
 
         warnings = []
         details = {}
