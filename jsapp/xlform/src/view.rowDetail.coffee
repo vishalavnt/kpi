@@ -859,8 +859,9 @@ module.exports = do ->
       senderValue = ocCustomEventArgs.value
       senderQuestionId = sender._parent.cid
       if (sender.key is 'bind::oc:external') and (questionId is senderQuestionId)
+        @$el.siblings(".message").remove();
+        @$el.closest('div').removeClass("input-error")
         if senderValue in ['clinicaldata', 'contactdata']
-          @removeFieldCheckCondition()
           if (@model.get 'value') != ''
             @makeFieldCheckCondition({
               checkIfNotEmpty: true,
@@ -873,11 +874,6 @@ module.exports = do ->
       @fieldTab = "active"
       @$el.addClass("card__settings__fields--#{@fieldTab}")
       viewRowDetail.Templates.textbox @cid, @model.key, _t("Item Group"), 'text', 'Enter data set name'
-      if @rowView.model.attributes['bind::oc:external'].get 'value' != ''
-        @makeFieldCheckCondition({
-          checkIfNotEmpty: true,
-          message: "This field is not empty"
-        })
     afterRender: ->
       @listenForInputChange()
 
