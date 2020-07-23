@@ -391,7 +391,9 @@ class XlsExportable(object):
         u'readonly',
         u'image',
         u'repeat_count',
-        u'bind::oc:external'
+        u'bind::oc:external',
+        u'bind::oc:contactdata',
+        u'instance::oc:contactdata'
     ]
 
     choicesCols = [

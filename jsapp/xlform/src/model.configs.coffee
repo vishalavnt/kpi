@@ -213,7 +213,9 @@ module.exports = do ->
     "default",
     "constraint",
     "bind::oc:external",
-    "readonly"
+    "readonly",
+    "bind::oc:contactdata", 
+    "instance::oc:contactdata"
   ]
 
   configs.lookupRowType = do->
@@ -313,6 +315,10 @@ module.exports = do ->
     "bind::oc:description":
       value: ''
     "select_one_from_file_filename":
+      value: ''
+    "bind::oc:contactdata":
+      value: ''
+    "instance::oc:contactdata":
       value: ''
 
   configs.newGroupDetails =

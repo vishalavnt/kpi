@@ -127,34 +127,57 @@ module.exports = do ->
     insertInDOM: (rowView)->
       @_insertInDOM rowView.defaultRowDetailParent
 
-    makeRequired: (opts={})->
+    makeFieldCheckCondition: (opts={}) ->
       el = opts.el || @$('input').get(0)
       $el = $(el)
+      fieldClass = opts.fieldClass || 'input-error'
+      message = opts.message || "This field is required"
+      checkIfNotEmpty = opts.checkIfNotEmpty || false
 
-      showOrHideRequired = () =>
-        if $el.val() is ''
-          $el.closest('div').addClass('input-error')
-          if $el.siblings('.message').length is 0
-            $message = $('<div/>').addClass('message').text(_t("This field is required"))
-            $el.after($message)
+      showMessage =() =>
+        $el.closest('div').addClass(fieldClass)
+        if $el.siblings('.message').length is 0
+          $message = $('<div/>').addClass('message').text(_t(message))
+          $el.after($message)
+
+      hideMessage =() =>
+        $el.closest('div').removeClass(fieldClass)
+        $el.siblings('.message').remove()
+      
+      showOrHideCondition = () =>
+        if checkIfNotEmpty
+          if $el.val() != ''
+            showMessage()
+          else
+            hideMessage()
         else
-          $el.closest('div').removeClass('input-error')
-          $el.siblings('.message').remove()
+          if $el.val() == ''
+            showMessage()
+          else
+            hideMessage()
 
       $el.on 'blur', ->
-        showOrHideRequired()
+        showOrHideCondition()
 
       $el.on 'keyup', ->
-        showOrHideRequired()
+        showOrHideCondition()
 
-      showOrHideRequired()
+      showOrHideCondition()
 
-    removeRequired: (opts={})->
+    removeFieldCheckCondition: (opts={}) ->
       el = opts.el || @$('input').get(0)
       $el = $(el)
+      fieldClass = opts.fieldClass || 'input-error'
+      
       $el.off 'blur'
-      $el.closest('div').removeClass('input-error')
+      $el.closest('div').removeClass(fieldClass)
       $el.siblings('.message').remove()
+
+    makeRequired: (opts={}) ->
+      @makeFieldCheckCondition()
+
+    removeRequired: (opts={}) ->
+      @removeFieldCheckCondition()
 
   viewRowDetail.Templates = {
     textbox: (cid, key, key_label = key, input_class = '', placeholder_text='', max_length = '') ->
@@ -837,8 +860,12 @@ module.exports = do ->
       senderQuestionId = sender._parent.cid
       if (sender.key is 'bind::oc:external') and (questionId is senderQuestionId)
         if senderValue in ['clinicaldata', 'contactdata']
-          @model.set 'value', ''
-          @$el.addClass('hidden')
+          @removeFieldCheckCondition()
+          if (@model.get 'value') != ''
+            @makeFieldCheckCondition({
+              checkIfNotEmpty: true,
+              message: "This field is not empty"
+            })
         else
           @$el.removeClass('hidden')
           @makeRequired()
@@ -846,6 +873,11 @@ module.exports = do ->
       @fieldTab = "active"
       @$el.addClass("card__settings__fields--#{@fieldTab}")
       viewRowDetail.Templates.textbox @cid, @model.key, _t("Item Group"), 'text', 'Enter data set name'
+      if @rowView.model.attributes['bind::oc:external'].get 'value' != ''
+        @makeFieldCheckCondition({
+          checkIfNotEmpty: true,
+          message: "This field is not empty"
+        })
     afterRender: ->
       @listenForInputChange()
 
@@ -876,6 +908,44 @@ module.exports = do ->
         return viewRowDetail.Templates.dropdown @cid, @model.key, options, _t("Use External Value")
     afterRender: ->
       $select = @$('select')
+
+      @contact_data_type_class_name = 'contact-data-type'
+      @$label_select_contact_data_type = $('<span/>', { class: @contact_data_type_class_name, style: 'display: block; margin-top: 10px;' }).text(_t('Contact Data Type') + ":")
+      @$select_contact_data_type = $('<select/>', { class: @contact_data_type_class_name, style: 'margin-top: 5px;' })
+      $('<option />', {value: "select", text: "- select -"}).appendTo(@$select_contact_data_type)
+      @contact_data_type_options = ['firstname', 'lastname', 'email', 'mobilenumber', 'secondaryid']
+      for contact_data_type_option in @contact_data_type_options
+        $('<option />', {value: "#{contact_data_type_option}", text: "#{contact_data_type_option}"}).appendTo(@$select_contact_data_type)
+
+      fieldClass = 'input-error'
+      message = "Constraint / Constraint Message is not empty"
+      showMessage = () =>
+        $select.closest('div').addClass(fieldClass)
+        if $select.siblings('.message').length is 0
+          $message = $('<div/>').addClass('message').text(_t(message))
+          $select.after($message)
+
+      hideMessage = () =>
+        $select.closest('div').removeClass(fieldClass)
+        $select.siblings('.message').remove()
+
+      addSelectContactDataType = () =>
+        @$('.settings__input').append(@$label_select_contact_data_type)
+        @$('.settings__input').append(@$select_contact_data_type)
+
+        bind_contactdata_value = @rowView.model.attributes['bind::oc:contactdata'].get 'value'
+        instance_contactdata_value = @rowView.model.attributes['instance::oc:contactdata'].get 'value'
+        if bind_contactdata_value != '' and (bind_contactdata_value in @contact_data_type_options)
+          @$select_contact_data_type.val(bind_contactdata_value)
+        else if instance_contactdata_value != '' and (instance_contactdata_value in @contact_data_type_options)
+          @$select_contact_data_type.val(instance_contactdata_value)
+
+        @$select_contact_data_type.change () =>
+          if @$select_contact_data_type.val() == 'select'
+            @rowView.model.attributes['instance::oc:contactdata'].set 'value', ''
+          else
+            @rowView.model.attributes['instance::oc:contactdata'].set 'value', @$select_contact_data_type.val()
+
       modelValue = @model.get 'value'
       if $select.length > 0
         if modelValue == ''
@@ -884,12 +954,23 @@ module.exports = do ->
           $select.val(modelValue)
           Backbone.trigger('ocCustomEvent', { sender: @model, value: modelValue })
 
+          if modelValue == 'contactdata'
+            addSelectContactDataType()
+
         $select.change () =>
+          Backbone.trigger('ocCustomEvent', { sender: @model, value: $select.val() })
           if $select.val() == 'No'
             @model.set 'value', ''
+            $select.siblings(".#{@contact_data_type_class_name}").remove();
+            hideMessage()
           else
             @model.set 'value', $select.val()
-          Backbone.trigger('ocCustomEvent', { sender: @model, value: @model.get 'value' })
+            if $select.val() == 'contactdata'
+              addSelectContactDataType()
+              constraint_value = @rowView.model.attributes.constraint.get('value')
+              constraint_message_value = @rowView.model.attributes.constraint_message.get('value')
+              if (constraint_value != '') or (constraint_message_value != '')
+                showMessage()
 
   viewRowDetail.DetailViewMixins.readonly =
     html: ->

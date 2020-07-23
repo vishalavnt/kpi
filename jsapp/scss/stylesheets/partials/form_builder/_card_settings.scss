@@ -108,7 +108,8 @@
     padding-top: 15px;
   }
 
-  &.xlf-dv-appearance {
+  &.xlf-dv-appearance,
+  &.xlf-dv-oc_external {
     label {
       vertical-align: top;
     }
@@ -133,7 +134,8 @@
   &.input-error {
     color: $cool-red;
 
-    input.text {
+    input.text,
+    select {
       border-color: $cool-red;
     }
   }
