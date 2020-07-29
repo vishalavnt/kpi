@@ -150,6 +150,8 @@ module.exports = do ->
       @onSave = options.save || $.noop
       @onPreview = options.preview || $.noop
 
+      @sortCancelled = false
+
       @expand_all_multioptions = () -> @$('.survey__row:not(.survey__row--deleted) .card--expandedchoices:visible').length > 0
 
       $(window).on "keydown", (evt)=>
@@ -404,6 +406,20 @@ module.exports = do ->
         i++
 
       return i
+
+    cancelSortable: (ui) ->
+      sortable_elements = ui.item.data('sortable_elements')
+      ui.item.data('sortable_elements', null)
+      @formEditorEl.sortable 'cancel'
+      group_rows = @formEditorEl.find('.group__rows')
+      group_rows.each (index) =>
+        $(group_rows[index]).sortable 'cancel'
+      if (ui.item.data('is_multi_select')) and (sortable_elements? and sortable_elements.length > 1)
+        for el in sortable_elements
+          row_id = $(el).attr('data-row-id')
+          if row_id != ui.item.attr('data-row-id')
+            $row = $("li.survey__row--selected.hidden[data-row-id='#{row_id}']").removeClass('hidden')
+
     activateSortable: ->
       $el = @formEditorEl
       survey = @survey
@@ -415,29 +431,55 @@ module.exports = do ->
 
         @survey.trigger evt.type
 
+      sortable_activate_check_esc = () =>
+        @onEscapeKeydown = () =>
+          @sortCancelled = true
+
+      sortable_deactivate_check_esc = () =>
+        @onEscapeKeydown = () =>
+          @sortCancelled = false
+
+      sortable_out = (evt, ui) =>
+        if @sortCancelled
+          @cancelSortable(ui)
+
+      sortable_change = (evt, ui) =>
+        if @sortCancelled
+          @cancelSortable(ui)
+
+      sortable_sort = (evt, ui) =>
+        if @sortCancelled
+          @cancelSortable(ui)
+
       sortable_stop = (evt, ui) =>
-        elements = ui.item.data('sortable_elements')
-        elements_array = _.toArray(elements)
-        elements_before = []
-        elements_after = []
-        itemElementsIndex = elements_array.findIndex (el) => $(el).attr('data-row-id') == ui.item.attr('data-row-id')
-        if itemElementsIndex > -1
-          elements_before = elements_array.slice(0, itemElementsIndex).map((el) => @__rowViews.get($(el).attr('data-row-id')).$el)
-          elements_after = elements_array.slice(itemElementsIndex + 1).map((el) => @__rowViews.get($(el).attr('data-row-id')).$el)
-        if elements_before.length > 0
-          ui.item.before(elements_before)
-        if elements_after.length > 0
-          ui.item.after(elements_after)
-        ui.item.closest('.survey-editor__list').find('.survey__row--selected.hidden').removeClass('hidden')
-        for el in elements
-          row_id = $(el).attr('data-row-id')
-          $row = $("li.survey__row--selected:not('.hidden')[data-row-id='#{row_id}']")
-          $row.trigger('survey__row-sortablestop')
-        @survey.trigger 'sortablestop'
-        if not ui.item.data('is_multi_select')
-          ui.item.closest('.survey-editor__list').find('.survey__row--selected').removeClass('survey__row--selected')
+        if @sortCancelled
+          @cancelSortable(ui)
+          sortable_deactivate_check_esc()
+        else
+          elements = ui.item.data('sortable_elements')
+          elements_array = _.toArray(elements)
+          elements_before = []
+          elements_after = []
+          itemElementsIndex = elements_array.findIndex (el) => $(el).attr('data-row-id') == ui.item.attr('data-row-id')
+          if itemElementsIndex > -1
+            elements_before = elements_array.slice(0, itemElementsIndex).map((el) => @__rowViews.get($(el).attr('data-row-id')).$el)
+            elements_after = elements_array.slice(itemElementsIndex + 1).map((el) => @__rowViews.get($(el).attr('data-row-id')).$el)
+          if elements_before.length > 0
+            ui.item.before(elements_before)
+          if elements_after.length > 0
+            ui.item.after(elements_after)
+          ui.item.closest('.survey-editor__list').find('.survey__row--selected.hidden').removeClass('hidden')
+          for el in elements
+            row_id = $(el).attr('data-row-id')
+            $row = $("li.survey__row--selected:not('.hidden')[data-row-id='#{row_id}']")
+            $row.trigger('survey__row-sortablestop')
+          @survey.trigger 'sortablestop'
+          if not ui.item.data('is_multi_select')
+            ui.item.closest('.survey-editor__list').find('.survey__row--selected').removeClass('survey__row--selected')
 
       sortable_helper = (evt, item) =>
+        sortable_activate_check_esc()
+        @sortCancelled = false
         item.data('is_multi_select', true)
         if not item.hasClass('survey__row--selected')
           item.closest('.survey-editor__list').find('.survey__row--selected').removeClass('survey__row--selected')
@@ -470,6 +512,9 @@ module.exports = do ->
           connectWith: ".group__rows"
           opacity: 0.9
           scroll: true
+          out: sortable_out
+          change: sortable_change
+          sort: sortable_sort
           stop: sortable_stop
           activate: sortable_activate_deactivate
           deactivate: sortable_activate_deactivate
@@ -499,6 +544,9 @@ module.exports = do ->
           connectWith: ".group__rows, .survey-editor__list"
           opacity: 0.9
           scroll: true
+          out: sortable_out
+          change: sortable_change
+          sort: sortable_sort
           stop: sortable_stop
           activate: sortable_activate_deactivate
           deactivate: sortable_activate_deactivate
