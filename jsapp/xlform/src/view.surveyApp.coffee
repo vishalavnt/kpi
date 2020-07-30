@@ -157,9 +157,6 @@ module.exports = do ->
       $(window).on "keydown", (evt)=>
         @onEscapeKeydown(evt) if evt.keyCode is 27
 
-      $(document).on "keyup", (evt)=>
-        @onDocumentEscapeKeyup(evt) if evt.keyCode is 27
-
     getView: (cid)->
       @__rowViews.get(cid)
 
@@ -446,20 +443,24 @@ module.exports = do ->
           @sortCancelled = true
           console.log 'esc pressed'
           console.log '@sortCancelled', @sortCancelled
-        @onDocumentEscapeKeyup = () =>
-          @sortCancelled = true
-          console.log 'esc pressed'
-          console.log '@sortCancelled', @sortCancelled
+        
+        $(document).on "keyup", (evt) =>
+          if evt.keyCode is 27
+            @sortCancelled = true
+            console.log 'esc pressed'
+            console.log '@sortCancelled', @sortCancelled
 
       sortable_deactivate_check_esc = () =>
         @onEscapeKeydown = () =>
           @sortCancelled = false
           console.log 'esc pressed'
           console.log '@sortCancelled', @sortCancelled
-        @onDocumentEscapeKeyup = () =>
-          @sortCancelled = true
-          console.log 'esc pressed'
-          console.log '@sortCancelled', @sortCancelled
+
+        $(document).on "keyup", (evt) =>
+          if evt.keyCode is 27
+            @sortCancelled = false
+            console.log 'esc pressed'
+            console.log '@sortCancelled', @sortCancelled
 
       sortable_stop = (evt, ui) =>
         if @sortCancelled
