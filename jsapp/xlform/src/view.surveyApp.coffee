@@ -155,7 +155,10 @@ module.exports = do ->
       @expand_all_multioptions = () -> @$('.survey__row:not(.survey__row--deleted) .card--expandedchoices:visible').length > 0
 
       $(window).on "keydown", (evt)=>
-        @onEscapeKeydown(evt)  if evt.keyCode is 27
+        @onEscapeKeydown(evt) if evt.keyCode is 27
+
+      $(document).on "keyup", (evt)=>
+        @onDocumentEscapeKeyup(evt) if evt.keyCode is 27
 
     getView: (cid)->
       @__rowViews.get(cid)
@@ -408,17 +411,24 @@ module.exports = do ->
       return i
 
     cancelSortable: (ui) ->
+      console.log 'cancelSortable'
       sortable_elements = ui.item.data('sortable_elements')
       ui.item.data('sortable_elements', null)
       @formEditorEl.sortable 'cancel'
       group_rows = @formEditorEl.find('.group__rows')
       group_rows.each (index) =>
         $(group_rows[index]).sortable 'cancel'
+      
+      if ui.item.hasClass('survey__row--group')
+        ui.item.find('.survey__row--selected.hidden').removeClass('hidden')
+
       if (ui.item.data('is_multi_select')) and (sortable_elements? and sortable_elements.length > 1)
         for el in sortable_elements
           row_id = $(el).attr('data-row-id')
           if row_id != ui.item.attr('data-row-id')
-            $row = $("li.survey__row--selected.hidden[data-row-id='#{row_id}']").removeClass('hidden')
+            $row = $("li.survey__row--selected.hidden[data-row-id='#{row_id}']")
+            $row.removeClass('hidden')
+            $row.find('.survey__row--selected.hidden').removeClass('hidden')
 
     activateSortable: ->
       $el = @formEditorEl
@@ -434,22 +444,22 @@ module.exports = do ->
       sortable_activate_check_esc = () =>
         @onEscapeKeydown = () =>
           @sortCancelled = true
+          console.log 'esc pressed'
+          console.log '@sortCancelled', @sortCancelled
+        @onDocumentEscapeKeyup = () =>
+          @sortCancelled = true
+          console.log 'esc pressed'
+          console.log '@sortCancelled', @sortCancelled
 
       sortable_deactivate_check_esc = () =>
         @onEscapeKeydown = () =>
           @sortCancelled = false
-
-      sortable_out = (evt, ui) =>
-        if @sortCancelled
-          @cancelSortable(ui)
-
-      sortable_change = (evt, ui) =>
-        if @sortCancelled
-          @cancelSortable(ui)
-
-      sortable_sort = (evt, ui) =>
-        if @sortCancelled
-          @cancelSortable(ui)
+          console.log 'esc pressed'
+          console.log '@sortCancelled', @sortCancelled
+        @onDocumentEscapeKeyup = () =>
+          @sortCancelled = true
+          console.log 'esc pressed'
+          console.log '@sortCancelled', @sortCancelled
 
       sortable_stop = (evt, ui) =>
         if @sortCancelled
@@ -512,9 +522,6 @@ module.exports = do ->
           connectWith: ".group__rows"
           opacity: 0.9
           scroll: true
-          out: sortable_out
-          change: sortable_change
-          sort: sortable_sort
           stop: sortable_stop
           activate: sortable_activate_deactivate
           deactivate: sortable_activate_deactivate
@@ -544,9 +551,6 @@ module.exports = do ->
           connectWith: ".group__rows, .survey-editor__list"
           opacity: 0.9
           scroll: true
-          out: sortable_out
-          change: sortable_change
-          sort: sortable_sort
           stop: sortable_stop
           activate: sortable_activate_deactivate
           deactivate: sortable_activate_deactivate
