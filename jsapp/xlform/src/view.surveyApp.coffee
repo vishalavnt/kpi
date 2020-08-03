@@ -443,24 +443,12 @@ module.exports = do ->
           @sortCancelled = true
           console.log 'esc pressed'
           console.log '@sortCancelled', @sortCancelled
-        
-        $(document).on "keyup", (evt) =>
-          if evt.keyCode is 27
-            @sortCancelled = true
-            console.log 'esc pressed'
-            console.log '@sortCancelled', @sortCancelled
 
       sortable_deactivate_check_esc = () =>
         @onEscapeKeydown = () =>
           @sortCancelled = false
           console.log 'esc pressed'
           console.log '@sortCancelled', @sortCancelled
-
-        $(document).on "keyup", (evt) =>
-          if evt.keyCode is 27
-            @sortCancelled = false
-            console.log 'esc pressed'
-            console.log '@sortCancelled', @sortCancelled
 
       sortable_stop = (evt, ui) =>
         if @sortCancelled
