@@ -26,6 +26,9 @@ from taggit.managers import TaggableManager, _TaggableManager
 from taggit.utils import require_instance_manager
 from bs4 import BeautifulSoup
 
+from pyxform import builder, xls2json
+from pyxform.errors import PyXFormError
+
 from formpack import FormPack
 from formpack.utils.flatten_content import flatten_content
 from formpack.utils.json_hash import json_hash
@@ -1135,6 +1138,96 @@ class AssetSnapshot(models.Model, XlsExportable, FormpackXLSFormUtils):
         self.source = _source
         return super(AssetSnapshot, self).save(*args, **kwargs)
 
+    def _prepare_for_xml_pyxform_generation(self, content, id_string):
+        if 'settings' in content:
+            settings = content['settings']
+
+            if 'id_string' not in settings.keys():
+                settings['id_string'] = id_string
+
+            content['settings'] = [settings]
+
+        if 'settings_header' not in content:
+            content['settings_header'] = [
+                {
+                  "form_title": "",
+                  "form_id": "",
+                  "version": "",
+                  "style": "",
+                  "crossform_references": "",
+                  "namespaces": "",
+                  "Read Me - Form template created by OpenClinica Form Designer": ""
+                }
+            ]
+
+        if 'translations' in content:
+            translations = content['translations']
+            if all(x is None for x in translations):
+                del content['translations']
+
+        if 'choices' in content:
+            choices = content['choices']
+
+            for choice_col_idx in range(len(choices)):
+                choice_col = choices[choice_col_idx]
+
+                if 'label' in choice_col:
+                    choice_col['label'] = choice_col['label'][0]
+
+        if 'choices_header' not in content:
+            content['choices_header'] = [
+                {
+                  "list_name": "",
+                  "label": "",
+                  "name": "",
+                  "image": ""
+                }
+            ]
+
+
+        if 'survey' in content:
+            survey = content['survey']
+
+            for survey_col_idx in range(len(survey)):
+                survey_col = survey[survey_col_idx]
+
+                if 'label' in survey_col:
+                    survey_col['label'] = survey_col['label'][0]
+
+                if 'type' in survey_col:
+                    if 'select_one' == survey_col['type'] and 'select_from_list_name' in survey_col.keys():
+                        survey_col['type'] = "{0} {1}".format(survey_col['type'], survey_col['select_from_list_name'])
+                        del survey_col['select_from_list_name']
+                    elif 'select_one_from_file' == survey_col['type'] and 'select_one_from_file_filename' in survey_col.keys():
+                        survey_col['type'] = "{0} {1}".format(survey_col['type'], survey_col['select_one_from_file_filename'])
+                        del survey_col['select_one_from_file_filename']
+
+        if 'survey_header' not in content:
+            content['survey_header'] = [
+                {
+                  "type": "",
+                  "name": "",
+                  "label": "",
+                  "bind::oc:itemgroup": "",
+                  "hint": "",
+                  "appearance": "",
+                  "bind::oc:briefdescription": "",
+                  "bind::oc:description": "",
+                  "relevant": "",
+                  "required": "",
+                  "required_message": "",
+                  "constraint": "",
+                  "constraint_message": "",
+                  "calculation": "",
+                  "readonly": "",
+                  "image": "",
+                  "repeat_count": "",
+                  "bind::oc:external": "",
+                  "bind::oc:contactdata": "",
+                  "instance::oc:contactdata": ""
+                }
+            ]
+
     def generate_xml_from_source(self,
                                  source,
                                  include_note=False,
@@ -1168,7 +1261,42 @@ class AssetSnapshot(models.Model, XlsExportable, FormpackXLSFormUtils):
                                 root_node_name=root_node_name,
                                 id_string=id_string,
                                 title=form_title)[0].to_xml(warnings=warnings)
-            
+
+            details.update({
+                u'status': u'success',
+                u'warnings': warnings,
+            })
+
+        except PyXFormError as err:
+            self._prepare_for_xml_pyxform_generation(source_copy, id_string=id_string)
+
+            survey_json = xls2json.workbook_to_json(source_copy)
+            survey = builder.create_survey_element_from_dict(survey_json)
+            xml = survey.to_xml()
+
+            details.update({
+                u'status': u'success',
+                u'warnings': warnings,
+            })
+        
+        except Exception as err:
+            err_message = unicode(err)
+            logging.error('Failed to generate xform for asset', extra={
+                'src': source,
+                'id_string': id_string,
+                'uid': self.uid,
+                '_msg': err_message,
+                'warnings': warnings,
+            })
+            xml = ''
+            details.update({
+                u'status': u'failure',
+                u'error_type': type(err).__name__,
+                u'error': err_message,
+                u'warnings': warnings,
+            })
+        
+        if xml != '':
             soup = BeautifulSoup(xml, 'xml')
             all_instance = soup.find_all('instance')
             instance_count = len(all_instance)
@@ -1189,26 +1317,6 @@ class AssetSnapshot(models.Model, XlsExportable, FormpackXLSFormUtils):
 
             xml = str(soup)
 
-            details.update({
-                u'status': u'success',
-                u'warnings': warnings,
-            })
-        except Exception as err:
-            err_message = unicode(err)
-            logging.error('Failed to generate xform for asset', extra={
-                'src': source,
-                'id_string': id_string,
-                'uid': self.uid,
-                '_msg': err_message,
-                'warnings': warnings,
-            })
-            xml = ''
-            details.update({
-                u'status': u'failure',
-                u'error_type': type(err).__name__,
-                u'error': err_message,
-                u'warnings': warnings,
-            })
         return (xml, details)
 
 
