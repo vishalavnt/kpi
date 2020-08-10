@@ -215,7 +215,8 @@ module.exports = do ->
     "bind::oc:external",
     "readonly",
     "bind::oc:contactdata", 
-    "instance::oc:contactdata"
+    "instance::oc:contactdata",
+    'trigger'
   ]
 
   configs.lookupRowType = do->
@@ -289,7 +290,6 @@ module.exports = do ->
       _hideUnlessChanged: true
     default:
       value: ""
-      _hideUnlessChanged: true
     constraint:
       value: ""
       _hideUnlessChanged: true
@@ -319,6 +319,8 @@ module.exports = do ->
     "bind::oc:contactdata":
       value: ''
     "instance::oc:contactdata":
+      value: ''
+    trigger:
       value: ''
 
   configs.newGroupDetails =

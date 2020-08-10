@@ -397,7 +397,7 @@ module.exports = do ->
       questionType = @model.get('type').get('typeId')
 
       # don't display columns that start with a $
-      hiddenFields = ['label', 'hint', 'type', 'select_from_list_name', 'kobo--matrix_list', 'parameters', 'tags', 'default', 'bind::oc:contactdata', 'instance::oc:contactdata']
+      hiddenFields = ['label', 'hint', 'type', 'select_from_list_name', 'kobo--matrix_list', 'parameters', 'tags', 'default', 'bind::oc:contactdata', 'instance::oc:contactdata', 'trigger']
       for [key, val] in @model.attributesArray() when !key.match(/^\$/) and key not in hiddenFields
         if key is 'required'
           if questionType isnt 'note'

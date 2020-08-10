@@ -183,9 +183,6 @@ class FormpackXLSFormUtils(object):
         # Remove hxl column and value from XLS export
         opts['remove_columns']['survey'].append('hxl')
 
-        # Remove 'default' column and value from XLS export
-        opts['remove_columns']['survey'].append('default')
-        
         if not kobo_specific:
             opts['remove_columns']['survey'].append('$kuid')
             opts['remove_columns']['survey'].append('$autoname')
@@ -390,7 +387,9 @@ class XlsExportable(object):
         u'required_message',
         u'constraint',
         u'constraint_message',
+        u'default',
         u'calculation',
+        u'trigger',
         u'readonly',
         u'image',
         u'repeat_count',
@@ -1203,30 +1202,7 @@ class AssetSnapshot(models.Model, XlsExportable, FormpackXLSFormUtils):
                         del survey_col['select_one_from_file_filename']
 
         if 'survey_header' not in content:
-            content['survey_header'] = [
-                {
-                  "type": "",
-                  "name": "",
-                  "label": "",
-                  "bind::oc:itemgroup": "",
-                  "hint": "",
-                  "appearance": "",
-                  "bind::oc:briefdescription": "",
-                  "bind::oc:description": "",
-                  "relevant": "",
-                  "required": "",
-                  "required_message": "",
-                  "constraint": "",
-                  "constraint_message": "",
-                  "calculation": "",
-                  "readonly": "",
-                  "image": "",
-                  "repeat_count": "",
-                  "bind::oc:external": "",
-                  "bind::oc:contactdata": "",
-                  "instance::oc:contactdata": ""
-                }
-            ]
+            content['survey_header'] = self.surveyCols
 
     def generate_xml_from_source(self,
                                  source,
