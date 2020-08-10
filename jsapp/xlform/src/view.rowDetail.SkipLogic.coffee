@@ -328,7 +328,7 @@ module.exports = do ->
         options = _.map(target_question.selectableRows(), (row) ->
           return {
             value: row.cid
-            text: row.getValue("label")
+            text: "#{row.getValue('label')} (${#{row.getValue('name')}})"
           }
         )
 
