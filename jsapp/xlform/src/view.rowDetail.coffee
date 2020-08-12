@@ -204,7 +204,10 @@ module.exports = do ->
       select = """<select name="#{key}" id="#{cid}">"""
 
       for value in values
-        select += """<option value="#{value}">#{value}</option>"""
+        if typeof value == 'object'
+          select += """<option value="#{value.value}">#{value.text}</option>"""
+        else
+          select += """<option value="#{value}">#{value}</option>"""
 
       select += "</select>"
 
@@ -458,7 +461,7 @@ module.exports = do ->
     html: ->
       @fieldTab = "active"
       @$el.addClass("card__settings__fields--#{@fieldTab}")
-      label = if @model.key == 'default' then _t("Default response") else @model.key.replace(/_/g, ' ')
+      label = if @model.key == 'default' then _t("Default value") else @model.key.replace(/_/g, ' ')
       viewRowDetail.Templates.textbox @cid, @model.key, label, 'text'
     afterRender: ->
       @$el.find('input').eq(0).val(@model.get("value"))
@@ -1004,5 +1007,45 @@ module.exports = do ->
     afterRender: ->
       @listenForInputChange()
       @makeRequired()
+
+  viewRowDetail.DetailViewMixins.trigger =
+    getOptions: () ->
+      currentQuestion = @model._parent
+      non_selectable = ['datetime', 'time', 'note', 'group', 'kobomatrix', 'repeat', 'rank', 'score']
+      
+      questions = []
+      currentQuestion.getSurvey().forEachRow (question) =>
+        if (question.getValue('type') not in non_selectable) and (question.cid != currentQuestion.cid)
+          questions.push question
+      , includeGroups:true
+
+      options = []
+      options = _.map(questions, (row) ->
+        return {
+          value: "${#{row.getValue('name')}}"
+          text: "#{row.getValue('label')} (${#{row.getValue('name')}})"
+        }
+      )
+      # add placeholder message/option
+      options.unshift({
+        value: ''
+        text: _t("No Trigger")
+      })
+      options
+    html: ->
+      @fieldTab = "active"
+      @$el.addClass("card__settings__fields--#{@fieldTab}")
+      options = @getOptions()
+      
+      return viewRowDetail.Templates.dropdown @cid, @model.key, options, _t("Calculation trigger")
+    afterRender: ->
+      $select = @$('select')
+      modelValue = @model.get 'value'
+      if $select.length > 0
+        if modelValue != ''
+          $select.val(modelValue)
+
+        $select.change () =>
+          @model.set 'value', $select.val()
 
   viewRowDetail

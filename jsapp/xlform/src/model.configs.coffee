@@ -210,12 +210,13 @@ module.exports = do ->
     "hint",
     "required",
     "relevant",
-    "default",
     "constraint",
     "bind::oc:external",
     "readonly",
     "bind::oc:contactdata", 
     "instance::oc:contactdata",
+    "default",
+    'calculation',
     'trigger'
   ]
 

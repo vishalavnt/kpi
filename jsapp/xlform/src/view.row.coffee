@@ -397,7 +397,7 @@ module.exports = do ->
       questionType = @model.get('type').get('typeId')
 
       # don't display columns that start with a $
-      hiddenFields = ['label', 'hint', 'type', 'select_from_list_name', 'kobo--matrix_list', 'parameters', 'tags', 'default', 'bind::oc:contactdata', 'instance::oc:contactdata', 'trigger']
+      hiddenFields = ['label', 'hint', 'type', 'select_from_list_name', 'kobo--matrix_list', 'parameters', 'tags', 'bind::oc:contactdata', 'instance::oc:contactdata']
       for [key, val] in @model.attributesArray() when !key.match(/^\$/) and key not in hiddenFields
         if key is 'required'
           if questionType isnt 'note'
@@ -411,7 +411,7 @@ module.exports = do ->
             if key not in ['readonly', 'select_one_from_file_filename']
               new $viewRowDetail.DetailView(model: val, rowView: @).render().insertInDOM(@)
           else if questionType is 'note'
-            if key not in ['readonly', 'bind::oc:itemgroup', 'bind::oc:external', 'calculation', 'bind::oc:briefdescription', 'bind::oc:description', 'select_one_from_file_filename']
+            if key not in ['readonly', 'bind::oc:itemgroup', 'bind::oc:external', 'calculation', 'bind::oc:briefdescription', 'bind::oc:description', 'select_one_from_file_filename', 'default', 'trigger']
               new $viewRowDetail.DetailView(model: val, rowView: @).render().insertInDOM(@)
           else
             if key isnt 'select_one_from_file_filename'
