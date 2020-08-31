@@ -1011,7 +1011,7 @@ module.exports = do ->
   viewRowDetail.DetailViewMixins.trigger =
     getOptions: () ->
       currentQuestion = @model._parent
-      non_selectable = ['datetime', 'time', 'note', 'group', 'kobomatrix', 'repeat', 'rank', 'score']
+      non_selectable = ['datetime', 'time', 'note', 'group', 'kobomatrix', 'repeat', 'rank', 'score', 'calculate']
       
       questions = []
       currentQuestion.getSurvey().forEachRow (question) =>
