@@ -93,14 +93,11 @@ module.exports = do ->
       @c = $("<code><label>#{_t("Value:")}</label> <span class=\"js-cancel-select-row\">#{_t("AUTOMATIC")}</span></code>")
       @i = $("<code><label>#{_t("Image:")}</label> <span class=\"js-cancel-select-row\">#{_t("None")}</span></code>")
       @d = $('<div>')
-      @optionImageField = 'media::image'
+      @optionImageField = 'image'
       if @model
         @p.html @model.get("label") || 'Empty'
         @$el.attr("data-option-id", @model.cid)
         $('span', @c).html @model.get("name")
-        if not @model.get(@optionImageField)?
-          if @model.get('image')? and @model.get('image') != ''
-            @optionImageField = 'image'
         $('span', @i).html @model.get(@optionImageField)
         @model.set('setManually', true)
       else
