@@ -210,10 +210,14 @@ module.exports = do ->
     "hint",
     "required",
     "relevant",
-    "default",
     "constraint",
     "bind::oc:external",
-    "readonly"
+    "readonly",
+    "bind::oc:contactdata", 
+    "instance::oc:contactdata",
+    "default",
+    'calculation',
+    'trigger'
   ]
 
   configs.lookupRowType = do->
@@ -287,7 +291,6 @@ module.exports = do ->
       _hideUnlessChanged: true
     default:
       value: ""
-      _hideUnlessChanged: true
     constraint:
       value: ""
       _hideUnlessChanged: true
@@ -313,6 +316,12 @@ module.exports = do ->
     "bind::oc:description":
       value: ''
     "select_one_from_file_filename":
+      value: ''
+    "bind::oc:contactdata":
+      value: ''
+    "instance::oc:contactdata":
+      value: ''
+    trigger:
       value: ''
 
   configs.newGroupDetails =

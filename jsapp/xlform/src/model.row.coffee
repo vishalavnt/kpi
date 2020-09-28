@@ -57,16 +57,14 @@ module.exports = do ->
 
     selectableRows: () ->
       questions = []
-      limit = false
-
-      non_selectable = ['datetime', 'time', 'note', 'calculate', 'group', 'kobomatrix', 'repeat', 'rank', 'score']
+      
+      non_selectable = ['datetime', 'time', 'note', 'group', 'kobomatrix', 'repeat', 'rank', 'score']
 
       survey = @getSurvey()
       if survey == null
         return null
       survey.forEachRow (question) =>
-        limit = limit || question is @
-        if !limit && question.getValue('type') not in non_selectable
+        if (question.getValue('type') not in non_selectable) and (not (question is @))
           questions.push question
       , includeGroups:true
       questions

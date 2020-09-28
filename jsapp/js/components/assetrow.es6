@@ -124,6 +124,11 @@ class AssetRow extends React.Component {
       this.props.downloads = this.props.downloads.filter(dl => dl.format !== 'xml');
     }
 
+    var settings_version = '';
+    if (this.props.summary && this.props.summary.settings_version) {
+      settings_version = this.props.summary.settings_version;
+    }
+
     return (
         <bem.AssetRow
           m={{
@@ -152,7 +157,7 @@ class AssetRow extends React.Component {
             {/* "title" column */}
             <bem.AssetRow__cell
               m={'title'}
-              className={['mdl-cell', this.props.asset_type == ASSET_TYPES.survey.id ? 'mdl-cell--3-col mdl-cell--4-col-tablet mdl-cell--2-col-phone' : 'mdl-cell--4-col mdl-cell--2-col-tablet mdl-cell--2-col-phone']}
+              className={['mdl-cell', this.props.asset_type == ASSET_TYPES.survey.id ? 'mdl-cell--3-col mdl-cell--4-col-tablet mdl-cell--2-col-phone' : 'mdl-cell--3-col mdl-cell--1-col-tablet mdl-cell--1-col-phone']}
             >
               { this.props.asset_type && (
                   this.props.asset_type == ASSET_TYPES.template.id ||
@@ -170,6 +175,20 @@ class AssetRow extends React.Component {
                 </bem.AssetRow__description>
               }
             </bem.AssetRow__cell>
+
+            {/* "version" column for library types */}
+            { this.props.asset_type && (
+                this.props.asset_type == ASSET_TYPES.template.id ||
+                this.props.asset_type == ASSET_TYPES.block.id ||
+                this.props.asset_type == ASSET_TYPES.question.id
+              ) &&
+              <bem.AssetRow__cell
+                m={'version'}
+                className={['mdl-cell mdl-cell--1-col mdl-cell--1-col-tablet mdl-cell--1-col-phone']}
+              >
+                {settings_version}
+              </bem.AssetRow__cell>
+            }
 
             {/* "type" column for library types */}
             { this.props.asset_type && (

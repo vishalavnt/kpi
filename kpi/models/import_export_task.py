@@ -322,7 +322,7 @@ class ImportTask(ImportExportTask):
         elif 'survey' in survey_dict_keys:
             if not destination:
                 if library and len(survey_dict.get('survey')) > 1:
-                    asset_type = 'block'
+                    asset_type = 'template'
                 elif library:
                     asset_type = 'question'
                 else:

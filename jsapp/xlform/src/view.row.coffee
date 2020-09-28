@@ -384,16 +384,6 @@ module.exports = do ->
         if key in ["name", "_isRepeat", "appearance", "relevant"] or key.match(/^.+::.+/)
           new $viewRowDetail.DetailView(model: val, rowView: @).render().insertInDOM(@)
 
-      @model.on 'add', (row) =>
-        if row.constructor.key == 'group'
-          $appearanceField = @$('.xlf-dv-appearance').eq(0)
-          $appearanceField.hide()
-          $appearanceField.find('input:checkbox').prop('checked', false)
-          appearanceModel = @model.get('appearance')
-          if appearanceModel.getValue()
-            alertify.warning(_t("You can't display nested groups on the same screen - the setting has been removed from the parent group"))
-          appearanceModel.set('value', '')
-
       @model.on 'remove', (row) =>
         if row.constructor.key == 'group' && !@hasNestedGroups()
           @$('.xlf-dv-appearance').eq(0).show()
@@ -407,7 +397,7 @@ module.exports = do ->
       questionType = @model.get('type').get('typeId')
 
       # don't display columns that start with a $
-      hiddenFields = ['label', 'hint', 'type', 'select_from_list_name', 'kobo--matrix_list', 'parameters', 'tags', 'default']
+      hiddenFields = ['label', 'hint', 'type', 'select_from_list_name', 'kobo--matrix_list', 'parameters', 'tags', 'bind::oc:contactdata', 'instance::oc:contactdata']
       for [key, val] in @model.attributesArray() when !key.match(/^\$/) and key not in hiddenFields
         if key is 'required'
           if questionType isnt 'note'
@@ -421,7 +411,7 @@ module.exports = do ->
             if key not in ['readonly', 'select_one_from_file_filename']
               new $viewRowDetail.DetailView(model: val, rowView: @).render().insertInDOM(@)
           else if questionType is 'note'
-            if key not in ['readonly', 'bind::oc:itemgroup', 'bind::oc:external', 'calculation', 'bind::oc:briefdescription', 'bind::oc:description', 'select_one_from_file_filename']
+            if key not in ['readonly', 'bind::oc:itemgroup', 'bind::oc:external', 'calculation', 'bind::oc:briefdescription', 'bind::oc:description', 'select_one_from_file_filename', 'default', 'trigger']
               new $viewRowDetail.DetailView(model: val, rowView: @).render().insertInDOM(@)
           else
             if key isnt 'select_one_from_file_filename'
@@ -438,12 +428,6 @@ module.exports = do ->
             parameters: @model.getParameters(),
             questionType: questionType
           }).render().insertInDOM(@)
-
-      if questionType is 'file'
-        @acceptedFilesView = new $acceptedFilesView.AcceptedFilesView({
-          rowView: @,
-          acceptedFiles: @model.getAcceptedFiles()
-        }).render().insertInDOM(@)
 
       return @
 

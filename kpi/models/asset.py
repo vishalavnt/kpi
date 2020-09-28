@@ -26,6 +26,9 @@ from taggit.managers import TaggableManager, _TaggableManager
 from taggit.utils import require_instance_manager
 from bs4 import BeautifulSoup
 
+from pyxform import builder, xls2json
+from pyxform.errors import PyXFormError
+
 from formpack import FormPack
 from formpack.utils.flatten_content import flatten_content
 from formpack.utils.json_hash import json_hash
@@ -180,9 +183,6 @@ class FormpackXLSFormUtils(object):
         # Remove hxl column and value from XLS export
         opts['remove_columns']['survey'].append('hxl')
 
-        # Remove 'default' column and value from XLS export
-        opts['remove_columns']['survey'].append('default')
-        
         if not kobo_specific:
             opts['remove_columns']['survey'].append('$kuid')
             opts['remove_columns']['survey'].append('$autoname')
@@ -387,11 +387,15 @@ class XlsExportable(object):
         u'required_message',
         u'constraint',
         u'constraint_message',
+        u'default',
         u'calculation',
+        u'trigger',
         u'readonly',
         u'image',
         u'repeat_count',
-        u'bind::oc:external'
+        u'bind::oc:external',
+        u'bind::oc:contactdata',
+        u'instance::oc:contactdata'
     ]
 
     choicesCols = [
@@ -419,6 +423,7 @@ class XlsExportable(object):
         content = OrderedDict(content)
         self._survey_column_oc_adjustments(content)
         self._settings_ensure_form_id(content)
+        self._settings_ensure_required_columns(content)
         self._settings_maintain_key_order(content)
         self._choices_column_oc_adjustments(content)
         self._xlsform_structure(content, ordered=True, kobo_specific=kobo_specific_types)
@@ -522,6 +527,24 @@ class XlsExportable(object):
                 settings['form_id'] = settings['id_string']
                 del settings['id_string']
     
+    def _settings_ensure_required_columns(self, content):
+        if 'settings' in content:
+            settings = content['settings']
+
+            try:
+                form_title = self.name
+            except Exception as e:
+                form_title = "Form Title"
+
+            settings.update(
+                {
+                    'form_title': form_title,
+                    'crossform_references': '',
+                    'namespaces': 'oc="http://openclinica.org/xforms" , OpenClinica="http://openclinica.com/odm"',
+                    'Read Me - Form template created by OpenClinica Form Designer': ''
+                }
+            )
+
     def _settings_maintain_key_order(self, content):
         if 'settings' in content:
             settings = content['settings']
@@ -593,14 +616,6 @@ class XlsExportable(object):
         if versioned:
             append = kwargs['append'] = kwargs.get('append', {})
             append_settings = append['settings'] = append.get('settings', {})
-            append_settings.update(
-                {
-                    'form_title': self.name,
-                    'crossform_references': '',
-                    'namespaces': 'oc="http://openclinica.org/xforms" , OpenClinica="http://openclinica.com/odm"',
-                    'Read Me - Form template created by OpenClinica Form Designer': ''
-                }
-            )
         try:
             def _add_contents_to_sheet(sheet, contents):
                 cols = []
@@ -777,7 +792,16 @@ class Asset(ObjectPermissionMixin,
                 del content['survey'][survey_col_idx]['readonly']
             else:
                 content['survey'][survey_col_idx]['oc_readonly'] = 'false'
-                    
+
+    def _adjust_content_media_column(self, content):
+        survey = content.get('survey', [])
+        media_columns = ['media::audio', 'media::image', 'media::video']
+        for survey_col_idx in range(len(survey)):
+            survey_col = survey[survey_col_idx]
+            for media_column in media_columns:
+                if media_column in survey_col:
+                    content['survey'][survey_col_idx][media_column[7:]] = survey_col[media_column]
+                    del content['survey'][survey_col_idx][media_column]
 
     def _revert_custom_column(self, content):
         survey = content.get('survey', [])
@@ -796,6 +820,7 @@ class Asset(ObjectPermissionMixin,
         self._adjust_content_custom_column(self.content)
         self._standardize(self.content)
         self._revert_custom_column(self.content)
+        self._adjust_content_media_column(self.content)
         self._make_default_translation_first(self.content)
         self._strip_empty_rows(self.content)
         self._assign_kuids(self.content)
@@ -1122,6 +1147,73 @@ class AssetSnapshot(models.Model, XlsExportable, FormpackXLSFormUtils):
         self.source = _source
         return super(AssetSnapshot, self).save(*args, **kwargs)
 
+    def _prepare_for_xml_pyxform_generation(self, content, id_string):
+        if 'settings' in content:
+            settings = content['settings']
+
+            if 'id_string' not in settings.keys():
+                settings['id_string'] = id_string
+
+            content['settings'] = [settings]
+
+        if 'settings_header' not in content:
+            content['settings_header'] = [
+                {
+                  "form_title": "",
+                  "form_id": "",
+                  "version": "",
+                  "style": "",
+                  "crossform_references": "",
+                  "namespaces": "",
+                  "Read Me - Form template created by OpenClinica Form Designer": ""
+                }
+            ]
+
+        if 'translations' in content:
+            translations = content['translations']
+            if all(x is None for x in translations):
+                del content['translations']
+
+        if 'choices' in content:
+            choices = content['choices']
+
+            for choice_col_idx in range(len(choices)):
+                choice_col = choices[choice_col_idx]
+
+                if 'label' in choice_col:
+                    choice_col['label'] = choice_col['label'][0]
+
+        if 'choices_header' not in content:
+            content['choices_header'] = [
+                {
+                  "list_name": "",
+                  "label": "",
+                  "name": "",
+                  "image": ""
+                }
+            ]
+
+
+        if 'survey' in content:
+            survey = content['survey']
+
+            for survey_col_idx in range(len(survey)):
+                survey_col = survey[survey_col_idx]
+
+                if 'label' in survey_col:
+                    survey_col['label'] = survey_col['label'][0]
+
+                if 'type' in survey_col:
+                    if 'select_one' == survey_col['type'] and 'select_from_list_name' in survey_col.keys():
+                        survey_col['type'] = "{0} {1}".format(survey_col['type'], survey_col['select_from_list_name'])
+                        del survey_col['select_from_list_name']
+                    elif 'select_one_from_file' == survey_col['type'] and 'select_one_from_file_filename' in survey_col.keys():
+                        survey_col['type'] = "{0} {1}".format(survey_col['type'], survey_col['select_one_from_file_filename'])
+                        del survey_col['select_one_from_file_filename']
+
+        if 'survey_header' not in content:
+            content['survey_header'] = self.surveyCols
+
     def generate_xml_from_source(self,
                                  source,
                                  include_note=False,
@@ -1146,6 +1238,7 @@ class AssetSnapshot(models.Model, XlsExportable, FormpackXLSFormUtils):
         self._expand_kobo_qs(source_copy)
         self._populate_fields_with_autofields(source_copy)
         self._strip_kuids(source_copy)
+        self._settings_ensure_required_columns(source_copy)
 
         warnings = []
         details = {}
@@ -1154,7 +1247,42 @@ class AssetSnapshot(models.Model, XlsExportable, FormpackXLSFormUtils):
                                 root_node_name=root_node_name,
                                 id_string=id_string,
                                 title=form_title)[0].to_xml(warnings=warnings)
-            
+
+            details.update({
+                u'status': u'success',
+                u'warnings': warnings,
+            })
+
+        except PyXFormError as err:
+            self._prepare_for_xml_pyxform_generation(source_copy, id_string=id_string)
+
+            survey_json = xls2json.workbook_to_json(source_copy)
+            survey = builder.create_survey_element_from_dict(survey_json)
+            xml = survey.to_xml()
+
+            details.update({
+                u'status': u'success',
+                u'warnings': warnings,
+            })
+        
+        except Exception as err:
+            err_message = unicode(err)
+            logging.error('Failed to generate xform for asset', extra={
+                'src': source,
+                'id_string': id_string,
+                'uid': self.uid,
+                '_msg': err_message,
+                'warnings': warnings,
+            })
+            xml = ''
+            details.update({
+                u'status': u'failure',
+                u'error_type': type(err).__name__,
+                u'error': err_message,
+                u'warnings': warnings,
+            })
+        
+        if xml != '':
             soup = BeautifulSoup(xml, 'xml')
             all_instance = soup.find_all('instance')
             instance_count = len(all_instance)
@@ -1175,26 +1303,6 @@ class AssetSnapshot(models.Model, XlsExportable, FormpackXLSFormUtils):
 
             xml = str(soup)
 
-            details.update({
-                u'status': u'success',
-                u'warnings': warnings,
-            })
-        except Exception as err:
-            err_message = unicode(err)
-            logging.error('Failed to generate xform for asset', extra={
-                'src': source,
-                'id_string': id_string,
-                'uid': self.uid,
-                '_msg': err_message,
-                'warnings': warnings,
-            })
-            xml = ''
-            details.update({
-                u'status': u'failure',
-                u'error_type': type(err).__name__,
-                u'error': err_message,
-                u'warnings': warnings,
-            })
         return (xml, details)
 
 
