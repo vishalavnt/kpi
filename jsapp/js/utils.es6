@@ -535,6 +535,7 @@ export function updateCrossStorageTimeOut() {
 export function checkCrossStorageUser(userName) {
   return crossStorageClient.onConnect().then(function() {
     return crossStorageClient.get(CROSS_STORAGE_USER_KEY).then(function(userValue) {
+      userValue = userValue.trim();
       if (_.isEmpty(userValue)) {
         console.log('checkCrossStorageUser userValue null');
         return Promise.reject('logout');
