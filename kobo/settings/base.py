@@ -73,6 +73,7 @@ LOGIN_REDIRECT_URL = '/'
 # apps both define templates for the same view, the first app listed receives
 # precedence
 INSTALLED_APPS = (
+    'oc_hack',
     'django.contrib.auth',
     'oc',
     'django.contrib.contenttypes',

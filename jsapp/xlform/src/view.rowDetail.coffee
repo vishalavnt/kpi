@@ -170,6 +170,7 @@ module.exports = do ->
       fieldClass = opts.fieldClass || 'input-error'
       
       $el.off 'blur'
+      $el.off 'keyup'
       $el.closest('div').removeClass(fieldClass)
       $el.siblings('.message').remove()
 
@@ -865,20 +866,23 @@ module.exports = do ->
         @$el.siblings(".message").remove();
         @$el.closest('div').removeClass("input-error")
         if senderValue in ['clinicaldata', 'contactdata']
-          if (@model.get 'value') != ''
-            @makeFieldCheckCondition({
-              checkIfNotEmpty: true,
-              message: "This field is not empty"
-            })
+          @removeRequired()
+          @makeFieldCheckCondition({
+            checkIfNotEmpty: true,
+            message: "This field needs to be empty"
+          })
         else
           @$el.removeClass('hidden')
           @makeRequired()
+      else
+        @makeRequired()
     html: ->
       @fieldTab = "active"
       @$el.addClass("card__settings__fields--#{@fieldTab}")
       viewRowDetail.Templates.textbox @cid, @model.key, _t("Item Group"), 'text', 'Enter data set name'
     afterRender: ->
       @listenForInputChange()
+      @makeRequired()
 
   viewRowDetail.DetailViewMixins.oc_briefdescription =
     html: ->
@@ -966,8 +970,8 @@ module.exports = do ->
             @model.set 'value', $select.val()
             if $select.val() == 'contactdata'
               addSelectContactDataType()
-              constraint_value = @rowView.model.attributes.constraint.get('value')
-              constraint_message_value = @rowView.model.attributes.constraint_message.get('value')
+              constraint_value = @rowView.model.attributes.constraint.getValue()
+              constraint_message_value = @rowView.model.attributes.constraint_message.getValue()
               if (constraint_value != '') or (constraint_message_value != '')
                 showMessage()
 
