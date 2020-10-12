@@ -45,3 +45,5 @@ SHADOW_MODEL_APP_LABEL = "shadow_model"
 NESTED_MONGO_RESERVED_ATTRIBUTES = [
     "_validation_status",
 ]
+
+X_OPENROSA_ACCEPT_CONTENT_LENGTH = "X-OpenRosa-Accept-Content-Length"

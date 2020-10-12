@@ -57,6 +57,7 @@ from .constants import (
     CLONE_COMPATIBLE_TYPES,
     CLONE_FROM_VERSION_ID_ARG_NAME,
     COLLECTION_CLONE_FIELDS,
+    X_OPENROSA_ACCEPT_CONTENT_LENGTH
 )
 from .deployment_backends.backends import DEPLOYMENT_BACKENDS
 from .filters import (
@@ -621,6 +622,8 @@ class AssetSnapshotViewSet(NoUpdateModelViewSet):
     def filter_queryset(self, queryset):
         if (self.action == 'retrieve' and
                 self.request.accepted_renderer.format == 'xml'):
+            if self.request.method == 'HEAD':
+                return queryset.none()
             # The XML renderer is totally public and serves anyone, so
             # /asset_snapshot/valid_uid.xml is world-readable, even though
             # /asset_snapshot/valid_uid/ requires ownership. Return the
@@ -634,6 +637,17 @@ class AssetSnapshotViewSet(NoUpdateModelViewSet):
             return owned_snapshots | RelatedAssetPermissionsFilter(
                 ).filter_queryset(self.request, queryset, view=self)
 
+    def retrieve(self, request, *args, **kwargs):
+        if request.method == 'HEAD':
+            return Response(None, headers={
+                X_OPENROSA_ACCEPT_CONTENT_LENGTH : 
+                    settings.X_OPENROSA_ACCEPT_CONTENT_LENGTH_DEFAULT
+            })
+
+        return super(AssetSnapshotViewSet, self).retrieve(
+            request, *args, **kwargs
+        )
+    
     @detail_route(renderer_classes=[renderers.TemplateHTMLRenderer])
     def xform(self, request, *args, **kwargs):
         '''
