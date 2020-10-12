@@ -820,26 +820,11 @@ class Asset(ObjectPermissionMixin,
         Can be disabled / skipped by calling with parameter:
         asset.save(adjust_content=False)
         '''
-        #logging.warning('adjust_content_on_save {}'.format(self.content))
         self._adjust_content_custom_column(self.content)
-        #logging.warning('_adjust_content_custom_column {}'.format(self.content))
         self._standardize(self.content)
-        #logging.warning('_standardize {}'.format(self.content))
         self._revert_custom_column(self.content)
-        #logging.warning('_revert_custom_column {}'.format(self.content))
+        self._adjust_content_media_column(self.content)
         self._make_default_translation_first(self.content)
-        #logging.warning('_make_default_translation_first {}'.format(self.content))
-        # self._adjust_content_media_column(self.content)
-        # logging.warning('_adjust_content_media_column {}'.format(self.content))
-        if 'translations' in self.content:
-            #logging.warning('_adjust_content_media_column get_translations {}'.format(self.content.get('translations')))
-            if None in self.content.get('translations'):
-                #logging.warning('_adjust_content_media_column len get_translations {}'.format(len(self.content.get('translations'))))
-                #logging.warning('_adjust_content_media_column type get_translations {}'.format(type(self.content.get('translations'))))
-                translations_without_none = self.content.get('translations')
-                translations_without_none.remove(None)
-                #logging.warning('_adjust_content_media_column translations_without_none {}'.format(translations_without_none))
-                self.update_translation_list(translations_without_none)
         self._strip_empty_rows(self.content)
         self._assign_kuids(self.content)
         self._autoname(self.content)
