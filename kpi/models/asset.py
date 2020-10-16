@@ -1206,13 +1206,21 @@ class AssetSnapshot(models.Model, XlsExportable, FormpackXLSFormUtils):
                 if 'label' in survey_col:
                     survey_col['label'] = survey_col['label'][0]
 
+                if 'hint' in survey_col:
+                    survey_col['hint'] = survey_col['hint'][0]
+
                 if 'type' in survey_col:
                     if 'select_one' == survey_col['type'] and 'select_from_list_name' in survey_col.keys():
                         survey_col['type'] = "{0} {1}".format(survey_col['type'], survey_col['select_from_list_name'])
                         del survey_col['select_from_list_name']
-                    elif 'select_one_from_file' == survey_col['type'] and 'select_one_from_file_filename' in survey_col.keys():
-                        survey_col['type'] = "{0} {1}".format(survey_col['type'], survey_col['select_one_from_file_filename'])
-                        del survey_col['select_one_from_file_filename']
+                    elif 'select_one_from_file' == survey_col['type']:
+                        select_one_from_file_filename = 'codelist.csv'
+                        if 'select_one_from_file_filename' in survey_col.keys():
+                            select_one_from_file_filename = survey_col['select_one_from_file_filename']
+                            if not select_one_from_file_filename.endswith(('.csv', '.xml')):
+                                select_one_from_file_filename = '{}.csv'.format(select_one_from_file_filename)
+                            del survey_col['select_one_from_file_filename']
+                        survey_col['type'] = "{0} {1}".format(survey_col['type'], select_one_from_file_filename)
 
         if 'survey_header' not in content:
             content['survey_header'] = [{ col : "" for col in self.surveyCols}]
@@ -1287,16 +1295,28 @@ class AssetSnapshot(models.Model, XlsExportable, FormpackXLSFormUtils):
             })
         
         if xml != '':
+
+            def bind_is_calculate_and_has_external_clinicaldata(tag):
+                return tag.name == 'bind' \
+                    and tag.has_attr('calculate') \
+                    and tag.has_attr('oc:external') \
+                    and tag['oc:external'] == 'clinicaldata'
+
             soup = BeautifulSoup(xml, 'xml')
-            all_instance = soup.find_all('instance')
-            instance_count = len(all_instance)
+            soup_find_clinicaldata= soup.find_all(bind_is_calculate_and_has_external_clinicaldata)
+            clinicaldata_count = len(soup_find_clinicaldata)
+            soup_find_all_instance = soup.find_all('instance')
+            instance_count = len(soup_find_all_instance)
 
             oc_clinicaldata_soup = BeautifulSoup('<instance id="clinicaldata" src="{}"/>'.format(django_settings.ENKETO_FORM_OC_INSTANCE_URL), 'xml')
-            if instance_count == 0:
-                if soup.find('model') is not None:
-                    soup.model.insert(1, oc_clinicaldata_soup.instance)
-            else:
-                all_instance[instance_count - 1].insert_after(oc_clinicaldata_soup.instance)
+            if clinicaldata_count > 0:
+                if instance_count == 0:
+                    if soup.find('model') is not None:
+                        soup.model.insert(1, oc_clinicaldata_soup.instance)
+                else:
+                    soup_find_instance = soup.find_all('instance')
+                    instance_count = len(soup_find_instance)
+                    soup_find_instance[instance_count - 1].insert_after(oc_clinicaldata_soup.instance)
             
             soup_body = soup.find('h:body')
             if 'class' in soup_body.attrs:
