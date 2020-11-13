@@ -352,13 +352,12 @@ module.exports = do ->
           value_chars.unshift('_')
 
         @model.set 'value', value
-        @model.deduplicate @model.getSurvey(), @fieldMaxLength
+        @model.deduplicate @model.getSurvey(), @model.getSurvey().rowItemNameMaxLength
       )
       update_view = () => @$el.find('input').eq(0).val(@model.get("value") || '')
       update_view()
 
       @model._parent.get('label').on 'change:value', update_view
-      @model.set 'value', @model.deduplicate @model.getSurvey(), @fieldMaxLength
       @makeRequired()
   # insertInDom: (rowView)->
     #   # default behavior...
@@ -545,6 +544,7 @@ module.exports = do ->
         select_multiple: ['minimal', 'columns', 'columns-pack', 'columns-4', 'columns no-buttons', 'columns-pack no-buttons', 'columns-4 no-buttons', 'image-map']
         image: ['draw', 'annotate', 'signature']
         date: ['month-year', 'year']
+        integer: ['analog-scale horizontal', 'analog-scale horizontal no-ticks', 'analog-scale vertical', 'analog-scale vertical no-ticks', 'analog-scale vertical show-scale']
 
       types[@model_type()]
     html: ->
@@ -900,7 +900,7 @@ module.exports = do ->
     getOptions: () ->
       types =
         text: ['contactdata']
-        calculate: ['clinicaldata', 'contactdata']
+        calculate: ['clinicaldata']
       types[@model_type()]
     html: ->
       @fieldTab = "active"
