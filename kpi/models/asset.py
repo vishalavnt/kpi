@@ -136,6 +136,85 @@ FLATTEN_OPTS = {
 }
 
 
+class OCFormUtils(object):
+
+    def _adjust_content_custom_column(self, content):
+        survey = content.get('survey', [])
+        for survey_col_idx in range(len(survey)):
+            survey_col = survey[survey_col_idx]
+            if 'readonly' in survey_col:
+                readonly_val = survey_col['readonly'].lower()
+                if readonly_val == 'yes' or readonly_val == 'true':
+                    readonly_val = 'true'
+                else:
+                    readonly_val = 'false'
+                content['survey'][survey_col_idx]['oc_readonly'] = readonly_val
+                del content['survey'][survey_col_idx]['readonly']
+            else:
+                content['survey'][survey_col_idx]['oc_readonly'] = 'false'
+
+    def _adjust_content_media_column(self, content):
+        survey = content.get('survey', [])
+        non_dc_media_columns = ['audio', 'image', 'video']
+        for survey_col_idx in range(len(survey)):
+            survey_col = survey[survey_col_idx]
+            for non_dc_media_column in non_dc_media_columns:
+                oc_non_dc_media_column = "oc_{}".format(non_dc_media_column)
+                if oc_non_dc_media_column in survey_col.keys():
+                    survey_col[non_dc_media_column] = survey_col[oc_non_dc_media_column]
+                    del survey_col[oc_non_dc_media_column]
+
+        translated = content.get('translated', [])
+        for translated_idx in range(len(translated)):
+            for non_dc_media_column in non_dc_media_columns:
+                oc_non_dc_media_column = "oc_{}".format(non_dc_media_column)
+                if oc_non_dc_media_column == translated[translated_idx]:
+                    translated[translated_idx] = non_dc_media_column
+    
+    def _adjust_content_media_column_before_standardize(self, content):
+        
+        def _adjust_media_columns(survey, non_dc_cols):
+            for survey_col_idx in range(len(survey)):
+                survey_col = survey[survey_col_idx]
+                survey_col_keys = list(survey_col.keys())
+                for survey_col_key in survey_col_keys:
+                    if survey_col_key in non_dc_cols:
+                        survey_col["oc_{}".format(survey_col_key)] = survey_col[survey_col_key]
+                        del survey_col[survey_col_key]
+        
+        survey = content.get('survey', [])
+
+        survey_col_key_list = []
+        for survey_col_idx in range(len(survey)):
+            survey_col = survey[survey_col_idx]
+            survey_col_key_list = survey_col_key_list + list(survey_col.keys())
+
+        media_columns = {"audio": "media::audio", "image": "media::image", "video": 'media::video'}
+
+        for media_column_key in media_columns.keys():
+            non_dc_col = media_column_key
+            non_dc_cols = [s for s in survey_col_key_list if s.startswith(non_dc_col)]
+
+            if len(non_dc_cols) > 0:
+                _adjust_media_columns(survey, non_dc_cols)
+
+        if 'translations' in content:
+            translated = content.get('translated', [])
+            non_dc_media_columns = ['audio', 'image', 'video']
+            for translated_idx in range(len(translated)):
+                for non_dc_media_column in non_dc_media_columns:
+                    if non_dc_media_column == translated[translated_idx]:
+                        translated[translated_idx] = "oc_{}".format(non_dc_media_column)
+
+    def _revert_custom_column(self, content):
+        survey = content.get('survey', [])
+        for survey_col_idx in range(len(survey)):
+            survey_col = survey[survey_col_idx]
+            if 'oc_readonly' in survey_col:
+                content['survey'][survey_col_idx]['readonly'] = survey_col['oc_readonly']
+                del content['survey'][survey_col_idx]['oc_readonly']
+
+
 class FormpackXLSFormUtils(object):
     
     def _standardize(self, content):
@@ -413,7 +492,9 @@ class XlsExportable(object):
         if append:
             self._append(content, **append)
         self._survey_prepare_custom_col_value(content)
+        self._adjust_content_media_column_before_standardize(content)
         self._standardize(content)
+        self._adjust_content_media_column(content)
         self._survey_revert_custom_col_value(content)
         if not kobo_specific_types:
             self._expand_kobo_qs(content)
@@ -666,6 +747,7 @@ class Asset(ObjectPermissionMixin,
             DeployableMixin,
             XlsExportable,
             FormpackXLSFormUtils,
+            OCFormUtils,
             models.Model):
     name = models.CharField(max_length=255, blank=True, default='')
     date_created = models.DateTimeField(auto_now_add=True)
@@ -780,83 +862,6 @@ class Asset(ObjectPermissionMixin,
             return
         analyzer = AssetContentAnalyzer(**self.content)
         self.summary = analyzer.summary
-
-    def _adjust_content_custom_column(self, content):
-        survey = content.get('survey', [])
-        for survey_col_idx in range(len(survey)):
-            survey_col = survey[survey_col_idx]
-            if 'readonly' in survey_col:
-                readonly_val = survey_col['readonly'].lower()
-                if readonly_val == 'yes' or readonly_val == 'true':
-                    readonly_val = 'true'
-                else:
-                    readonly_val = 'false'
-                content['survey'][survey_col_idx]['oc_readonly'] = readonly_val
-                del content['survey'][survey_col_idx]['readonly']
-            else:
-                content['survey'][survey_col_idx]['oc_readonly'] = 'false'
-
-    def _adjust_content_media_column(self, content):
-        survey = content.get('survey', [])
-        non_dc_media_columns = ['audio', 'image', 'video']
-        for survey_col_idx in range(len(survey)):
-            survey_col = survey[survey_col_idx]
-            for non_dc_media_column in non_dc_media_columns:
-                oc_non_dc_media_column = "oc_{}".format(non_dc_media_column)
-                if oc_non_dc_media_column in survey_col.keys():
-                    survey_col[non_dc_media_column] = survey_col[oc_non_dc_media_column]
-                    del survey_col[oc_non_dc_media_column]
-
-        translated = content.get('translated', [])
-        for translated_idx in range(len(translated)):
-            for non_dc_media_column in non_dc_media_columns:
-                oc_non_dc_media_column = "oc_{}".format(non_dc_media_column)
-                if oc_non_dc_media_column == translated[translated_idx]:
-                    translated[translated_idx] = non_dc_media_column
-    
-    def _adjust_content_media_column_before_standardize(self, content):
-        
-        def _adjust_media_columns(survey, non_dc_cols):
-            for survey_col_idx in range(len(survey)):
-                survey_col = survey[survey_col_idx]
-                survey_col_keys = list(survey_col.keys())
-                for survey_col_key in survey_col_keys:
-                    if survey_col_key in non_dc_cols:
-                        survey_col["oc_{}".format(survey_col_key)] = survey_col[survey_col_key]
-                        del survey_col[survey_col_key]
-        
-        survey = content.get('survey', [])
-
-        survey_col_key_list = []
-        for survey_col_idx in range(len(survey)):
-            survey_col = survey[survey_col_idx]
-            survey_col_key_list = survey_col_key_list + list(survey_col.keys())
-
-        media_columns = {"audio": "media::audio", "image": "media::image", "video": 'media::video'}
-
-        for media_column_key in media_columns.keys():
-            non_dc_col = media_column_key
-            non_dc_cols = [s for s in survey_col_key_list if s.startswith(non_dc_col)]
-
-            if len(non_dc_cols) > 0:
-                _adjust_media_columns(survey, non_dc_cols)
-
-        if 'translations' in content:
-            translated = content.get('translated', [])
-            non_dc_media_columns = ['audio', 'image', 'video']
-            for translated_idx in range(len(translated)):
-                for non_dc_media_column in non_dc_media_columns:
-                    if non_dc_media_column == translated[translated_idx]:
-                        translated[translated_idx] = "oc_{}".format(non_dc_media_column)
-
-
-    def _revert_custom_column(self, content):
-        survey = content.get('survey', [])
-        for survey_col_idx in range(len(survey)):
-            survey_col = survey[survey_col_idx]
-            if 'oc_readonly' in survey_col:
-                content['survey'][survey_col_idx]['readonly'] = survey_col['oc_readonly']
-                del content['survey'][survey_col_idx]['oc_readonly']
 
     def adjust_content_on_save(self):
         '''
@@ -1141,7 +1146,7 @@ class Asset(ObjectPermissionMixin,
         return queryset
 
 
-class AssetSnapshot(models.Model, XlsExportable, FormpackXLSFormUtils):
+class AssetSnapshot(models.Model, XlsExportable, FormpackXLSFormUtils, OCFormUtils):
     '''
     This model serves as a cache of the XML that was exported by the installed
     version of pyxform.
@@ -1177,7 +1182,11 @@ class AssetSnapshot(models.Model, XlsExportable, FormpackXLSFormUtils):
         _source = copy.deepcopy(self.source)
         if _source is None:
             _source = {}
+
+        self._adjust_content_media_column_before_standardize(_source)
         self._standardize(_source)
+        self._adjust_content_media_column(_source)
+        self._revert_custom_column(_source)
         self._make_default_translation_first(_source)
         self._strip_empty_rows(_source)
         self._autoname(_source)
@@ -1205,7 +1214,7 @@ class AssetSnapshot(models.Model, XlsExportable, FormpackXLSFormUtils):
                 survey_col_keys = list(survey_col.keys())
                 for survey_col_key in survey_col_keys:
                     if survey_col_key in non_dc_cols:
-                        survey_col["{}".format(media_columns[survey_col_key])] = survey_col[survey_col_key][0]
+                        survey_col["{}".format(media_columns[survey_col_key])] = survey_col[survey_col_key]
                         del survey_col[survey_col_key]
 
         survey = content.get('survey', [])
@@ -1237,6 +1246,7 @@ class AssetSnapshot(models.Model, XlsExportable, FormpackXLSFormUtils):
             if 'id_string' not in settings.keys():
                 settings['id_string'] = id_string
 
+            settings['name'] = 'data'
             content['settings'] = [settings]
 
         if 'settings_header' not in content:
@@ -1252,6 +1262,7 @@ class AssetSnapshot(models.Model, XlsExportable, FormpackXLSFormUtils):
                 }
             ]
 
+        translations = None
         if 'translations' in content:
             translations = content['translations']
             if all(x is None for x in translations):
@@ -1279,14 +1290,15 @@ class AssetSnapshot(models.Model, XlsExportable, FormpackXLSFormUtils):
 
         if 'survey' in content:
             survey = content['survey']
+            translated = content.get('translated', [])
 
             for survey_col_idx in range(len(survey)):
                 survey_col = survey[survey_col_idx]
 
-                if 'label' in survey_col:
+                if 'label' in survey_col and len(translated) > 0 and 'label' not in translated and type(survey_col['label']) is list:
                     survey_col['label'] = survey_col['label'][0]
 
-                if 'hint' in survey_col:
+                if 'hint' in survey_col and len(translated) > 0 and 'hint' not in translated and type(survey_col['hint']) is list:
                     survey_col['hint'] = survey_col['hint'][0]
 
                 if 'type' in survey_col:
@@ -1301,6 +1313,18 @@ class AssetSnapshot(models.Model, XlsExportable, FormpackXLSFormUtils):
                                 select_one_from_file_filename = '{}.csv'.format(select_one_from_file_filename)
                             del survey_col['select_one_from_file_filename']
                         survey_col['type'] = "{0} {1}".format(survey_col['type'], select_one_from_file_filename)
+
+                if len(translated) > 0:
+                    for translated_column in translated:
+                        if translated_column in survey_col:
+                            translated_value = survey_col[translated_column]
+                            del survey_col[translated_column]
+                            for translation in translations:
+                                column_value = translated_value[translations.index(translation)]
+                                if translations.index(translation) == 0:
+                                    survey_col['{}'.format(translated_column, translation)] = u"{}".format(column_value)
+                                else:
+                                    survey_col['{}::{}'.format(translated_column, translation)] = u"{}".format(column_value)
 
         if 'survey_header' not in content:
             content['survey_header'] = [{ col : "" for col in self.surveyCols}]
