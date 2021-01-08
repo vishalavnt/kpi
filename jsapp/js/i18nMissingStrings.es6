@@ -110,7 +110,7 @@ test= t('Default response');
 test= t('Repeat');
 test= t('Repeat this group if necessary');
 test= t('Mandatory response');
-test= t('Appearance (advanced)');
+test= t('Appearance');
 test= t('Show all questions in this group on the same screen');
 test= t('Please check your connection and try again.');
 test= t('The server encountered an error while trying to deploy the project. If this problem persists, please contact <a href="mailto:help@kobotoolbox.org">help@kobotoolbox.org</a>.');
