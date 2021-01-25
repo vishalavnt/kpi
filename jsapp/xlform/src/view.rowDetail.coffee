@@ -572,7 +572,7 @@ module.exports = do ->
       @is_checkbox_samescreen = false
       @$el.addClass("card__settings__fields--active")
       if @model_is_group(@model)
-        return viewRowDetail.Templates.textbox @cid, @model.key, _t("Appearance (advanced)"), 'text'
+        return viewRowDetail.Templates.textbox @cid, @model.key, _t("Appearance"), 'text'
       else
         if @model_type() isnt 'calculate'
           appearances = @getTypes()
@@ -580,9 +580,9 @@ module.exports = do ->
             appearances.push 'other'
             appearances.unshift 'select'
             @is_input_select = true
-            return viewRowDetail.Templates.dropdown @cid, @model.key, appearances, _t("Appearance (advanced)")
+            return viewRowDetail.Templates.dropdown @cid, @model.key, appearances, _t("Appearance")
           else
-            return viewRowDetail.Templates.textbox @cid, @model.key, _t("Appearance (advanced)"), 'text'
+            return viewRowDetail.Templates.textbox @cid, @model.key, _t("Appearance"), 'text'
 
     model_is_group: (model) ->
       model._parent.constructor.key == 'group'
