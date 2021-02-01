@@ -389,12 +389,21 @@ module.exports = do ->
       @textarea.render().attach_to @$parent
       @button.render().attach_to @$parent
       @button.bind_event 'click', () => @context.use_mode_selector_helper()
+      @textarea.val(@criteria)
+      @textarea.bind_event 'keyup', () => @textarea_change_handler()
+      @textarea.bind_event('blur', () =>
+        if @textarea.val() != @criteria
+          textarea_change_handler()
+      )
     serialize: () ->
       @textarea.$el.val() || @criteria
     constructor: (@criteria, @builder, @view_factory, @context) ->
       @$parent = $('<div>')
       @textarea = @view_factory.create_textarea @criteria, 'skiplogic__handcode-edit'
       @button = @view_factory.create_button '<i class="fa fa-trash-o"></i>', 'skiplogic-handcode__cancel'
+    textarea_change_handler: () ->
+      @criteria = @textarea.val()
+      @context.view_factory.survey.trigger('change')
 
   class skipLogicHelpers.SkipLogicModeSelectorHelper
     render: ($destination) ->
@@ -444,8 +453,10 @@ module.exports = do ->
       operators: [
         ops.EQ #2
         ops.EX #1
+        ops.GT #3
+        ops.GE #4
       ]
-      equality_operator_type: 'text'
+      equality_operator_type: 'basic'
       response_type: 'dropdown'
       name: 'select_one'
     select_multiple:
