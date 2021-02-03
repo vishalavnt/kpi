@@ -306,8 +306,9 @@ module.exports = do ->
       handle_model_cid_change = () =>
         @val(@model.get 'cid')
 
-      @model.off 'change:cid', handle_model_cid_change
-      @model.on 'change:cid', handle_model_cid_change
+      if @model?
+        @model.off 'change:cid', handle_model_cid_change
+        @model.on 'change:cid', handle_model_cid_change
 
     constructor: (@responses, @model) ->
       super(_.map @responses.models, (response) ->
