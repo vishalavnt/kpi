@@ -24,6 +24,7 @@ from keycloak.realm import KeycloakRealm
 
 from kpi.utils.domain import get_subdomain
 from kpi.utils.log import logging as kpi_logging
+from kobo.apps.service_health.views import get_response
 
 logger = logging.getLogger(__name__)
 
@@ -279,18 +280,6 @@ def logout(request, next_page=None):
         if next_page:
             request.session['next'] = next_page
 
-class OCAppInfo(object):
-    def __init__(self, **kwargs):
-        setattr(self, 'name', kwargs.get('name', 'FormDesigner'))
-        setattr(self, 'version', kwargs.get('version', None))
-
-class OCAppInfoSerializer(serializers.Serializer):
-    name = serializers.CharField(max_length=256)
-    version = serializers.CharField(max_length=256)
-
-    def create(self, app_info):
-        return OCAppInfo(**app_info)
-
 @csrf_exempt
 def app_info(request):
     if request.method == 'GET':
@@ -302,6 +291,18 @@ def app_info(request):
         except IOError:
             return HttpResponseNotFound()
 
-        appInfo = OCAppInfo(version=package_info['version'])
-        serializer = OCAppInfoSerializer(appInfo)
-        return JsonResponse(serializer.data)
+        failure, kobocat_message, kobocat_content = get_response(settings.KOBOCAT_INTERNAL_URL + '/app_info/')
+        
+        kobocat_data = {}
+        if not failure:
+            kobocat_data = json.loads(kobocat_content)
+
+        kpi_data = {
+            "name": package_info["name"],
+            "description": package_info["description"],
+            "version": package_info["version"]
+        }
+
+        data = [kpi_data, kobocat_data]
+
+        return JsonResponse(data, safe=False)
