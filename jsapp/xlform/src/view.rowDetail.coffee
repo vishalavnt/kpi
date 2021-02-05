@@ -70,7 +70,7 @@ module.exports = do ->
       # the model's value is reflected in the element and changes
       # to the element are reflected in the model (with transformFn
       # applied)
-      el = opts.el || @$('input').get(0)
+      el = opts.el || @$('input').get(0) || @$('textarea').get(0)
 
       $el = $(el)
       transformFn = opts.transformFn || false
@@ -128,7 +128,7 @@ module.exports = do ->
       @_insertInDOM rowView.defaultRowDetailParent
 
     makeFieldCheckCondition: (opts={}) ->
-      el = opts.el || @$('input').get(0)
+      el = opts.el || @$('input').get(0) || @$('textarea').get(0)
       $el = $(el)
       fieldClass = opts.fieldClass || 'input-error'
       message = opts.message || "This field is required"
@@ -165,7 +165,7 @@ module.exports = do ->
       showOrHideCondition()
 
     removeFieldCheckCondition: (opts={}) ->
-      el = opts.el || @$('input').get(0)
+      el = opts.el || @$('input').get(0) || @$('textarea').get(0)
       $el = $(el)
       fieldClass = opts.fieldClass || 'input-error'
       
@@ -188,6 +188,14 @@ module.exports = do ->
         @field """<input type="text" name="#{key}" id="#{cid}" class="#{input_class}" placeholder="#{placeholder_text}" />""", cid, key_label
       else
         @field """<input type="text" name="#{key}" id="#{cid}" class="#{input_class}" placeholder="#{placeholder_text}" maxlength="#{max_length}" />""", cid, key_label
+
+    textarea: (cid, key, key_label = key, input_class = '', placeholder_text='', max_length = '') ->
+      if placeholder_text is not ''
+        placeholder_text = _t(placeholder_text)
+      if max_length is ''
+        @field """<textarea name="#{key}" id="#{cid}" class="#{input_class}" placeholder="#{placeholder_text}" />""", cid, key_label
+      else
+        @field """<textarea name="#{key}" id="#{cid}" class="#{input_class}" placeholder="#{placeholder_text}" maxlength="#{max_length}" />""", cid, key_label
 
     checkbox: (cid, key, key_label = key, input_label = _t("Yes")) ->
       input_label = input_label
@@ -470,10 +478,24 @@ module.exports = do ->
       @fieldTab = "active"
       @$el.addClass("card__settings__fields--#{@fieldTab}")
       label = if @model.key == 'default' then _t("Default value") else @model.key.replace(/_/g, ' ')
-      viewRowDetail.Templates.textbox @cid, @model.key, label, 'text'
+      viewRowDetail.Templates.textarea @cid, @model.key, label, 'text'
+    changeModelValue: () ->
+      $textarea = $(@$('textarea').get(0))
+      $elVal = $textarea.val().replace(/\n/g, "")
+      @model.set('value', $elVal)
     afterRender: ->
-      @$el.find('input').eq(0).val(@model.get("value"))
-      @listenForInputChange()
+      $textarea = $(@$('textarea').get(0))
+      $textarea.val(@model.get("value"))
+      $textarea.on 'blur', () =>
+        @changeModelValue()
+      $textarea.on 'change', () =>
+        @changeModelValue()
+      $textarea.on 'keyup', () =>
+        @changeModelValue()
+      $textarea.on 'keypress', (evt) =>
+        if evt.key is 'Enter' or evt.keyCode is 13
+          evt.preventDefault()
+          $textarea.blur()
 
   viewRowDetail.DetailViewMixins._isRepeat =
     html: ->
@@ -996,13 +1018,29 @@ module.exports = do ->
     html: ->
       @fieldTab = "active"
       @$el.addClass("card__settings__fields--#{@fieldTab}")
-      viewRowDetail.Templates.textbox @cid, @model.key, _t("Calculation"), 'text'
+      viewRowDetail.Templates.textarea @cid, @model.key, _t("Calculation"), 'text'
+    changeModelValue: () ->
+      $textarea = $(@$('textarea').get(0))
+      $elVal = $textarea.val().replace(/\n/g, "")
+      @model.set('value', $elVal)
     afterRender: ->
-      questionType = @model._parent.get('type').get('typeId')
+      $textarea = $(@$('textarea').get(0))
+      $textarea.val(@model.get("value"))
 
-      @listenForInputChange()
+      questionType = @model._parent.get('type').get('typeId')
       if questionType is 'calculate'
         @makeRequired()
+
+      $textarea.on 'blur', () =>
+        @changeModelValue()
+      $textarea.on 'change', () =>
+        @changeModelValue()
+      $textarea.on 'keyup', () =>
+        @changeModelValue()
+      $textarea.on 'keypress', (evt) =>
+        if evt.key is 'Enter' or evt.keyCode is 13
+          evt.preventDefault()
+          $textarea.blur()
 
   viewRowDetail.DetailViewMixins.oc_description =
     html: ->
