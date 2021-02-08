@@ -240,10 +240,12 @@ module.exports = do ->
       typeStr = @model.get("typeId")
       if !(@model._parent.constructor.kls is "Group")
         faClass = $icons.get(typeStr)?.get("faClass")
+        iconLabel = $icons.get(typeStr)?.get("label")
         if !faClass
           console?.error("could not find icon for type: #{typeStr}")
           faClass = "fighter-jet"
         rowView.$el.find(".card__header-icon").addClass("fa-#{faClass}")
+        rowView.$el.find(".card__indicator__icon").attr("data-tip", "#{iconLabel}")
 
 
   viewRowDetail.DetailViewMixins.label =
