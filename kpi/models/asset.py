@@ -418,6 +418,8 @@ class FormpackXLSFormUtils(object):
                                 val = row[col].pop(_tindex)
                             except KeyError:
                                 continue
+                            except AttributeError:
+                                continue
                         row[col].insert(0, val)
             if is_new:
                 _translations.insert(0, translation_name)
