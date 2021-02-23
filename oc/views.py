@@ -296,11 +296,15 @@ def app_info(request):
         kobocat_data = {}
         if not failure:
             kobocat_data = json.loads(kobocat_content)
+            kobocat_data["status"] = "passing"
+        else:
+            kobocat_data["status"] = "failed"
 
         kpi_data = {
             "name": package_info["name"],
             "description": package_info["description"],
-            "version": package_info["version"]
+            "version": package_info["version"],
+            "status": "passing"
         }
 
         data = [kpi_data, kobocat_data]
