@@ -61,6 +61,15 @@
         }
     }
 
+    .card__header-name {
+        text-align: right;
+        padding-bottom: 10px;
+        color: $cool-gray;
+
+        &:focus {
+            color: $black;
+        }
+    }
     .card__header-title {
         color: $cool-gray;
 
@@ -306,11 +315,14 @@ $cardIndicatorIconWidth: 21px;
     &.card__buttons__button--blue {
         color:$linkColor;
     }
-    // &.card__buttons__button--add {
-    //   bottom: 22%;
-    // }
+    &.card__buttons__button--delete {
+        top: 32px;
+    }
     &.card__buttons__button--copy {
-        bottom: 26%;
+        top: 45px;
+    }
+    &.card__buttons__button--add {
+       top: 68px;
     }
     &.card__buttons__button--activated {
         // trying to transition this into %activated-card-button
