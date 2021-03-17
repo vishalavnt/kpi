@@ -456,7 +456,7 @@ module.exports = do ->
         ops.GT #3
         ops.GE #4
       ]
-      equality_operator_type: 'basic'
+      equality_operator_type: 'text'
       response_type: 'dropdown'
       name: 'select_one'
     select_multiple:
