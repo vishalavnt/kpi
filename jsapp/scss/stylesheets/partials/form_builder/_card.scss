@@ -69,7 +69,8 @@
         }
 
         &::placeholder {
-            color: $cool-gray;
+            color: inherit;
+            opacity: 0.6;
         }
     }
     .card__header-hint {
