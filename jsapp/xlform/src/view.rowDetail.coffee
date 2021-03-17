@@ -371,7 +371,7 @@ module.exports = do ->
       )
 
       @model.on 'change:value', () => 
-        @$el.parents('.survey__row__item').find('.card__header-name').html(@model.getValue())
+        @$el.closest('.survey__row__item').find('.card__header-name').html(@model.getValue())
 
       update_view = () => @$el.find('input').eq(0).val(@model.get("value") || '')
       update_view()
