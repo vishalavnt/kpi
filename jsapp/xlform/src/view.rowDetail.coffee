@@ -492,6 +492,12 @@ module.exports = do ->
     afterRender: ->
       $textarea = $(@$('textarea').get(0))
       $textarea.val(@model.get("value"))
+      if @model.get("value")?
+        setTimeout =>
+          textareaScrollHeight = $textarea.prop('scrollHeight')
+          $textarea.css("height", "")
+          $textarea.css("height", textareaScrollHeight)
+        , 1
       $textarea.on 'blur', () =>
         @changeModelValue()
       $textarea.on 'change', () =>
@@ -1032,6 +1038,13 @@ module.exports = do ->
     afterRender: ->
       $textarea = $(@$('textarea').get(0))
       $textarea.val(@model.get("value"))
+
+      if @model.get("value")?
+        setTimeout =>
+          textareaScrollHeight = $textarea.prop('scrollHeight')
+          $textarea.css("height", "")
+          $textarea.css("height", textareaScrollHeight)
+        , 1
 
       questionType = @model._parent.get('type').get('typeId')
       if questionType is 'calculate'
