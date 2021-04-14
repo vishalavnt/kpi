@@ -370,11 +370,15 @@ module.exports = do ->
         @model.deduplicate @model.getSurvey(), @model.getSurvey().rowItemNameMaxLength
       )
 
-      @model.on 'change:value', () => 
+      @model.on 'change:value', () =>
         @$el.closest('.survey__row__item').find('.card__header-name').html(@model.getValue())
 
       update_view = () => @$el.find('input').eq(0).val(@model.get("value") || '')
       update_view()
+
+      setTimeout =>
+        @$el.closest('.survey__row__item').find('.card__header-name').html(@model.getValue())
+      , 1
 
       if @model._parent.get('label')?
         @model._parent.get('label').on 'change:value', update_view
