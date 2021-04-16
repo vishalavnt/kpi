@@ -370,11 +370,15 @@ module.exports = do ->
         @model.deduplicate @model.getSurvey(), @model.getSurvey().rowItemNameMaxLength
       )
 
-      @model.on 'change:value', () => 
+      @model.on 'change:value', () =>
         @$el.closest('.survey__row__item').find('.card__header-name').html(@model.getValue())
 
       update_view = () => @$el.find('input').eq(0).val(@model.get("value") || '')
       update_view()
+
+      setTimeout =>
+        @$el.closest('.survey__row__item').find('.card__header-name').html(@model.getValue())
+      , 1
 
       if @model._parent.get('label')?
         @model._parent.get('label').on 'change:value', update_view
@@ -492,6 +496,12 @@ module.exports = do ->
     afterRender: ->
       $textarea = $(@$('textarea').get(0))
       $textarea.val(@model.get("value"))
+      if @model.get("value")?
+        setTimeout =>
+          textareaScrollHeight = $textarea.prop('scrollHeight')
+          $textarea.css("height", "")
+          $textarea.css("height", textareaScrollHeight)
+        , 1
       $textarea.on 'blur', () =>
         @changeModelValue()
       $textarea.on 'change', () =>
@@ -1032,6 +1042,13 @@ module.exports = do ->
     afterRender: ->
       $textarea = $(@$('textarea').get(0))
       $textarea.val(@model.get("value"))
+
+      if @model.get("value")?
+        setTimeout =>
+          textareaScrollHeight = $textarea.prop('scrollHeight')
+          $textarea.css("height", "")
+          $textarea.css("height", textareaScrollHeight)
+        , 1
 
       questionType = @model._parent.get('type').get('typeId')
       if questionType is 'calculate'
