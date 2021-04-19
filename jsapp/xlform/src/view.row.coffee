@@ -276,7 +276,8 @@ module.exports = do ->
       context = {warnings: []}
 
       @$label.resizable({
-        containment: "parent"
+        containment: "parent",
+        handles: "s"
       })
 
       questionType = @model.get('type').get('typeId')
