@@ -275,11 +275,6 @@ module.exports = do ->
       @$header = @$('.card__header')
       context = {warnings: []}
 
-      @$label.resizable({
-        containment: "parent",
-        handles: "s"
-      })
-
       questionType = @model.get('type').get('typeId')
       if (
         $configs.questionParams[questionType] and
