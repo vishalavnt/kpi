@@ -268,6 +268,7 @@ module.exports = do ->
       @
     _renderRow: ->
       @$el.html $viewTemplates.$$render('row.xlfRowView', @surveyView)
+      @$name = @$('.card__header-name')
       @$label = @$('.card__header-title')
       @$hint = @$('.card__header-hint')
       @$card = @$('.card')
@@ -294,6 +295,9 @@ module.exports = do ->
         @$card.addClass('card--selectquestion card--expandedchoices')
         @is_expanded = true
         @listView = new $viewChoices.ListView(model: cl, rowView: @).render()
+
+      if @model.getValue('name')?
+        @$name.html(@model.getValue('name'))
 
       @cardSettingsWrap = @$('.card__settings').eq(0)
       @defaultRowDetailParent = @cardSettingsWrap.find('.card__settings__fields--question-options').eq(0)
