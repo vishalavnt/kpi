@@ -22,6 +22,7 @@
 // inputs in edit-in-place
 
 .card__text input,
+.card__text textarea,
 .editable-wrapper input {
   font-family: $font;
   border: none;
@@ -29,9 +30,13 @@
   margin: 0px;
   font-weight: 600;
   display: inline;
-  height: auto !important;
   font-size: 13px;
   width: 100%;
+}
+
+.card__text input,
+.editable-wrapper input {
+  height: auto !important;
 }
 
 code input[type="text"] {

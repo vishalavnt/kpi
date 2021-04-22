@@ -8,6 +8,7 @@ import $ from 'jquery';
 window.jQuery = $;
 window.$ = $;
 require('jquery-ui/ui/widgets/sortable');
+require('jquery-ui/ui/widgets/resizable');
 
 import React from 'react';
 import ReactDOM from 'react-dom';

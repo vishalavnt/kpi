@@ -139,5 +139,5 @@ urlpatterns = [
         'kobo.apps.superuser_stats.views.user_report'),
     url(r'^superuser_stats/user_report/(?P<base_filename>[^/]+)$',
         'kobo.apps.superuser_stats.views.retrieve_user_report'),
-    url(r'app_info$', app_info, name='app_info'),
+    url(r'app_info/$', app_info, name='app_info'),
 ]
