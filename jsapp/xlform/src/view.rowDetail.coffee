@@ -271,7 +271,13 @@ module.exports = do ->
           return value
       })
       $textarea = $(this.rowView.$label)
+      $textarea.css("min-height", 20)
       if @model.get("value")?
+        resizableOpts = {
+          containment: "parent",
+          handles: "s",
+          minHeight: 27
+        }
         setTimeout =>
           textareaScrollHeight = $textarea.prop('scrollHeight')
           textAreaLineHeight = parseInt($textarea.css('line-height'))
@@ -279,16 +285,10 @@ module.exports = do ->
           textAreaSetHeight = Math.min(textareaScrollHeight, (textAreaLineHeight * maxLine)) + 7
           $textarea.css("height", "")
           $textarea.css("height", textAreaSetHeight)
-          $textarea.resizable({
-            containment: "parent",
-            handles: "s"
-          })
+          $textarea.resizable(resizableOpts)
         , 1
       else
-        $textarea.resizable({
-          containment: "parent",
-          handles: "s"
-        })
+        $textarea.resizable($textarea.resizable(resizableOpts))
       return
 
   viewRowDetail.DetailViewMixins.hint =
