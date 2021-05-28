@@ -1,7 +1,9 @@
+import _ from 'underscore';
 import actions from '../actions';
 import {
   notify,
   t,
+  surveyToValidJson
 } from '../utils';
 
 class SurveyScope {
@@ -34,8 +36,51 @@ class SurveyScope {
       }).then(function(){
         notify(t('question has been added to the library'));
       });
-    } else {
-      console.error('cannot add group to question library');
+    } else { // add group as block to library
+      var groupContents = [];
+      var groupChoices = [];
+      
+      var groupKuid = row.get("$kuid").get("value");
+      var groupAsset = JSON.parse(surveyToValidJson(this.survey));
+      var surveyContents = groupAsset.survey;
+      if (!_.isEmpty(surveyContents)) {
+        var startGroupIndexFound = _.findIndex(surveyContents, function(content) {
+          return content["$kuid"] == groupKuid;
+        })
+        if (startGroupIndexFound > -1) {
+          var endGroupIndexFound = _.findIndex(surveyContents, function(content) {
+            return content["$kuid"] == "/" + groupKuid;
+          })
+          groupContents = surveyContents.slice(startGroupIndexFound, endGroupIndexFound + 1);
+        }
+      }
+
+      if (groupContents.length > 0) {
+        groupAsset.survey = groupContents;
+
+        var selectSurveyContents = surveyContents.filter(content => ['select_one', 'select_multiple'].indexOf(content.type) > -1);
+        if (selectSurveyContents.length > 0) {
+          var selectListNames = _.pluck(selectSurveyContents, 'select_from_list_name');
+          groupChoices = groupAsset.choices.filter(choice => selectListNames.indexOf(choice.list_name) > -1);
+          groupAsset.choices = groupChoices;
+        }
+        
+      }
+
+      var styleSettings = groupAsset.settings[0]['style'];
+      var versionSettings = groupAsset.settings[0]['version'];
+      groupAsset.settings = [{}];
+      groupAsset.settings[0]['style'] = styleSettings;
+      groupAsset.settings[0]['version'] = versionSettings;
+      groupAsset.settings[0]['form_id'] = '';
+
+      actions.resources.createResource.triggerAsync({
+        asset_type: 'block',
+        content: JSON.stringify(groupAsset),
+        name: row.get("name").get("value")
+      }).then(function(){
+        notify(t('group has been added to the library as a block'));
+      });
     }
   }
   handleItem({position, itemData, groupId}) {

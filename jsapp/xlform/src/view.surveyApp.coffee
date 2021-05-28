@@ -47,6 +47,7 @@ module.exports = do ->
       "click .js-delete-row": "clickRemoveRow"
       "click .js-delete-group": "clickDeleteGroup"
       "click .js-add-to-question-library": "clickAddRowToQuestionLibrary"
+      "click .js-add-group-to-library": "clickAddGroupToLibrary"
       "click .js-clone-question": "clickCloneQuestion"
       "click #xlf-preview": "previewButtonClick"
       "click #csv-preview": "previewCsv"
@@ -657,6 +658,9 @@ module.exports = do ->
 
     clickAddRowToQuestionLibrary: (evt)->
       @_getViewForTarget(evt).add_row_to_question_library(evt)
+
+    clickAddGroupToLibrary: (evt)->
+      @_getViewForTarget(evt).add_group_to_library(evt)
 
     clickCloneQuestion: (evt)->
       @_getViewForTarget(evt).clone()
