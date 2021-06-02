@@ -745,7 +745,10 @@ module.exports = do ->
       if rows_length > 0
         last_row = rows[rows.length - 1]
         @_duplicateRows rows, last_row
-              
+
+    addSelectedRowsToLibrary: () ->
+      rows = @selectedRows()
+      @ngScope.add_rows_to_question_library(rows)
 
     selectedRows: ()->
       rows = []

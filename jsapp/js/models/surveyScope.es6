@@ -10,6 +10,41 @@ class SurveyScope {
   constructor ({survey}) {
     this.survey = survey;
   }
+  add_rows_to_question_library (rows) {
+    var contents = [];
+    var choices = [];
+    var rows_kuids = _.map(rows, function(row) { return row.constructor.kls === 'Row' && row.get("$kuid").get("value"); });
+    var currentAsset = JSON.parse(surveyToValidJson(this.survey));
+    var currentAssetContents = currentAsset.survey;
+    if (!_.isEmpty(currentAssetContents)) {
+      contents = _.filter(currentAssetContents, function(content) { return rows_kuids.indexOf(content["$kuid"]) > -1; });
+    }
+    if (contents.length > 0) {
+        currentAsset.survey = contents;
+
+        var selectSurveyContents = currentAssetContents.filter(content => ['select_one', 'select_multiple'].indexOf(content.type) > -1);
+        if (selectSurveyContents.length > 0) {
+          var selectListNames = _.pluck(selectSurveyContents, 'select_from_list_name');
+          choices = currentAsset.choices.filter(choice => selectListNames.indexOf(choice.list_name) > -1);
+
+          currentAsset.choices = choices;
+        }
+    }
+
+    var styleSettings = currentAsset.settings[0]['style'];
+    var versionSettings = currentAsset.settings[0]['version'];
+    currentAsset.settings = [{}];
+    currentAsset.settings[0]['style'] = styleSettings;
+    currentAsset.settings[0]['version'] = versionSettings;
+    currentAsset.settings[0]['form_id'] = '';
+
+    actions.resources.createResource.triggerAsync({
+      asset_type: 'block',
+      content: JSON.stringify(currentAsset)
+    }).then(function(){
+      notify(t('selected questions has been added to the library as a block'));
+    });
+  }
   add_row_to_question_library (row) {
     if (row.constructor.kls === 'Row') {
       var rowJSON = row.toJSON2();
