@@ -581,14 +581,10 @@ module.exports = do ->
       senderValue = ocCustomEventArgs.value
       senderQuestionId = sender._parent.cid
       if (sender.key is '_isRepeat') and (questionId is senderQuestionId)
-        if senderValue.trim() == ''
-          senderValue = 'null'
         @model.set('value', senderValue)
     html: -> 
       setTimeout =>
           modelValue = @model.getValue()
-          if modelValue == 'null'
-            modelValue = ''
           Backbone.trigger('ocCustomEvent', { sender: @model, value: modelValue })
         , 1
       false

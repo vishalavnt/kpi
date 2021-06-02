@@ -335,7 +335,7 @@ module.exports = do ->
     _isRepeat:
       value: false
     repeat_count:
-      value: "null"
+      value: ""
     relevant:
       value: ""
       _hideUnlessChanged: true
