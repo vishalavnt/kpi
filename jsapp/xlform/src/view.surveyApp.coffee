@@ -748,7 +748,7 @@ module.exports = do ->
 
     addSelectedRowsToLibrary: () ->
       rows = @selectedRows()
-      @ngScope.add_rows_to_question_library(rows)
+      @ngScope.add_rows_to_question_library(rows, @survey._initialParams)
 
     selectedRows: ()->
       rows = []

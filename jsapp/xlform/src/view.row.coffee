@@ -337,7 +337,7 @@ module.exports = do ->
 
     add_row_to_question_library: (evt) =>
       evt.stopPropagation()
-      @ngScope?.add_row_to_question_library @model
+      @ngScope?.add_row_to_question_library @model, @model.getSurvey()._initialParams
 
   class GroupView extends BaseRowView
     className: "survey__row survey__row--group  xlf-row-view xlf-row-view--depr"
@@ -396,7 +396,7 @@ module.exports = do ->
 
     add_group_to_library: (evt) =>
       evt.stopPropagation()
-      @ngScope?.add_row_to_question_library @model
+      @ngScope?.add_row_to_question_library @model, @model.getSurvey()._initialParams
 
   class RowView extends BaseRowView
     _expandedRender: ->
