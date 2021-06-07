@@ -38,9 +38,28 @@ class SurveyScope {
     var settingsObj = unnullifiedContent.settings;
     var surveyObj = unnullifiedContent.survey;
     
-    var rows_kuids = _.map(rows, function(row) { return row.constructor.kls === 'Row' && row.get("$kuid").get("value"); });
-    if (!_.isEmpty(surveyObj)) {
-      contents = _.filter(surveyObj, function(content) { return rows_kuids.indexOf(content["$kuid"]) > -1; });
+    if (!_.isEmpty(rows)) {
+      for (var idx in rows) {
+        var row = rows[idx];
+        var rowKuid = row.toJSON2().$kuid;
+        if (row.constructor.kls === 'Row') { // regular question
+          var row_content = _.find(surveyObj, function(content) { return content["$kuid"] == rowKuid; });
+          if (!_.isEmpty(row_content)) {
+            contents.push(row_content);
+          }
+        } else { // group
+          var startGroupIndexFound = _.findIndex(surveyObj, function(content) {
+            return content["$kuid"] == rowKuid;
+          });
+          if (startGroupIndexFound > -1) {
+            var endGroupIndexFound = _.findIndex(surveyObj, function(content) {
+              return content["$kuid"] == "/" + rowKuid;
+            })
+            var group_contents = surveyObj.slice(startGroupIndexFound, endGroupIndexFound + 1);
+            contents = contents.concat(group_contents);
+          }
+        }
+      }
     }
 
     content = JSON.stringify({
@@ -53,7 +72,7 @@ class SurveyScope {
       asset_type: 'block',
       content: content
     }).then(function(){
-      notify(t('selected questions has been added to the library as a block'));
+      notify(t('selected questions or groups has been added to the library as a block'));
     });
   }
   add_row_to_question_library (row, assetContent) {
