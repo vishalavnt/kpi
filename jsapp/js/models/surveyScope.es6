@@ -122,11 +122,11 @@ class SurveyScope {
       if (!_.isEmpty(surveyObj)) {
         var startGroupIndexFound = _.findIndex(surveyObj, function(content) {
           return content["$kuid"] == groupKuid;
-        })
+        });
         if (startGroupIndexFound > -1) {
           var endGroupIndexFound = _.findIndex(surveyObj, function(content) {
             return content["$kuid"] == "/" + groupKuid;
-          })
+          });
           contents = surveyObj.slice(startGroupIndexFound, endGroupIndexFound + 1);
         }
       }
