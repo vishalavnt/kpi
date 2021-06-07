@@ -334,6 +334,8 @@ module.exports = do ->
       value: "group"
     _isRepeat:
       value: false
+    repeat_count:
+      value: ""
     relevant:
       value: ""
       _hideUnlessChanged: true

@@ -337,7 +337,7 @@ module.exports = do ->
 
     add_row_to_question_library: (evt) =>
       evt.stopPropagation()
-      @ngScope?.add_row_to_question_library @model
+      @ngScope?.add_row_to_question_library @model, @model.getSurvey()._initialParams
 
   class GroupView extends BaseRowView
     className: "survey__row survey__row--group  xlf-row-view xlf-row-view--depr"
@@ -346,6 +346,7 @@ module.exports = do ->
       @_shrunk = !!opts.shrunk
       @$el.attr("data-row-id", @model.cid)
       @surveyView = @options.surveyView
+      @ngScope = opts.ngScope
 
     deleteGroup: (evt)=>
       skipConfirm = $(evt.currentTarget).hasClass('js-force-delete-group')
@@ -385,13 +386,17 @@ module.exports = do ->
       @cardSettingsWrap = @$('.card__settings').eq(0)
       @defaultRowDetailParent = @cardSettingsWrap.find('.card__settings__fields--active').eq(0)
       for [key, val] in @model.attributesArray()
-        if key in ["name", "_isRepeat", "appearance", "relevant"] or key.match(/^.+::.+/)
+        if key in ["name", "_isRepeat", "repeat_count", "appearance", "relevant"] or key.match(/^.+::.+/)
           new $viewRowDetail.DetailView(model: val, rowView: @).render().insertInDOM(@)
 
       @model.on 'remove', (row) =>
         if row.constructor.key == 'group' && !@hasNestedGroups()
           @$('.xlf-dv-appearance').eq(0).show()
       @
+
+    add_group_to_library: (evt) =>
+      evt.stopPropagation()
+      @ngScope?.add_row_to_question_library @model, @model.getSurvey()._initialParams
 
   class RowView extends BaseRowView
     _expandedRender: ->

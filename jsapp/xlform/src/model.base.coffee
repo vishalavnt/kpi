@@ -166,7 +166,7 @@ module.exports = do ->
                   "bind::oc:itemgroup", "bind::oc:external",
                   "bind::oc:contactdata", "instance::oc:contactdata",
                   "bind::oc:briefdescription", "bind::oc:description",
-                  "readonly", "select_one_from_file_filename", "trigger"] or @key.match(/^.+::.+/)
+                  "readonly", "select_one_from_file_filename", "trigger", "_isRepeat", "repeat_count"] or @key.match(/^.+::.+/)
         @on "change", (changes)=>
           @getSurvey().trigger "change", changes
 

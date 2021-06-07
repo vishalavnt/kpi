@@ -47,6 +47,7 @@ module.exports = do ->
       "click .js-delete-row": "clickRemoveRow"
       "click .js-delete-group": "clickDeleteGroup"
       "click .js-add-to-question-library": "clickAddRowToQuestionLibrary"
+      "click .js-add-group-to-library": "clickAddGroupToLibrary"
       "click .js-clone-question": "clickCloneQuestion"
       "click #xlf-preview": "previewButtonClick"
       "click #csv-preview": "previewCsv"
@@ -658,6 +659,9 @@ module.exports = do ->
     clickAddRowToQuestionLibrary: (evt)->
       @_getViewForTarget(evt).add_row_to_question_library(evt)
 
+    clickAddGroupToLibrary: (evt)->
+      @_getViewForTarget(evt).add_group_to_library(evt)
+
     clickCloneQuestion: (evt)->
       @_getViewForTarget(evt).clone()
 
@@ -741,7 +745,10 @@ module.exports = do ->
       if rows_length > 0
         last_row = rows[rows.length - 1]
         @_duplicateRows rows, last_row
-              
+
+    addSelectedRowsToLibrary: () ->
+      rows = @selectedRows()
+      @ngScope.add_rows_to_question_library(rows, @survey._initialParams)
 
     selectedRows: ()->
       rows = []

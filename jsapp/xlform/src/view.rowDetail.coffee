@@ -271,7 +271,13 @@ module.exports = do ->
           return value
       })
       $textarea = $(this.rowView.$label)
+      $textarea.css("min-height", 20)
       if @model.get("value")?
+        resizableOpts = {
+          containment: "parent",
+          handles: "s",
+          minHeight: 27
+        }
         setTimeout =>
           textareaScrollHeight = $textarea.prop('scrollHeight')
           textAreaLineHeight = parseInt($textarea.css('line-height'))
@@ -279,16 +285,10 @@ module.exports = do ->
           textAreaSetHeight = Math.min(textareaScrollHeight, (textAreaLineHeight * maxLine)) + 7
           $textarea.css("height", "")
           $textarea.css("height", textAreaSetHeight)
-          $textarea.resizable({
-            containment: "parent",
-            handles: "s"
-          })
+          $textarea.resizable(resizableOpts)
         , 1
       else
-        $textarea.resizable({
-          containment: "parent",
-          handles: "s"
-        })
+        $textarea.resizable($textarea.resizable(resizableOpts))
       return
 
   viewRowDetail.DetailViewMixins.hint =
@@ -533,11 +533,61 @@ module.exports = do ->
           $textarea.blur()
 
   viewRowDetail.DetailViewMixins._isRepeat =
+    onOcCustomEvent: (ocCustomEventArgs) ->
+      questionId = @model._parent.cid
+      sender = ocCustomEventArgs.sender
+      senderValue = ocCustomEventArgs.value
+      senderQuestionId = sender._parent.cid
+      if (sender.key is 'repeat_count') and (questionId is senderQuestionId)
+        @$repeat_count.val(senderValue)
     html: ->
+      @$label_repeat_count = $('<span/>', { style: 'display: block; margin-top: 10px;' }).text(_t('Automatic Repeat Count') + ":")
+      @$repeat_count = $('<input/>', { style: 'margin-top: 10px; width:85%;' }).attr('placeholder', _t('(leave blank to allow users to add and remove repeats)'))
       @$el.addClass("card__settings__fields--active")
       viewRowDetail.Templates.checkbox @cid, @model.key, _t("Repeat"), _t("Repeat this group if necessary")
     afterRender: ->
+      @$('.settings__input').append(@$label_repeat_count)
+      @$('.settings__input').append(@$repeat_count)
+      @$repeat_count.attr('disabled', true)
+
+      if @model.getValue()?
+        @$repeat_count.attr('disabled', @model.getValue() == false)
+
       @listenForCheckboxChange()
+
+      @model.on 'change:value', () =>
+        @$repeat_count.attr('disabled', @model.getValue() == false)
+        if @model.getValue() == false
+          @$repeat_count.val('')
+          @changeRepeatCountValue()
+
+      @$repeat_count.on 'blur', () =>
+        @changeRepeatCountValue()
+      @$repeat_count.on 'change', () =>
+        @changeRepeatCountValue()
+      @$repeat_count.on 'keyup', () =>
+        @changeRepeatCountValue()
+      @$repeat_count.on 'keypress', (evt) =>
+        if evt.key is 'Enter' or evt.keyCode is 13
+          evt.preventDefault()
+          @$repeat_count.blur()
+    changeRepeatCountValue: ->
+      Backbone.trigger('ocCustomEvent', { sender: @model, value: @$repeat_count.val() })
+
+  viewRowDetail.DetailViewMixins.repeat_count =
+    onOcCustomEvent: (ocCustomEventArgs) ->
+      questionId = @model._parent.cid
+      sender = ocCustomEventArgs.sender
+      senderValue = ocCustomEventArgs.value
+      senderQuestionId = sender._parent.cid
+      if (sender.key is '_isRepeat') and (questionId is senderQuestionId)
+        @model.set('value', senderValue)
+    html: -> 
+      setTimeout =>
+          modelValue = @model.getValue()
+          Backbone.trigger('ocCustomEvent', { sender: @model, value: modelValue })
+        , 1
+      false
 
   # handled by mandatorySettingSelector
   viewRowDetail.DetailViewMixins.required =

@@ -310,6 +310,10 @@ export default assign({
     this.app.duplicateSelectedRows();
   },
 
+  addQuestionsToLibrary() {
+    this.app.addSelectedRowsToLibrary();
+  },
+
   showAll(evt) {
     evt.preventDefault();
     evt.currentTarget.blur();
@@ -818,6 +822,18 @@ export default assign({
               data-tip={groupable ? t('Duplicate selected questions') : t('Duplicate questions disabled. Please select at least one question.')}
             >
               <i className='k-icon-clone' />
+            </bem.FormBuilderHeader__button>
+
+            <bem.FormBuilderHeader__button
+              m={['group', {groupable: groupable}]}
+              onClick={this.addQuestionsToLibrary}
+              disabled={!groupable}
+              data-tip={groupable ? t('Add selected questions to library') : t('Add selected questions to library disabled. Please select at least one question.')}
+              className='add-questions-to-library'
+            >
+              <i class='k-icon-folder'>
+                <i className='k-icon-plus' />
+              </i>
             </bem.FormBuilderHeader__button>
 
             <bem.FormBuilderHeader__button
