@@ -366,6 +366,10 @@ module.exports = do ->
       @_insertInDOM rowView.cardSettingsWrap.find('.card__settings__fields--validation-criteria')
 
   viewRowDetail.DetailViewMixins.name =
+    isInGroup: ->
+      @model._parent.constructor.key == 'group'
+    changeHeaderName: ->
+      @$el.closest('.survey__row__item').find('.card__header-name').html(@model.getValue())
     html: ->
       @fieldMaxLength = 36
       @fieldTab = "active"
@@ -375,7 +379,7 @@ module.exports = do ->
       model_value = @model.get 'value'
       if (@model.get('value').length > rowItemNameMaxLength) and (model_value.charAt(model_value.length - 4) != '_')
         @model.set 'value', @model.get('value').slice(0, rowItemNameMaxLength)
-      if @model._parent.constructor.key == 'group'
+      if @isInGroup()
         viewRowDetail.Templates.textbox @cid, @model.key, _t("Layout Group Name"), 'text', 'Enter layout group name'
       else
         viewRowDetail.Templates.textbox @cid, @model.key, _t("Item Name"), 'text', 'Enter variable name', '40'
@@ -390,13 +394,13 @@ module.exports = do ->
       )
 
       @model.on 'change:value', () =>
-        @$el.closest('.survey__row__item').find('.card__header-name').html(@model.getValue())
+        @changeHeaderName()
 
       update_view = () => @$el.find('input').eq(0).val(@model.get("value") || '')
       update_view()
 
       setTimeout =>
-        @$el.closest('.survey__row__item').find('.card__header-name').html(@model.getValue())
+        @changeHeaderName() if !@isInGroup()
       , 1
 
       if @model._parent.get('label')?
