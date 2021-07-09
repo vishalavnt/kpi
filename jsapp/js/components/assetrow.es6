@@ -53,6 +53,9 @@ class AssetRow extends React.Component {
   componentDidMount () {
     this.prepParentCollection();
   }
+  componentWillReceiveProps(props) {
+    this.setState({isTagsInputVisible: props.showAllTags});
+  }
   prepParentCollection () {
     this.setState({
       parent: this.props.parent,
