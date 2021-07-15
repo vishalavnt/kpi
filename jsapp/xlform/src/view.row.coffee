@@ -297,6 +297,8 @@ module.exports = do ->
         @listView = new $viewChoices.ListView(model: cl, rowView: @).render()
 
       if @model.getValue('name')?
+        name_detail = @model.get('name')
+        name_detail.set 'value', name_detail.deduplicate(@model.getSurvey(), @model.getSurvey().rowItemNameMaxLength)
         @$name.html(@model.getValue('name'))
 
       @cardSettingsWrap = @$('.card__settings').eq(0)
