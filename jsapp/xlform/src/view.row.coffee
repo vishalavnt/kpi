@@ -370,6 +370,10 @@ module.exports = do ->
         @$card = @$('.card')
         @$header = @$('.card__header,.group__header').eq(0)
 
+      if @model.getValue('name')?
+        name_detail = @model.get('name')
+        name_detail.set 'value', name_detail.deduplicate(@model.getSurvey(), @model.getSurvey().rowItemNameMaxLength)
+
       @model.rows.each (row)=>
         @getApp().ensureElInView(row, @, @$rows).render()
 
