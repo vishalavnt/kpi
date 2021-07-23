@@ -49,6 +49,7 @@ module.exports = do ->
       "click .js-add-to-question-library": "clickAddRowToQuestionLibrary"
       "click .js-add-group-to-library": "clickAddGroupToLibrary"
       "click .js-clone-question": "clickCloneQuestion"
+      "click .js-clone-group": "clickCloneGroup"
       "click #xlf-preview": "previewButtonClick"
       "click #csv-preview": "previewCsv"
       "click #xlf-download": "downloadButtonClick"
@@ -664,6 +665,18 @@ module.exports = do ->
 
     clickCloneQuestion: (evt)->
       @_getViewForTarget(evt).clone()
+
+    clickCloneGroup: (evt)->
+      $et = $(evt.target)
+      $group_item = $et.closest('.survey__row--group')
+      $group_prev_item = $group_item.prev()
+      group_prev_item_position = @getItemPosition($group_prev_item)
+      uiItemParentWithId = $group_item.parents('[data-row-id]')[0]
+      if uiItemParentWithId
+        groupId = uiItemParentWithId.dataset.rowId
+        group_prev_item_position = group_prev_item_position + 1
+
+      @_getViewForTarget(evt).clone(group_prev_item_position, groupId)
 
     clickRemoveRow: (evt)->
       evt.preventDefault()

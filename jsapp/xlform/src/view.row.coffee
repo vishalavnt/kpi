@@ -404,6 +404,14 @@ module.exports = do ->
       evt.stopPropagation()
       @ngScope?.add_row_to_question_library @model, @model.getSurvey()._initialParams
 
+    clone: (position, groupId) =>
+      @ngScope?.handleCloneGroup({
+        position: position
+        itemDict: @model,
+        assetContent: @model.getSurvey()._initialParams,
+        groupId: groupId
+      })
+
   class RowView extends BaseRowView
     _expandedRender: ->
       @$header.after($viewTemplates.row.rowSettingsView())

@@ -154,6 +154,57 @@ class SurveyScope {
       groupId: groupId
     });
   }
+  handleCloneGroup({position, groupId, itemDict, assetContent}) {
+    let content;
+    let contents = [];
+    var unnullifiedContent = this.getUnnullifiedContent(assetContent);
+    var surveyObj = unnullifiedContent.survey;
+    var settingsObj = unnullifiedContent.settings;
+    var groupKuid = itemDict.toJSON2().$kuid;
+    var groupName = itemDict.toJSON2().name;
+
+    if (!_.isEmpty(surveyObj)) {
+      var startGroupIndexFound = _.findIndex(surveyObj, function(surveyObjItem) {
+        return surveyObjItem["$kuid"] == groupKuid && surveyObjItem["name"] ==  groupName;
+      });
+
+      if (startGroupIndexFound > -1) {
+        var endGroups = [];
+        for (var i = startGroupIndexFound; i < surveyObj.length; i++) {
+          var surveyObjRow = surveyObj[i];
+          if (surveyObjRow["$kuid"] == "/" + groupKuid) {
+            endGroups.push(i);
+          }
+        }
+
+        if (endGroups.length > 0) {
+          for (i = 0; i < endGroups.length; i++) {
+            var endGroupSurveyObjIndex = endGroups[i];
+            var slicedSurveyObj = surveyObj.slice(startGroupIndexFound, endGroupSurveyObjIndex + 1);
+            var startGroupCount = _.filter(slicedSurveyObj, function(obj) { return obj["type"] == "begin_group" }).length;
+            var endGroupCount = _.filter(slicedSurveyObj, function(obj) { return obj["type"] == "end_group" }).length;
+            if (startGroupCount ==  endGroupCount) {
+              contents = slicedSurveyObj;
+              break;
+            }
+          }
+        }
+      }
+    }
+    
+    content = {
+      survey: contents,
+      choices: this.getContentChoices(unnullifiedContent, contents),
+      settings: settingsObj
+    };
+
+    actions.survey.addItemAtPosition({
+      position: position,
+      survey: this.survey,
+      itemDict: content,
+      groupId: groupId
+    });
+  }
 }
 
 export default SurveyScope;
