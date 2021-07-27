@@ -49,6 +49,7 @@ module.exports = do ->
       "click .js-add-to-question-library": "clickAddRowToQuestionLibrary"
       "click .js-add-group-to-library": "clickAddGroupToLibrary"
       "click .js-clone-question": "clickCloneQuestion"
+      "click .js-clone-group": "clickCloneGroup"
       "click #xlf-preview": "previewButtonClick"
       "click #csv-preview": "previewCsv"
       "click #xlf-download": "downloadButtonClick"
@@ -665,6 +666,17 @@ module.exports = do ->
     clickCloneQuestion: (evt)->
       @_getViewForTarget(evt).clone()
 
+    clickCloneGroup: (evt)->
+      $group_item = $(evt.target).closest('.survey__row--group')
+      uiItemParentWithId = $group_item.parents('[data-row-id]')[0]
+      if uiItemParentWithId # group in group
+        groupId = uiItemParentWithId.dataset.rowId
+
+      view = @_getViewForTarget(evt)
+      viewModel = view.model
+      viewParent = viewModel._parent
+      view.clone(viewParent.models.indexOf(viewModel) + 1, groupId)
+
     clickRemoveRow: (evt)->
       evt.preventDefault()
       if confirm(_t("Are you sure you want to delete this question?") + " " +
@@ -727,24 +739,26 @@ module.exports = do ->
       else
         false
 
-    _duplicateRows: (rows, afterThisRow) ->
-      afterThisRowViewModel = @__rowViews.get(afterThisRow.cid).model
-      afterThisRowViewModelParent = afterThisRowViewModel._parent
-
+    _duplicateRows: (rows) ->
       for row, row_idx in rows
-        if row.constructor.kls isnt "Group"
-          view = @__rowViews.get(row.cid)
-          viewModel = view.model
-          viewParent = viewModel._parent
-          insert_index = afterThisRowViewModelParent.models.indexOf(afterThisRowViewModel) + row_idx + 1
-          viewModel.getSurvey().insert_row.call afterThisRowViewModelParent._parent, viewModel, insert_index
+        view = @__rowViews.get(row.cid)
+        viewModel = view.model
+        viewParent = viewModel._parent
+        if row.constructor.kls isnt "Group"  
+          viewModel.getSurvey().insert_row.call viewParent._parent, viewModel, viewParent.models.indexOf(viewModel) + 1
+        else # duplicate group
+          $group_item = $("li[data-row-id='#{row.cid}']")
+          uiItemParentWithId = $group_item.parents('[data-row-id]')[0]
+          if uiItemParentWithId # group in group
+            groupId = uiItemParentWithId.dataset.rowId
+          view.clone(viewParent.models.indexOf(viewModel) + 1, groupId)
 
     duplicateSelectedRows: () ->
       rows = @selectedRows()
       rows_length = rows.length
+
       if rows_length > 0
-        last_row = rows[rows.length - 1]
-        @_duplicateRows rows, last_row
+        @_duplicateRows rows
 
     addSelectedRowsToLibrary: () ->
       rows = @selectedRows()

@@ -5,6 +5,7 @@ $configs = require './model.configs'
 $viewUtils = require './view.utils'
 $icons = require './view.icons'
 $hxl = require './view.rowDetail.hxlDict'
+ResizeSensor = require 'css-element-queries/src/ResizeSensor'
 
 $viewRowDetailSkipLogic = require './view.rowDetail.SkipLogic'
 $viewTemplates = require './view.templates'
@@ -270,25 +271,40 @@ module.exports = do ->
           value = value.replace /\t/g, ' '
           return value
       })
+
       $textarea = $(this.rowView.$label)
+
+      if $textarea.closest('.card__text').length == 0
+        return
+      
       $textarea.css("min-height", 20)
+
+      resizableOpts = {
+        containment: "parent",
+        handles: "s",
+        minHeight: 27
+      }
       if @model.get("value")?
-        resizableOpts = {
-          containment: "parent",
-          handles: "s",
-          minHeight: 27
-        }
         setTimeout =>
+          maxLine = 3
           textareaScrollHeight = $textarea.prop('scrollHeight')
           textAreaLineHeight = parseInt($textarea.css('line-height'))
-          maxLine = 3
           textAreaSetHeight = Math.min(textareaScrollHeight, (textAreaLineHeight * maxLine)) + 7
           $textarea.css("height", "")
           $textarea.css("height", textAreaSetHeight)
           $textarea.resizable(resizableOpts)
         , 1
       else
-        $textarea.resizable($textarea.resizable(resizableOpts))
+        $textarea.resizable(resizableOpts)
+
+      targetNode = $textarea.closest('.card__text')[0]
+      new ResizeSensor(targetNode, =>
+        card_text_width = targetNode.clientWidth
+        $textarea.width(card_text_width)
+        $textarea.siblings('.ui-resizable-s').width(card_text_width)
+        $textarea.closest('.ui-wrapper').width(card_text_width)
+      )
+
       return
 
   viewRowDetail.DetailViewMixins.hint =
@@ -366,6 +382,10 @@ module.exports = do ->
       @_insertInDOM rowView.cardSettingsWrap.find('.card__settings__fields--validation-criteria')
 
   viewRowDetail.DetailViewMixins.name =
+    isInGroup: ->
+      @model._parent.constructor.key == 'group'
+    changeHeaderName: ->
+      @$el.closest('.survey__row__item').find('.card__header-name').html(@model.getValue())
     html: ->
       @fieldMaxLength = 36
       @fieldTab = "active"
@@ -375,7 +395,7 @@ module.exports = do ->
       model_value = @model.get 'value'
       if (@model.get('value').length > rowItemNameMaxLength) and (model_value.charAt(model_value.length - 4) != '_')
         @model.set 'value', @model.get('value').slice(0, rowItemNameMaxLength)
-      if @model._parent.constructor.key == 'group'
+      if @isInGroup()
         viewRowDetail.Templates.textbox @cid, @model.key, _t("Layout Group Name"), 'text', 'Enter layout group name'
       else
         viewRowDetail.Templates.textbox @cid, @model.key, _t("Item Name"), 'text', 'Enter variable name', '40'
@@ -390,13 +410,13 @@ module.exports = do ->
       )
 
       @model.on 'change:value', () =>
-        @$el.closest('.survey__row__item').find('.card__header-name').html(@model.getValue())
+        @changeHeaderName()
 
       update_view = () => @$el.find('input').eq(0).val(@model.get("value") || '')
       update_view()
 
       setTimeout =>
-        @$el.closest('.survey__row__item').find('.card__header-name').html(@model.getValue())
+        @changeHeaderName() if !@isInGroup()
       , 1
 
       if @model._parent.get('label')?

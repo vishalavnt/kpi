@@ -115,10 +115,10 @@ module.exports = do ->
         if val is ''
           valChanged = true if val isnt @model.get('name')
           @model.unset('name')
-          @model.set('setManually', false)
           val = 'AUTOMATIC'
           @$el.trigger("choice-list-update", @options.cl.cid)
           @model.getSurvey()?.trigger('change') if valChanged
+          return
         else
           val = $modelUtils.sluggify(val, {
                     preventDuplicates: other_names
@@ -131,10 +131,9 @@ module.exports = do ->
                   })
           valChanged = true if val isnt @model.get('name')
           @model.set('name', val)
-          @model.set('setManually', true)
           @$el.trigger("choice-list-update", @options.cl.cid)
           @model.getSurvey()?.trigger('change') if valChanged
-        return
+          return newValue: @model.get('name')
 
       @j = $('span', @i)
       $viewUtils.makeEditable @, @model, @j, edit_callback: (val) =>
@@ -142,7 +141,6 @@ module.exports = do ->
         if val is ''
           valChanged = true if val isnt @model.get(@optionImageField)
           @model.unset(@optionImageField)
-          @model.set('setManually', false)
           val = 'None'
           @$el.trigger("choice-list-update", @options.cl.cid)
           @model.getSurvey()?.trigger('change') if valChanged
@@ -153,7 +151,6 @@ module.exports = do ->
             
           if valChanged
             @model.set(@optionImageField, val)
-            @model.set('setManually', true)
             @$el.trigger("choice-list-update", @options.cl.cid)
             @model.getSurvey()?.trigger('change') 
         return

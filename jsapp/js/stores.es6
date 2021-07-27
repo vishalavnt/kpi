@@ -317,11 +317,16 @@ var surveyCompanionStore = Reflux.createStore({
   init () {
     this.listenTo(actions.survey.addItemAtPosition, this.addItemAtPosition);
   },
-  addItemAtPosition ({position, survey, uid, groupId}) {
-    stores.allAssets.whenLoaded(uid, function(asset){
-      var _s = dkobo_xlform.model.Survey.loadDict(asset.content, survey)
+  addItemAtPosition ({position, survey, uid, groupId, itemDict}) {
+    if (itemDict) { // clone group
+      var _s = dkobo_xlform.model.Survey.loadDict(itemDict, survey);
       survey.insertSurvey(_s, position, groupId);
-    });
+    } else {
+      stores.allAssets.whenLoaded(uid, function(asset){
+        var _s = dkobo_xlform.model.Survey.loadDict(asset.content, survey);
+        survey.insertSurvey(_s, position, groupId);
+      });
+    }
   }
 })
 
@@ -340,14 +345,23 @@ var allAssetsStore = Reflux.createStore({
     this.listenTo(actions.resources.loadAsset.completed, this.onLoadAssetCompleted);
   },
   whenLoaded (uid, cb) {
-    if (this.byUid[uid] && this.byUid[uid].content) {
-      cb.call(this, this.byUid[uid]);
-    } else {
-      if (!this._waitingOn[uid]) {
-        this._waitingOn[uid] = [];
+    var that = this;
+    function waitAndLoadAsset() {
+      if (!that._waitingOn[uid]) {
+        that._waitingOn[uid] = [];
       }
-      this._waitingOn[uid].push(cb);
+      that._waitingOn[uid].push(cb);
       actions.resources.loadAsset({id: uid});
+    }
+
+    if (this.byUid[uid] && this.byUid[uid].content) {
+      if (this.byUid[uid].content.survey[0].type === 'group') {
+        waitAndLoadAsset();
+      } else {
+        cb.call(this, this.byUid[uid]);  
+      }
+    } else {
+      waitAndLoadAsset();
     }
   },
   onUpdateAssetCompleted (asset) {

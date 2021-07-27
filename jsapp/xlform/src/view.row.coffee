@@ -297,6 +297,8 @@ module.exports = do ->
         @listView = new $viewChoices.ListView(model: cl, rowView: @).render()
 
       if @model.getValue('name')?
+        name_detail = @model.get('name')
+        name_detail.set 'value', name_detail.deduplicate(@model.getSurvey(), @model.getSurvey().rowItemNameMaxLength)
         @$name.html(@model.getValue('name'))
 
       @cardSettingsWrap = @$('.card__settings').eq(0)
@@ -368,6 +370,10 @@ module.exports = do ->
         @$card = @$('.card')
         @$header = @$('.card__header,.group__header').eq(0)
 
+      if @model.getValue('name')?
+        name_detail = @model.get('name')
+        name_detail.set 'value', name_detail.deduplicate(@model.getSurvey(), @model.getSurvey().rowItemNameMaxLength)
+
       @model.rows.each (row)=>
         @getApp().ensureElInView(row, @, @$rows).render()
 
@@ -397,6 +403,14 @@ module.exports = do ->
     add_group_to_library: (evt) =>
       evt.stopPropagation()
       @ngScope?.add_row_to_question_library @model, @model.getSurvey()._initialParams
+
+    clone: (position, groupId) =>
+      @ngScope?.handleCloneGroup({
+        position: position
+        itemDict: @model,
+        assetContent: @model.getSurvey()._initialParams,
+        groupId: groupId
+      })
 
   class RowView extends BaseRowView
     _expandedRender: ->
