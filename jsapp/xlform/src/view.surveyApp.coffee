@@ -667,16 +667,15 @@ module.exports = do ->
       @_getViewForTarget(evt).clone()
 
     clickCloneGroup: (evt)->
-      $et = $(evt.target)
-      $group_item = $et.closest('.survey__row--group')
-      $group_prev_item = $group_item.prev()
-      group_prev_item_position = @getItemPosition($group_prev_item)
+      $group_item = $(evt.target).closest('.survey__row--group')
       uiItemParentWithId = $group_item.parents('[data-row-id]')[0]
-      if uiItemParentWithId
+      if uiItemParentWithId # group in group
         groupId = uiItemParentWithId.dataset.rowId
-        group_prev_item_position = group_prev_item_position + 1
 
-      @_getViewForTarget(evt).clone(group_prev_item_position, groupId)
+      view = @_getViewForTarget(evt)
+      viewModel = view.model
+      viewParent = viewModel._parent
+      view.clone(viewParent.models.indexOf(viewModel) + 1, groupId)
 
     clickRemoveRow: (evt)->
       evt.preventDefault()
