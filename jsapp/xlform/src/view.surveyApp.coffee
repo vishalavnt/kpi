@@ -740,24 +740,26 @@ module.exports = do ->
       else
         false
 
-    _duplicateRows: (rows, afterThisRow) ->
-      afterThisRowViewModel = @__rowViews.get(afterThisRow.cid).model
-      afterThisRowViewModelParent = afterThisRowViewModel._parent
-
+    _duplicateRows: (rows) ->
       for row, row_idx in rows
-        if row.constructor.kls isnt "Group"
-          view = @__rowViews.get(row.cid)
-          viewModel = view.model
-          viewParent = viewModel._parent
-          insert_index = afterThisRowViewModelParent.models.indexOf(afterThisRowViewModel) + row_idx + 1
-          viewModel.getSurvey().insert_row.call afterThisRowViewModelParent._parent, viewModel, insert_index
+        view = @__rowViews.get(row.cid)
+        viewModel = view.model
+        viewParent = viewModel._parent
+        if row.constructor.kls isnt "Group"  
+          viewModel.getSurvey().insert_row.call viewParent._parent, viewModel, viewParent.models.indexOf(viewModel) + 1
+        else # duplicate group
+          $group_item = $("li[data-row-id='#{row.cid}']")
+          uiItemParentWithId = $group_item.parents('[data-row-id]')[0]
+          if uiItemParentWithId # group in group
+            groupId = uiItemParentWithId.dataset.rowId
+          view.clone(viewParent.models.indexOf(viewModel) + 1, groupId)
 
     duplicateSelectedRows: () ->
       rows = @selectedRows()
       rows_length = rows.length
+
       if rows_length > 0
-        last_row = rows[rows.length - 1]
-        @_duplicateRows rows, last_row
+        @_duplicateRows rows
 
     addSelectedRowsToLibrary: () ->
       rows = @selectedRows()
