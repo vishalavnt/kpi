@@ -731,13 +731,25 @@ module.exports = do ->
           parent_view._deleteGroup()
 
     deleteSelectedRows: ->
-      if confirm(_t("Are you sure you want to delete these questions?") + " " +
-          _t("This action cannot be undone."))
-        @survey.trigger('change')
-      
-        rows = @selectedRows()
-        for row in rows
-          @_deleteRow row
+      dialog = alertify.dialog('confirm')
+      rows = @selectedRows()
+      opts = 
+        title: _t('Delete selected questions')
+        message: _t('Are you sure you want to delete these questions?') + " " + _t("This action cannot be undone.")
+        labels:
+          ok: _t('Yes')
+          cancel: _t('No')
+        onok: =>
+          @survey.trigger('change')
+
+          for row in rows
+            @_deleteRow row
+
+          return
+        oncancel: =>
+          dialog.destroy()
+          return
+      dialog.set(opts).show()
 
     groupSelectedRows: ->
       rows = @selectedRows()
