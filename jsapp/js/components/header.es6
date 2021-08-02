@@ -83,7 +83,7 @@ class MainHeader extends Reflux.Component {
         if ('reload' in window.location) {
           window.location.reload();
         } else {
-          window.alert(t('Please refresh the page'));
+          alertify.alert(t('Change language'), t('Please refresh the page'));
         }
       });
     }
