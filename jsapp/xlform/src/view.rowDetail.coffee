@@ -1101,6 +1101,7 @@ module.exports = do ->
             $select.siblings(".#{@contact_data_type_class_name}").remove()
           if $select.val() == 'No'
             @model.set 'value', ''
+            @rowView.model.attributes['instance::oc:contactdata'].set 'value', ''
             hideMessage()
           else
             @model.set 'value', $select.val()
