@@ -213,7 +213,6 @@ module.exports = do ->
     "constraint",
     "bind::oc:external",
     "readonly",
-    "bind::oc:contactdata", 
     "instance::oc:contactdata",
     "default",
     'calculation',
@@ -316,8 +315,6 @@ module.exports = do ->
     "bind::oc:description":
       value: ''
     "select_one_from_file_filename":
-      value: ''
-    "bind::oc:contactdata":
       value: ''
     "instance::oc:contactdata":
       value: ''

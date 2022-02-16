@@ -1071,11 +1071,8 @@ module.exports = do ->
         @$('.settings__input').append(@$label_select_contact_data_type)
         @$('.settings__input').append(@$select_contact_data_type)
 
-        bind_contactdata_value = @rowView.model.attributes['bind::oc:contactdata'].get 'value'
         instance_contactdata_value = @rowView.model.attributes['instance::oc:contactdata'].get 'value'
-        if bind_contactdata_value != '' and (bind_contactdata_value in @contact_data_type_options)
-          @$select_contact_data_type.val(bind_contactdata_value)
-        else if instance_contactdata_value != '' and (instance_contactdata_value in @contact_data_type_options)
+        if instance_contactdata_value != '' and (instance_contactdata_value in @contact_data_type_options)
           @$select_contact_data_type.val(instance_contactdata_value)
 
         @$select_contact_data_type.change () =>
