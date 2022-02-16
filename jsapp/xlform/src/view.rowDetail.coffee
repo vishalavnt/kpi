@@ -1000,11 +1000,11 @@ module.exports = do ->
       if (sender.key is 'bind::oc:external') and (questionId is senderQuestionId)
         @$el.siblings(".message").remove();
         @$el.closest('div').removeClass("input-error")
-        if senderValue in ['clinicaldata', 'contactdata']
+        if senderValue in ['clinicaldata', 'contactdata', 'identifier']
           @removeRequired()
           @makeFieldCheckCondition({
             checkIfNotEmpty: true,
-            message: 'This field must be empty for external "clinicaldata" or "contactdata" items'
+            message: 'This field must be empty if Use External Value is being used'
           })
         else
           @$el.removeClass('hidden')
@@ -1032,7 +1032,7 @@ module.exports = do ->
       @model._parent.getValue('type').split(' ')[0]
     getOptions: () ->
       types =
-        text: ['contactdata']
+        text: ['contactdata', 'identifier']
         calculate: ['clinicaldata']
       types[@model_type()]
     html: ->
@@ -1054,6 +1054,14 @@ module.exports = do ->
       @contact_data_type_options = ['firstname', 'lastname', 'email', 'mobilenumber', 'secondaryid']
       for contact_data_type_option in @contact_data_type_options
         $('<option />', {value: "#{contact_data_type_option}", text: "#{contact_data_type_option}"}).appendTo(@$select_contact_data_type)
+
+      @identifier_type_class_name = 'identifier-type'
+      @$label_select_identifier_type = $('<span/>', { class: @identifier_type_class_name, style: 'display: block; margin-top: 10px;' }).text(_t('Identifier Type') + ":")
+      @$select_identifier_type = $('<select/>', { class: @identifier_type_class_name, style: 'margin-top: 5px;' })
+      $('<option />', {value: "select", text: "- select -"}).appendTo(@$select_identifier_type)
+      @identifier_type_options = ['participantid']
+      for identifier_type_option in @identifier_type_options
+        $('<option />', {value: "#{identifier_type_option}", text: "#{identifier_type_option}"}).appendTo(@$select_identifier_type)
 
       fieldClass = 'input-error'
       message = "Constraint / Constraint Message is not empty"
@@ -1084,6 +1092,24 @@ module.exports = do ->
           else
             @rowView.model.attributes['instance::oc:contactdata'].set 'value', @$select_contact_data_type.val()
 
+      addSelectIdentifierType = () =>
+        @$('.settings__input').append(@$label_select_identifier_type)
+        @$('.settings__input').append(@$select_identifier_type)
+
+        instance_identifier_value = @rowView.model.attributes['instance::oc:identifier'].get 'value'
+        if instance_identifier_value != '' and (instance_identifier_value in @identifier_type_options)
+          @$select_identifier_type.val(instance_identifier_value)
+
+        @$select_identifier_type.change () =>
+          if @$select_identifier_type.val() == 'select'
+            @rowView.model.attributes['instance::oc:identifier'].set 'value', ''
+          else
+            @rowView.model.attributes['instance::oc:identifier'].set 'value', @$select_identifier_type.val()
+
+      resetInstanceValues = () =>
+        @rowView.model.attributes['instance::oc:contactdata'].set 'value', ''
+        @rowView.model.attributes['instance::oc:identifier'].set 'value', ''
+
       modelValue = @model.get 'value'
       if $select.length > 0
         if modelValue == ''
@@ -1094,23 +1120,33 @@ module.exports = do ->
 
           if modelValue == 'contactdata'
             addSelectContactDataType()
+          else if modelValue == 'identifier'
+            addSelectIdentifierType()
 
         $select.change () =>
           Backbone.trigger('ocCustomEvent', { sender: @model, value: $select.val() })
+
           if $select.siblings(".#{@contact_data_type_class_name}").length > 0
             $select.siblings(".#{@contact_data_type_class_name}").remove()
+
+          if $select.siblings(".#{@identifier_type_class_name}").length > 0
+            $select.siblings(".#{@identifier_type_class_name}").remove()
+
           if $select.val() == 'No'
             @model.set 'value', ''
-            @rowView.model.attributes['instance::oc:contactdata'].set 'value', ''
+            resetInstanceValues()
             hideMessage()
           else
             @model.set 'value', $select.val()
+            resetInstanceValues()
             if $select.val() == 'contactdata'
               addSelectContactDataType()
               constraint_value = @rowView.model.attributes.constraint.getValue()
               constraint_message_value = @rowView.model.attributes.constraint_message.getValue()
               if (constraint_value != '') or (constraint_message_value != '')
                 showMessage()
+            else if $select.val() == 'identifier'
+              addSelectIdentifierType()
 
   viewRowDetail.DetailViewMixins.readonly =
     html: ->

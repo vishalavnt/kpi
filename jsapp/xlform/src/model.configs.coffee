@@ -215,6 +215,7 @@ module.exports = do ->
     "readonly",
     "bind::oc:contactdata", 
     "instance::oc:contactdata",
+    "instance::oc:identifier",
     "default",
     'calculation',
     'trigger'
@@ -320,6 +321,8 @@ module.exports = do ->
     "bind::oc:contactdata":
       value: ''
     "instance::oc:contactdata":
+      value: ''
+    "instance::oc:identifier":
       value: ''
     trigger:
       value: ''
