@@ -475,7 +475,6 @@ class XlsExportable(object):
         u'image',
         u'repeat_count',
         u'bind::oc:external',
-        u'bind::oc:contactdata',
         u'instance::oc:contactdata',
         u'instance::oc:identifier'
     ]
