@@ -214,6 +214,7 @@ module.exports = do ->
     "bind::oc:external",
     "readonly",
     "instance::oc:contactdata",
+    "instance::oc:identifier",
     "default",
     'calculation',
     'trigger'
@@ -317,6 +318,8 @@ module.exports = do ->
     "select_one_from_file_filename":
       value: ''
     "instance::oc:contactdata":
+      value: ''
+    "instance::oc:identifier":
       value: ''
     trigger:
       value: ''

@@ -165,6 +165,7 @@ module.exports = do ->
                   "constraint_message", "tags",
                   "bind::oc:itemgroup", "bind::oc:external",
                   "instance::oc:contactdata",
+                  "instance::oc:identifier",
                   "bind::oc:briefdescription", "bind::oc:description",
                   "readonly", "select_one_from_file_filename", "trigger", "_isRepeat", "repeat_count"] or @key.match(/^.+::.+/)
         @on "change", (changes)=>
