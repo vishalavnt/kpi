@@ -8,7 +8,7 @@ module.exports = do ->
       operator = null
       switch type
         when 'text' then operator = new rowDetailValidationLogic.ValidationLogicTextOperator symbol
-        when 'date' then operator = new rowDetailValidationLogic.ValidationLogicDateOperator symbol
+        when 'date' then operator = new rowDetailValidationLogic.ValidationLogicTextOperator symbol
         when 'basic' then operator = new rowDetailValidationLogic.ValidationLogicBasicOperator symbol
         when 'existence' then operator = new rowDetailValidationLogic.ValidationLogicExistenceOperator symbol
         when 'select_multiple' then operator = new rowDetailValidationLogic.ValidationLogicSelectMultipleOperator symbol
