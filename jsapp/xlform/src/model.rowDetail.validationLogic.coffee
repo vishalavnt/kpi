@@ -8,7 +8,7 @@ module.exports = do ->
       operator = null
       switch type
         when 'text' then operator = new rowDetailValidationLogic.ValidationLogicTextOperator symbol
-        when 'date' then operator = new rowDetailValidationLogic.ValidationLogicTextOperator symbol
+        when 'date' then operator = new rowDetailValidationLogic.ValidationLogicDateOperator symbol
         when 'basic' then operator = new rowDetailValidationLogic.ValidationLogicBasicOperator symbol
         when 'existence' then operator = new rowDetailValidationLogic.ValidationLogicExistenceOperator symbol
         when 'select_multiple' then operator = new rowDetailValidationLogic.ValidationLogicSelectMultipleOperator symbol
@@ -27,8 +27,6 @@ module.exports = do ->
       return super '', ' ' + "'" + response_value.replace(/'/g, "\\'") + "'"
   class rowDetailValidationLogic.ValidationLogicDateOperator extends rowDetailValidationLogic.ValidationLogicBasicOperator
     serialize: (question_name, response_value) ->
-      if response_value.indexOf('date') == -1
-        response_value = "date('" + response_value + "')"
       return super '', ' ' + response_value
   class rowDetailValidationLogic.ValidationLogicExistenceOperator extends rowDetailValidationLogic.ValidationLogicBasicOperator
     serialize: () ->
