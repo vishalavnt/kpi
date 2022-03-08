@@ -679,28 +679,41 @@ module.exports = do ->
 
     clickRemoveRow: (evt)->
       evt.preventDefault()
-      if confirm(_t("Are you sure you want to delete this question?") + " " +
-          _t("This action cannot be undone."))
-        @survey.trigger('change')
 
-        $et = $(evt.target)
-        rowEl = $et.parents(".survey__row").eq(0)
-        rowId = rowEl.data("rowId")
+      dialog = alertify.dialog('confirm')
+      opts = 
+        title: _t('Delete question')
+        message: _t('Are you sure you want to delete this question?') + " " + _t("This action cannot be undone.")
+        labels:
+          ok: _t('Yes')
+          cancel: _t('No')
+        onok: =>
+          @survey.trigger('change')
 
-        matchingRow = false
-        findMatch = (r)->
-          if r.cid is rowId
-            matchingRow = r
+          $et = $(evt.target)
+          rowEl = $et.parents(".survey__row").eq(0)
+          rowId = rowEl.data("rowId")
+
+          matchingRow = false
+          findMatch = (r)->
+            if r.cid is rowId
+              matchingRow = r
+            return
+
+          @survey.forEachRow findMatch, {
+            includeGroups: false
+          }
+
+          if !matchingRow
+            throw new Error("Matching row was not found.")
+          
+          @_deleteRow matchingRow
+
           return
-
-        @survey.forEachRow findMatch, {
-          includeGroups: false
-        }
-
-        if !matchingRow
-          throw new Error("Matching row was not found.")
-        
-        @_deleteRow matchingRow
+        oncancel: =>
+          dialog.destroy()
+          return
+      dialog.set(opts).show()
 
     _deleteRow: (row) ->
       $row = $("li[data-row-id='#{row.cid}']")
@@ -718,13 +731,25 @@ module.exports = do ->
           parent_view._deleteGroup()
 
     deleteSelectedRows: ->
-      if confirm(_t("Are you sure you want to delete these questions?") + " " +
-          _t("This action cannot be undone."))
-        @survey.trigger('change')
-      
-        rows = @selectedRows()
-        for row in rows
-          @_deleteRow row
+      dialog = alertify.dialog('confirm')
+      rows = @selectedRows()
+      opts = 
+        title: _t('Delete selected questions')
+        message: _t('Are you sure you want to delete these questions?') + " " + _t("This action cannot be undone.")
+        labels:
+          ok: _t('Yes')
+          cancel: _t('No')
+        onok: =>
+          @survey.trigger('change')
+
+          for row in rows
+            @_deleteRow row
+
+          return
+        oncancel: =>
+          dialog.destroy()
+          return
+      dialog.set(opts).show()
 
     groupSelectedRows: ->
       rows = @selectedRows()

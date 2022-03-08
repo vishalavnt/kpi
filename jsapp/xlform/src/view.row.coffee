@@ -351,10 +351,25 @@ module.exports = do ->
       @ngScope = opts.ngScope
 
     deleteGroup: (evt)=>
-      skipConfirm = $(evt.currentTarget).hasClass('js-force-delete-group')
-      if skipConfirm or confirm(_t("Are you sure you want to split apart this group?"))
-        @_deleteGroup()
       evt.preventDefault()
+      skipConfirm = $(evt.currentTarget).hasClass('js-force-delete-group')
+      if !skipConfirm
+        dialog = alertify.dialog('confirm')
+        opts = 
+          title: _t('Delete group')
+          message: _t('Are you sure you want to split apart this group?')
+          labels:
+            ok: _t('Yes')
+            cancel: _t('No')
+          onok: =>
+            @_deleteGroup()
+            return
+          oncancel: =>
+            dialog.destroy()
+            return
+        dialog.set(opts).show()
+      else
+        @_deleteGroup()
 
     _deleteGroup: () =>
       @model.splitApart()
