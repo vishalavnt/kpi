@@ -159,6 +159,8 @@ module.exports = do ->
       $(window).on "keydown", (evt)=>
         @onEscapeKeydown(evt) if evt.keyCode is 27
 
+      @isAlertifyDialogShown = false
+
     getView: (cid)->
       @__rowViews.get(cid)
 
@@ -687,6 +689,17 @@ module.exports = do ->
         labels:
           ok: _t('Yes')
           cancel: _t('No')
+        onshow: =>
+          @isAlertifyDialogShown = true
+          return
+
+        onclose: =>
+          @isAlertifyDialogShown = false
+          $et = $(evt.target)
+          $deleteButton = $et.closest('.card__buttons__button')
+          $deleteButton.trigger('mouseleave')
+          return
+
         onok: =>
           @survey.trigger('change')
 
@@ -713,6 +726,7 @@ module.exports = do ->
         oncancel: =>
           dialog.destroy()
           return
+
       dialog.set(opts).show()
 
     _deleteRow: (row) ->
@@ -872,6 +886,8 @@ module.exports = do ->
       return
     buttonHoverOut: (evt)->
       evt.stopPropagation()
+      if @isAlertifyDialogShown
+        return
       $et = $(evt.currentTarget)
       buttonName = $et.data('buttonName')
       $et.closest('.card__header').removeClass(buttonName)
