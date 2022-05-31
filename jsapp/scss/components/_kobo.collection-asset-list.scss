@@ -94,6 +94,35 @@
       margin-left: 5px;
     }
   }
+
+  .library__actions {
+    position: absolute;
+    top: 0;
+    right: 250px;
+    z-index: 1;
+
+    .library__action-icon {
+      margin-left: 0px;
+      font-weight: 400;
+      color: $cool-gray;
+      cursor: pointer;
+
+      &:hover {
+        background-color: transparent;
+        color: $cool-blue;
+      }
+
+      i::before {
+        margin: 0px;
+        font-size: 36px;
+      }
+    }
+
+    &.library__actions--display-all-tags .library__action-icon--tagsToggle {
+      background-color: transparent;
+      color: $cool-blue;
+    }
+  }
 }
 
 .list--regular {

@@ -5,6 +5,7 @@ $configs = require './model.configs'
 $viewUtils = require './view.utils'
 $icons = require './view.icons'
 $hxl = require './view.rowDetail.hxlDict'
+ResizeSensor = require 'css-element-queries/src/ResizeSensor'
 
 $viewRowDetailSkipLogic = require './view.rowDetail.SkipLogic'
 $viewTemplates = require './view.templates'
@@ -270,25 +271,40 @@ module.exports = do ->
           value = value.replace /\t/g, ' '
           return value
       })
+
       $textarea = $(this.rowView.$label)
+
+      if $textarea.closest('.card__text').length == 0
+        return
+      
+      $textarea.css("min-height", 20)
+
+      resizableOpts = {
+        containment: "parent",
+        handles: "s",
+        minHeight: 27
+      }
       if @model.get("value")?
         setTimeout =>
+          maxLine = 3
           textareaScrollHeight = $textarea.prop('scrollHeight')
           textAreaLineHeight = parseInt($textarea.css('line-height'))
-          maxLine = 3
           textAreaSetHeight = Math.min(textareaScrollHeight, (textAreaLineHeight * maxLine)) + 7
           $textarea.css("height", "")
           $textarea.css("height", textAreaSetHeight)
-          $textarea.resizable({
-            containment: "parent",
-            handles: "s"
-          })
+          $textarea.resizable(resizableOpts)
         , 1
       else
-        $textarea.resizable({
-          containment: "parent",
-          handles: "s"
-        })
+        $textarea.resizable(resizableOpts)
+
+      targetNode = $textarea.closest('.card__text')[0]
+      new ResizeSensor(targetNode, =>
+        card_text_width = targetNode.clientWidth
+        $textarea.width(card_text_width)
+        $textarea.siblings('.ui-resizable-s').width(card_text_width)
+        $textarea.closest('.ui-wrapper').width(card_text_width)
+      )
+
       return
 
   viewRowDetail.DetailViewMixins.hint =
@@ -366,6 +382,10 @@ module.exports = do ->
       @_insertInDOM rowView.cardSettingsWrap.find('.card__settings__fields--validation-criteria')
 
   viewRowDetail.DetailViewMixins.name =
+    isInGroup: ->
+      @model._parent.constructor.key == 'group'
+    changeHeaderName: ->
+      @$el.closest('.survey__row__item').find('.card__header-name').html(@model.getValue())
     html: ->
       @fieldMaxLength = 36
       @fieldTab = "active"
@@ -375,7 +395,7 @@ module.exports = do ->
       model_value = @model.get 'value'
       if (@model.get('value').length > rowItemNameMaxLength) and (model_value.charAt(model_value.length - 4) != '_')
         @model.set 'value', @model.get('value').slice(0, rowItemNameMaxLength)
-      if @model._parent.constructor.key == 'group'
+      if @isInGroup()
         viewRowDetail.Templates.textbox @cid, @model.key, _t("Layout Group Name"), 'text', 'Enter layout group name'
       else
         viewRowDetail.Templates.textbox @cid, @model.key, _t("Item Name"), 'text', 'Enter variable name', '40'
@@ -390,13 +410,13 @@ module.exports = do ->
       )
 
       @model.on 'change:value', () =>
-        @$el.closest('.survey__row__item').find('.card__header-name').html(@model.getValue())
+        @changeHeaderName()
 
       update_view = () => @$el.find('input').eq(0).val(@model.get("value") || '')
       update_view()
 
       setTimeout =>
-        @$el.closest('.survey__row__item').find('.card__header-name').html(@model.getValue())
+        @changeHeaderName() if !@isInGroup()
       , 1
 
       if @model._parent.get('label')?
@@ -533,11 +553,61 @@ module.exports = do ->
           $textarea.blur()
 
   viewRowDetail.DetailViewMixins._isRepeat =
+    onOcCustomEvent: (ocCustomEventArgs) ->
+      questionId = @model._parent.cid
+      sender = ocCustomEventArgs.sender
+      senderValue = ocCustomEventArgs.value
+      senderQuestionId = sender._parent.cid
+      if (sender.key is 'repeat_count') and (questionId is senderQuestionId)
+        @$repeat_count.val(senderValue)
     html: ->
+      @$label_repeat_count = $('<span/>', { style: 'display: block; margin-top: 10px;' }).text(_t('Automatic Repeat Count') + ":")
+      @$repeat_count = $('<input/>', { style: 'margin-top: 10px; width:85%;' }).attr('placeholder', _t('(leave blank to allow users to add and remove repeats)'))
       @$el.addClass("card__settings__fields--active")
       viewRowDetail.Templates.checkbox @cid, @model.key, _t("Repeat"), _t("Repeat this group if necessary")
     afterRender: ->
+      @$('.settings__input').append(@$label_repeat_count)
+      @$('.settings__input').append(@$repeat_count)
+      @$repeat_count.attr('disabled', true)
+
+      if @model.getValue()?
+        @$repeat_count.attr('disabled', @model.getValue() == false)
+
       @listenForCheckboxChange()
+
+      @model.on 'change:value', () =>
+        @$repeat_count.attr('disabled', @model.getValue() == false)
+        if @model.getValue() == false
+          @$repeat_count.val('')
+          @changeRepeatCountValue()
+
+      @$repeat_count.on 'blur', () =>
+        @changeRepeatCountValue()
+      @$repeat_count.on 'change', () =>
+        @changeRepeatCountValue()
+      @$repeat_count.on 'keyup', () =>
+        @changeRepeatCountValue()
+      @$repeat_count.on 'keypress', (evt) =>
+        if evt.key is 'Enter' or evt.keyCode is 13
+          evt.preventDefault()
+          @$repeat_count.blur()
+    changeRepeatCountValue: ->
+      Backbone.trigger('ocCustomEvent', { sender: @model, value: @$repeat_count.val() })
+
+  viewRowDetail.DetailViewMixins.repeat_count =
+    onOcCustomEvent: (ocCustomEventArgs) ->
+      questionId = @model._parent.cid
+      sender = ocCustomEventArgs.sender
+      senderValue = ocCustomEventArgs.value
+      senderQuestionId = sender._parent.cid
+      if (sender.key is '_isRepeat') and (questionId is senderQuestionId)
+        @model.set('value', senderValue)
+    html: -> 
+      setTimeout =>
+          modelValue = @model.getValue()
+          Backbone.trigger('ocCustomEvent', { sender: @model, value: modelValue })
+        , 1
+      false
 
   # handled by mandatorySettingSelector
   viewRowDetail.DetailViewMixins.required =
@@ -930,11 +1000,11 @@ module.exports = do ->
       if (sender.key is 'bind::oc:external') and (questionId is senderQuestionId)
         @$el.siblings(".message").remove();
         @$el.closest('div').removeClass("input-error")
-        if senderValue in ['clinicaldata', 'contactdata']
+        if senderValue in ['clinicaldata', 'contactdata', 'identifier']
           @removeRequired()
           @makeFieldCheckCondition({
             checkIfNotEmpty: true,
-            message: 'This field must be empty for external "clinicaldata" or "contactdata" items'
+            message: 'This field must be empty if Use External Value is being used'
           })
         else
           @$el.removeClass('hidden')
@@ -962,7 +1032,7 @@ module.exports = do ->
       @model._parent.getValue('type').split(' ')[0]
     getOptions: () ->
       types =
-        text: ['contactdata']
+        text: ['contactdata', 'identifier']
         calculate: ['clinicaldata']
       types[@model_type()]
     html: ->
@@ -985,6 +1055,14 @@ module.exports = do ->
       for contact_data_type_option in @contact_data_type_options
         $('<option />', {value: "#{contact_data_type_option}", text: "#{contact_data_type_option}"}).appendTo(@$select_contact_data_type)
 
+      @identifier_type_class_name = 'identifier-type'
+      @$label_select_identifier_type = $('<span/>', { class: @identifier_type_class_name, style: 'display: block; margin-top: 10px;' }).text(_t('Identifier Type') + ":")
+      @$select_identifier_type = $('<select/>', { class: @identifier_type_class_name, style: 'margin-top: 5px;' })
+      $('<option />', {value: "select", text: "- select -"}).appendTo(@$select_identifier_type)
+      @identifier_type_options = ['participantid']
+      for identifier_type_option in @identifier_type_options
+        $('<option />', {value: "#{identifier_type_option}", text: "#{identifier_type_option}"}).appendTo(@$select_identifier_type)
+
       fieldClass = 'input-error'
       message = "Constraint / Constraint Message is not empty"
       showMessage = () =>
@@ -1001,11 +1079,8 @@ module.exports = do ->
         @$('.settings__input').append(@$label_select_contact_data_type)
         @$('.settings__input').append(@$select_contact_data_type)
 
-        bind_contactdata_value = @rowView.model.attributes['bind::oc:contactdata'].get 'value'
         instance_contactdata_value = @rowView.model.attributes['instance::oc:contactdata'].get 'value'
-        if bind_contactdata_value != '' and (bind_contactdata_value in @contact_data_type_options)
-          @$select_contact_data_type.val(bind_contactdata_value)
-        else if instance_contactdata_value != '' and (instance_contactdata_value in @contact_data_type_options)
+        if instance_contactdata_value != '' and (instance_contactdata_value in @contact_data_type_options)
           @$select_contact_data_type.val(instance_contactdata_value)
 
         @$select_contact_data_type.change () =>
@@ -1013,6 +1088,24 @@ module.exports = do ->
             @rowView.model.attributes['instance::oc:contactdata'].set 'value', ''
           else
             @rowView.model.attributes['instance::oc:contactdata'].set 'value', @$select_contact_data_type.val()
+
+      addSelectIdentifierType = () =>
+        @$('.settings__input').append(@$label_select_identifier_type)
+        @$('.settings__input').append(@$select_identifier_type)
+
+        instance_identifier_value = @rowView.model.attributes['instance::oc:identifier'].get 'value'
+        if instance_identifier_value != '' and (instance_identifier_value in @identifier_type_options)
+          @$select_identifier_type.val(instance_identifier_value)
+
+        @$select_identifier_type.change () =>
+          if @$select_identifier_type.val() == 'select'
+            @rowView.model.attributes['instance::oc:identifier'].set 'value', ''
+          else
+            @rowView.model.attributes['instance::oc:identifier'].set 'value', @$select_identifier_type.val()
+
+      resetInstanceValues = () =>
+        @rowView.model.attributes['instance::oc:contactdata'].set 'value', ''
+        @rowView.model.attributes['instance::oc:identifier'].set 'value', ''
 
       modelValue = @model.get 'value'
       if $select.length > 0
@@ -1024,22 +1117,33 @@ module.exports = do ->
 
           if modelValue == 'contactdata'
             addSelectContactDataType()
+          else if modelValue == 'identifier'
+            addSelectIdentifierType()
 
         $select.change () =>
           Backbone.trigger('ocCustomEvent', { sender: @model, value: $select.val() })
+
           if $select.siblings(".#{@contact_data_type_class_name}").length > 0
             $select.siblings(".#{@contact_data_type_class_name}").remove()
+
+          if $select.siblings(".#{@identifier_type_class_name}").length > 0
+            $select.siblings(".#{@identifier_type_class_name}").remove()
+
           if $select.val() == 'No'
             @model.set 'value', ''
+            resetInstanceValues()
             hideMessage()
           else
             @model.set 'value', $select.val()
+            resetInstanceValues()
             if $select.val() == 'contactdata'
               addSelectContactDataType()
               constraint_value = @rowView.model.attributes.constraint.getValue()
               constraint_message_value = @rowView.model.attributes.constraint_message.getValue()
               if (constraint_value != '') or (constraint_message_value != '')
                 showMessage()
+            else if $select.val() == 'identifier'
+              addSelectIdentifierType()
 
   viewRowDetail.DetailViewMixins.readonly =
     html: ->

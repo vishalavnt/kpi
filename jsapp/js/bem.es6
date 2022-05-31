@@ -102,6 +102,8 @@ bem.CollectionNav__searchicon = bem.CollectionNav.__('searchicon', '<i>');
 
 bem.Library = bem('library');
 bem.Library__typeFilter = bem.Library.__('type-filter', '<label>');
+bem.Library__actions = bem.Library.__('actions');
+bem.Library__actionIcon  = bem.Library.__('action-icon', '<a>');
 
 bem.List = bem('list');
 bem.List__heading = bem.List.__('heading');

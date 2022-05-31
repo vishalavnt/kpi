@@ -297,6 +297,8 @@ module.exports = do ->
         @listView = new $viewChoices.ListView(model: cl, rowView: @).render()
 
       if @model.getValue('name')?
+        name_detail = @model.get('name')
+        name_detail.set 'value', name_detail.deduplicate(@model.getSurvey(), @model.getSurvey().rowItemNameMaxLength, '-')
         @$name.html(@model.getValue('name'))
 
       @cardSettingsWrap = @$('.card__settings').eq(0)
@@ -337,7 +339,7 @@ module.exports = do ->
 
     add_row_to_question_library: (evt) =>
       evt.stopPropagation()
-      @ngScope?.add_row_to_question_library @model
+      @ngScope?.add_row_to_question_library @model, @model.getSurvey()._initialParams
 
   class GroupView extends BaseRowView
     className: "survey__row survey__row--group  xlf-row-view xlf-row-view--depr"
@@ -346,12 +348,28 @@ module.exports = do ->
       @_shrunk = !!opts.shrunk
       @$el.attr("data-row-id", @model.cid)
       @surveyView = @options.surveyView
+      @ngScope = opts.ngScope
 
     deleteGroup: (evt)=>
-      skipConfirm = $(evt.currentTarget).hasClass('js-force-delete-group')
-      if skipConfirm or confirm(_t("Are you sure you want to split apart this group?"))
-        @_deleteGroup()
       evt.preventDefault()
+      skipConfirm = $(evt.currentTarget).hasClass('js-force-delete-group')
+      if !skipConfirm
+        dialog = alertify.dialog('confirm')
+        opts = 
+          title: _t('Delete group')
+          message: _t('Are you sure you want to split apart this group?')
+          labels:
+            ok: _t('Yes')
+            cancel: _t('No')
+          onok: =>
+            @_deleteGroup()
+            return
+          oncancel: =>
+            dialog.destroy()
+            return
+        dialog.set(opts).show()
+      else
+        @_deleteGroup()
 
     _deleteGroup: () =>
       @model.splitApart()
@@ -366,6 +384,10 @@ module.exports = do ->
         @$rows = @$('.group__rows').eq(0)
         @$card = @$('.card')
         @$header = @$('.card__header,.group__header').eq(0)
+
+      if @model.getValue('name')?
+        name_detail = @model.get('name')
+        name_detail.set 'value', name_detail.deduplicate(@model.getSurvey(), @model.getSurvey().rowItemNameMaxLength)
 
       @model.rows.each (row)=>
         @getApp().ensureElInView(row, @, @$rows).render()
@@ -385,13 +407,25 @@ module.exports = do ->
       @cardSettingsWrap = @$('.card__settings').eq(0)
       @defaultRowDetailParent = @cardSettingsWrap.find('.card__settings__fields--active').eq(0)
       for [key, val] in @model.attributesArray()
-        if key in ["name", "_isRepeat", "appearance", "relevant"] or key.match(/^.+::.+/)
+        if key in ["name", "_isRepeat", "repeat_count", "appearance", "relevant"] or key.match(/^.+::.+/)
           new $viewRowDetail.DetailView(model: val, rowView: @).render().insertInDOM(@)
 
       @model.on 'remove', (row) =>
         if row.constructor.key == 'group' && !@hasNestedGroups()
           @$('.xlf-dv-appearance').eq(0).show()
       @
+
+    add_group_to_library: (evt) =>
+      evt.stopPropagation()
+      @ngScope?.add_row_to_question_library @model, @model.getSurvey()._initialParams
+
+    clone: (position, groupId) =>
+      @ngScope?.handleCloneGroup({
+        position: position
+        itemDict: @model,
+        assetContent: @model.getSurvey()._initialParams,
+        groupId: groupId
+      })
 
   class RowView extends BaseRowView
     _expandedRender: ->
@@ -401,7 +435,7 @@ module.exports = do ->
       questionType = @model.get('type').get('typeId')
 
       # don't display columns that start with a $
-      hiddenFields = ['label', 'hint', 'type', 'select_from_list_name', 'kobo--matrix_list', 'parameters', 'tags', 'bind::oc:contactdata', 'instance::oc:contactdata']
+      hiddenFields = ['label', 'hint', 'type', 'select_from_list_name', 'kobo--matrix_list', 'parameters', 'tags', 'instance::oc:contactdata', 'instance::oc:identifier']
       for [key, val] in @model.attributesArray() when !key.match(/^\$/) and key not in hiddenFields
         if key is 'required'
           if questionType isnt 'note'

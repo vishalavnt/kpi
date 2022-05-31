@@ -57,7 +57,12 @@ if os.environ.get('CSRF_COOKIE_DOMAIN'):
 # Instances of this model will be treated as allowed origins; see
 # https://github.com/ottoyiu/django-cors-headers#cors_model
 CORS_MODEL = None
-CORS_ORIGIN_REGEX_WHITELIST = (r'^(https?://)?([A-Za-z0-9-]+\.){1,4}openclinica\.io$', r'^(https?://)?([A-Za-z0-9-]+\.){1,4}openclinica-dev\.io$')
+CORS_ORIGIN_REGEX_WHITELIST = (
+    r'^(https?://)?([A-Za-z0-9-]+\.){1,4}openclinica\.io$',
+    r'^(https?://)?([A-Za-z0-9-]+\.){1,4}openclinica-dev\.io$',
+    r'^(https?://)?([A-Za-z0-9-]+\.){1,4}openclinica-staging\.io$',
+    r'^(https?://)?([A-Za-z0-9-]+\.){1,4}openclinica-staging-2\.io$'
+)
 CORS_ALLOW_CREDENTIALS = True
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -131,10 +136,10 @@ MIDDLEWARE_CLASSES = (
     'hub.middleware.UsernameInResponseHeaderMiddleware',
 )
 
-CSP_FRAME_ANCESTORS = "https://*.openclinica-dev.io https://*.openclinica-staging.io https://*.openclinica.io https://*.staging.openclinica.io"
+CSP_FRAME_ANCESTORS = "https://*.openclinica-dev.io https://*.openclinica-staging.io https://*.openclinica-staging-2.io https://*.openclinica.io https://*.staging.openclinica.io"
 CSP_STYLE_SRC = "'self' 'unsafe-inline'"
-CSP_CONNECT_SRC = "'self' https://*.openclinica-dev.io https://*.openclinica-staging.io https://*.openclinica.io https://*.staging.openclinica.io"
-CSP_FRAME_SRC = "'self' https://*.openclinica-dev.io https://*.openclinica-staging.io https://*.openclinica.io https://*.staging.openclinica.io"
+CSP_CONNECT_SRC = "'self' https://*.openclinica-dev.io https://*.openclinica-staging.io https://*.openclinica-staging-2.io https://*.openclinica.io https://*.staging.openclinica.io"
+CSP_FRAME_SRC = "'self' https://*.openclinica-dev.io https://*.openclinica-staging.io https://*.openclinica-staging-2.io https://*.openclinica.io https://*.staging.openclinica.io"
 
 if os.environ.get('DEFAULT_FROM_EMAIL'):
     DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL')

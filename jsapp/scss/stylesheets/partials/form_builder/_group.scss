@@ -26,7 +26,7 @@
     position: relative;
     margin: -4px -10px 0;
     padding: 12px;
-    min-height: 50px;
+    min-height: 90px;
     .group__label {
         font-size: 16px;
         font-weight: 600;
@@ -120,6 +120,11 @@
         }
         .group__header__buttons__button--settings {
             background: #D2D7DC;
+        }
+    }
+    .group__header__buttons__button--add-group-to-library {
+        .fa-plus {
+            top: 74px;
         }
     }
 

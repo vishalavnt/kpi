@@ -213,8 +213,8 @@ module.exports = do ->
     "constraint",
     "bind::oc:external",
     "readonly",
-    "bind::oc:contactdata", 
     "instance::oc:contactdata",
+    "instance::oc:identifier",
     "default",
     'calculation',
     'trigger'
@@ -317,9 +317,9 @@ module.exports = do ->
       value: ''
     "select_one_from_file_filename":
       value: ''
-    "bind::oc:contactdata":
-      value: ''
     "instance::oc:contactdata":
+      value: ''
+    "instance::oc:identifier":
       value: ''
     trigger:
       value: ''
@@ -334,6 +334,8 @@ module.exports = do ->
       value: "group"
     _isRepeat:
       value: false
+    repeat_count:
+      value: ""
     relevant:
       value: ""
       _hideUnlessChanged: true
