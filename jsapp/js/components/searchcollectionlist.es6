@@ -99,6 +99,7 @@ class SearchCollectionList extends Reflux.Component {
         ownedCollections={ownedCollections}
         deleting={resource.deleting}
         firstQuestionLabel={firstQuestionLabel}
+        showAllTags={this.props.showAllTags}
         {...resource}
       />
     );

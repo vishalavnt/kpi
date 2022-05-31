@@ -171,6 +171,11 @@ module.exports = do ->
         , (item) -> !!item)
         if criteria.length == 0
           criteria.push @build_empty_criterion()
+        else
+          serialized_criteria_symbol = @_operator_type().symbol[parsed.criteria[0].operator]
+          build_criteria_symbol = criteria[0].model.get('operator').get('symbol')
+          if serialized_criteria_symbol != build_criteria_symbol
+            return false
 
       catch e
         Raven?.captureException new Error('could not parse skip logic. falling back to hand-coded'), extra:

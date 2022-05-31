@@ -246,6 +246,16 @@ $t-form-builder-aside-open: 200ms;
             vertical-align: bottom;
           }
         }
+
+        &.add-questions-to-library {
+          .k-icon-plus {
+            color: $warm-green;
+            position: absolute;
+            font-size: 16px;
+            left: 13px;
+            top: 15px;
+          }
+        }
       }
     }
 

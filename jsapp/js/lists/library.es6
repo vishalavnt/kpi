@@ -40,6 +40,7 @@ class LibrarySearchableList extends React.Component {
         filterTags: this.TYPE_FILTER_DEFAULT,
       }),
       isSessionLoaded: !!stores.session.currentAccount,
+      showAllTags: false
     };
     autoBind(this);
   }
@@ -103,6 +104,13 @@ class LibrarySearchableList extends React.Component {
       </bem.Loading>
     );
   }
+  clickShowAllTagsToggle () {
+    this.setState((prevState) => {
+      return {
+        showAllTags : !prevState.showAllTags
+      };
+    });
+  }
   render () {
     if (!this.state.isSessionLoaded) {
       return this.renderLoading();
@@ -115,6 +123,19 @@ class LibrarySearchableList extends React.Component {
     ];
     return (
       <bem.Library>
+        <bem.Library__actions
+          m={{
+            'display-all-tags': this.state.showAllTags,
+          }}
+        >
+          <bem.Library__actionIcon
+              m='tagsToggle'
+              onClick={this.clickShowAllTagsToggle}
+              data-tip= {this.state.showAllTags ? t('Hide all labels') : t('Show all labels')}
+              >
+            <i className='k-icon-tag' />
+          </bem.Library__actionIcon>
+        </bem.Library__actions>
         <bem.Library__typeFilter>
           {t('Filter by type:')}
           &nbsp;
@@ -132,6 +153,7 @@ class LibrarySearchableList extends React.Component {
         <SearchCollectionList
           showDefault
           searchContext={this.state.searchContext}
+          showAllTags={this.state.showAllTags}
         />
 
         <ListSearchSummary

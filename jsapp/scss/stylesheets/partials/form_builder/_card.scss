@@ -62,9 +62,13 @@
 
         .ui-resizable-handle {
             color: $cool-gray;
+        }
+
+        .ui-resizable-s {
+            border-top: 1px solid $cool-lightgray;
 
             &:hover {
-                border-top: 1px solid darken($cool-gray, 20%);
+                border-top: 1px solid darken($cool-lightgray, 20%);
             }
         }
     }
