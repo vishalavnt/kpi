@@ -10,7 +10,7 @@ python-digest==1.7
 -e git+https://github.com/dimagi/django-digest@0eb1c921329dd187c343b61acfbec4e98450136e#egg=django_digest
 
 # Regular PyPI packages
-Django<1.9
+Django==1.10.8
 Markdown
 Pygments
 amqp
@@ -21,6 +21,7 @@ boto
 boto3
 celery>=4.0,<5.0
 celery[redis]
+cryptography==3.3.2
 dj-static
 dj-database-url
 django-braces
@@ -53,6 +54,7 @@ kombu
 lxml
 mock
 oauthlib
+pillow==6.2.2
 py-gfm
 pymongo
 python-dateutil

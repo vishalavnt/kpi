@@ -7,23 +7,22 @@ from kpi.models import ImportTask
 from optparse import make_option
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--destroy',
+    def add_arguments(self, parser):
+        parser.add_argument('--destroy',
             action='store_true',
             dest='destroy',
             default=False,
-            help='Delete all collections, assets, and tasks for user'),
-        make_option('--destination',
+            help='Delete all collections, assets, and tasks for user')
+        parser.add_argument('--destination',
             action='store',
             dest='destination',
             default=False,
-            help='A uid of a destination collection that will contain the imported asset(s)'),
-        make_option('--username',
+            help='A uid of a destination collection that will contain the imported asset(s)')
+        parser.add_argument('--username',
             action='store',
             dest='username',
             default=False,
-            help='Delete all collections for user'),
-        )
+            help='Delete all collections for user')
 
     def handle(self, *args, **options):
         if not options.get('username'):
