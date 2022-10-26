@@ -14,7 +14,7 @@ if [[ -z $DATABASE_URL ]]; then
 fi
 
 echo 'Synchronizing database.'
-python manage.py syncdb --noinput
+# python manage.py syncdb --noinput
 
 echo 'Running migrations.'
 python manage.py migrate --noinput

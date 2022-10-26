@@ -13,5 +13,5 @@ else
     echo 'Running `kpi` container with `runserver_plus` debugging application server.'
     cd "${KPI_SRC_DIR}"
     pip-sync dependencies/pip/dev_requirements.txt
-    exec python manage.py runserver_plus
+    exec python manage.py runserver_plus 0:8000
 fi

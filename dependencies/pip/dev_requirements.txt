@@ -115,9 +115,9 @@ django-csp==3.5
     # via -r dependencies/pip/requirements.in
 django-debug-toolbar==1.4
     # via -r dependencies/pip/requirements.in
-django-extensions==1.6.7
+django-extensions==1.7.1
     # via -r dependencies/pip/requirements.in
-django-haystack==2.6.0
+django-haystack==2.7.0
     # via -r dependencies/pip/requirements.in
 django-jsonbfield==0.1.0
     # via -r dependencies/pip/requirements.in
@@ -149,7 +149,7 @@ django-toolbelt==0.0.1
     # via -r dependencies/pip/requirements.in
 django-webpack-loader==0.3.0
     # via -r dependencies/pip/requirements.in
-django==1.10.8
+django==1.11.29
     # via
     #   -r dependencies/pip/requirements.in
     #   boss-oidc
@@ -354,6 +354,7 @@ pytz==2018.9
     # via
     #   -r dependencies/pip/requirements.in
     #   celery
+    #   django
     #   django-ses
 pyxform==0.13.1
     # via

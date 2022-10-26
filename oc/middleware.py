@@ -7,6 +7,8 @@ import re
 from urlparse import urlparse
 
 from django.conf import settings
+from django.contrib.sessions.backends.base import UpdateError
+from django.core.exceptions import SuspiciousOperation
 from django.core.urlresolvers import get_callable
 from django.http.response import HttpResponse
 from django.utils.http import cookie_date
@@ -17,7 +19,7 @@ from django.utils.http import is_same_domain
 from django.utils.six.moves.urllib.parse import urlparse
 
 from django.contrib.sessions.middleware import SessionMiddleware
-from django.middleware.csrf import CsrfViewMiddleware, CSRF_SECRET_LENGTH, CSRF_ALLOWED_CHARS, CSRF_TOKEN_LENGTH, REASON_NO_REFERER, REASON_BAD_REFERER, REASON_NO_CSRF_COOKIE, REASON_BAD_TOKEN, REASON_MALFORMED_REFERER, REASON_INSECURE_REFERER
+from django.middleware.csrf import CsrfViewMiddleware, CSRF_SECRET_LENGTH, CSRF_ALLOWED_CHARS, CSRF_TOKEN_LENGTH, CSRF_SESSION_KEY, REASON_NO_REFERER, REASON_BAD_REFERER, REASON_NO_CSRF_COOKIE, REASON_BAD_TOKEN, REASON_MALFORMED_REFERER, REASON_INSECURE_REFERER
 from http.cookies import Morsel
 
 Morsel._reserved["samesite"] = "SameSite"
@@ -30,7 +32,6 @@ def _get_current_domain(request):
 
 class OCSessionMiddleware(SessionMiddleware):
     def process_response(self, request, response):
-
         """
         If request.session was modified, or if the configuration is to save the
         session every time, save the changes and set a session cookie or delete
@@ -46,8 +47,11 @@ class OCSessionMiddleware(SessionMiddleware):
             # First check if we need to delete this cookie.
             # The session should be deleted only if the session is entirely empty
             if settings.SESSION_COOKIE_NAME in request.COOKIES and empty:
-                response.delete_cookie(settings.SESSION_COOKIE_NAME,
-                    domain=_get_current_domain(request))
+                response.delete_cookie(
+                    settings.SESSION_COOKIE_NAME,
+                    path=settings.SESSION_COOKIE_PATH,
+                    domain=_get_current_domain(request),
+                )
             else:
                 if accessed:
                     patch_vary_headers(response, ('Cookie',))
@@ -62,13 +66,22 @@ class OCSessionMiddleware(SessionMiddleware):
                     # Save the session data and refresh the client cookie.
                     # Skip session save for 500 responses, refs #3881.
                     if response.status_code != 500:
-                        request.session.save()
-                        response.set_cookie(settings.SESSION_COOKIE_NAME,
-                                request.session.session_key, max_age=max_age,
-                                expires=expires, domain=_get_current_domain(request),
-                                path=settings.SESSION_COOKIE_PATH,
-                                secure=settings.SESSION_COOKIE_SECURE or None,
-                                httponly=settings.SESSION_COOKIE_HTTPONLY or None)
+                        try:
+                            request.session.save()
+                        except UpdateError:
+                            raise SuspiciousOperation(
+                                "The request's session was deleted before the "
+                                "request completed. The user may have logged "
+                                "out in a concurrent request, for example."
+                            )
+                        response.set_cookie(
+                            settings.SESSION_COOKIE_NAME,
+                            request.session.session_key, max_age=max_age,
+                            expires=expires, domain=_get_current_domain(request),
+                            path=settings.SESSION_COOKIE_PATH,
+                            secure=settings.SESSION_COOKIE_SECURE or None,
+                            httponly=settings.SESSION_COOKIE_HTTPONLY or None,
+                        )
                         response.cookies[settings.SESSION_COOKIE_NAME]['samesite'] = 'None'
         return response
 
@@ -188,7 +201,8 @@ class OCCsrfViewMiddleware(CsrfViewMiddleware):
         return None
 
     def _reject(self, request, reason):
-        logger.warning('Forbidden (%s): %s', reason, request.path,
+        logger.warning(
+            'Forbidden (%s): %s', reason, request.path,
             extra={
                 'status_code': 403,
                 'request': request,
@@ -197,17 +211,8 @@ class OCCsrfViewMiddleware(CsrfViewMiddleware):
         return _get_failure_view()(request, reason=reason)
 
     def process_view(self, request, callback, callback_args, callback_kwargs):
-
         if getattr(request, 'csrf_processing_done', False):
             return None
-
-        try:
-            csrf_token = _sanitize_token(
-                request.COOKIES[settings.CSRF_COOKIE_NAME])
-            # Use same token next time
-            request.META['CSRF_COOKIE'] = csrf_token
-        except KeyError:
-            csrf_token = None
 
         # Wait until request.META["CSRF_COOKIE"] has been manipulated before
         # bailing out, so that get_token still works
@@ -232,7 +237,7 @@ class OCCsrfViewMiddleware(CsrfViewMiddleware):
                 #
                 # The attacker will need to provide a CSRF cookie and token, but
                 # that's no problem for a MITM and the session-independent
-                # nonce we're using. So the MITM can circumvent the CSRF
+                # secret we're using. So the MITM can circumvent the CSRF
                 # protection. This is true for any HTTP connection, but anyone
                 # using HTTPS expects better! For this reason, for
                 # https://example.com/ we need additional protection that treats
@@ -258,16 +263,21 @@ class OCCsrfViewMiddleware(CsrfViewMiddleware):
                 if referer.scheme != 'https':
                     return self._reject(request, REASON_INSECURE_REFERER)
 
-                # If there isn't a CSRF_COOKIE_DOMAIN, assume we need an exact
-                # match on host:port. If not, obey the cookie rules.
-                if settings.CSRF_COOKIE_DOMAIN is None:
-                    # request.get_host() includes the port.
-                    good_referer = request.get_host()
-                else:
-                    good_referer = settings.CSRF_COOKIE_DOMAIN
+                # If there isn't a CSRF_COOKIE_DOMAIN, require an exact match
+                # match on host:port. If not, obey the cookie rules (or those
+                # for the session cookie, if CSRF_USE_SESSIONS).
+                good_referer = (
+                    settings.SESSION_COOKIE_DOMAIN
+                    if settings.CSRF_USE_SESSIONS
+                    else settings.CSRF_COOKIE_DOMAIN
+                )
+                if good_referer is not None:
                     server_port = request.get_port()
                     if server_port not in ('443', '80'):
                         good_referer = '%s:%s' % (good_referer, server_port)
+                else:
+                    # request.get_host() includes the port.
+                    good_referer = request.get_host()
 
                 # Here we generate a list of all acceptable HTTP referers,
                 # including the current host since that has been validated
@@ -279,6 +289,7 @@ class OCCsrfViewMiddleware(CsrfViewMiddleware):
                     reason = REASON_BAD_REFERER % referer.geturl()
                     return self._reject(request, reason)
 
+            csrf_token = request.META.get('CSRF_COOKIE')
             if csrf_token is None:
                 # No CSRF cookie. For POST requests, we insist on a CSRF cookie,
                 # and in this way we can avoid all CSRF attacks, including login
@@ -303,30 +314,39 @@ class OCCsrfViewMiddleware(CsrfViewMiddleware):
                 # and possible for PUT/DELETE.
                 request_csrf_token = request.META.get(settings.CSRF_HEADER_NAME, '')
 
-            if not constant_time_compare(request_csrf_token, csrf_token):
+            request_csrf_token = _sanitize_token(request_csrf_token)
+            if not _compare_salted_tokens(request_csrf_token, csrf_token):
                 return self._reject(request, REASON_BAD_TOKEN)
 
         return self._accept(request)
 
+    def _set_token(self, request, response):
+        if settings.CSRF_USE_SESSIONS:
+            request.session[CSRF_SESSION_KEY] = request.META['CSRF_COOKIE']
+        else:
+            response.set_cookie(
+                settings.CSRF_COOKIE_NAME,
+                request.META['CSRF_COOKIE'],
+                max_age=settings.CSRF_COOKIE_AGE,
+                domain=_get_current_domain(request),
+                path=settings.CSRF_COOKIE_PATH,
+                secure=settings.CSRF_COOKIE_SECURE,
+                httponly=settings.CSRF_COOKIE_HTTPONLY,
+            )
+            response.cookies[settings.CSRF_COOKIE_NAME]['samesite'] = 'None'
+            # Set the Vary header since content varies with the CSRF cookie.
+            patch_vary_headers(response, ('Cookie',))
+
     def process_response(self, request, response):
-        if getattr(response, 'csrf_processing_done', False):
-            return response
+        if not getattr(request, 'csrf_cookie_needs_reset', False):
+            if getattr(response, 'csrf_cookie_set', False):
+                return response
 
         if not request.META.get("CSRF_COOKIE_USED", False):
             return response
 
         # Set the CSRF cookie even if it's already set, so we renew
         # the expiry timer.
-        response.set_cookie(settings.CSRF_COOKIE_NAME,
-                            request.META["CSRF_COOKIE"],
-                            max_age=settings.CSRF_COOKIE_AGE,
-                            domain=_get_current_domain(request),
-                            path=settings.CSRF_COOKIE_PATH,
-                            secure=settings.CSRF_COOKIE_SECURE,
-                            httponly=settings.CSRF_COOKIE_HTTPONLY
-                            )
-        response.cookies[settings.CSRF_COOKIE_NAME]['samesite'] = 'None'
-        # Content varies with the CSRF cookie, so set the Vary header.
-        patch_vary_headers(response, ('Cookie',))
-        response.csrf_processing_done = True
+        self._set_token(request, response)
+        response.csrf_cookie_set = True
         return response
