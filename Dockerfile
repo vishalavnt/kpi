@@ -39,6 +39,14 @@ RUN if ! diff "${KPI_SRC_DIR}/dependencies/pip/external_services.txt" /srv/tmp/b
 
 
 ##########################################
+# OC-19137 : For django 1.11 upgrade     #
+##########################################
+RUN pip install --upgrade pip && \
+    pip install --upgrade pip-tools && \
+    pip install --upgrade setuptools && \
+    pip install --upgrade wheel
+
+##########################################
 # Install any additional `npm` packages. #
 ##########################################
 
