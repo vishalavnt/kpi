@@ -25,6 +25,14 @@ RUN if ! diff "${KPI_SRC_DIR}/dependencies/apt_requirements.txt" /srv/tmp/base__
         apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \ 
     ; fi
 
+##########################################
+# OC-19137 : For django 1.11 upgrade     #
+##########################################
+RUN pip install --upgrade pip && \
+    pip install --upgrade pip-tools && \
+    pip install --upgrade setuptools && \
+    pip install --upgrade wheel
+
 
 ###########################
 # Re-sync `pip` packages. #
@@ -37,14 +45,6 @@ RUN if ! diff "${KPI_SRC_DIR}/dependencies/pip/external_services.txt" /srv/tmp/b
         pip-sync "${KPI_SRC_DIR}/dependencies/pip/external_services.txt" 1>/dev/null \
     ; fi
 
-
-##########################################
-# OC-19137 : For django 1.11 upgrade     #
-##########################################
-RUN pip install --upgrade pip && \
-    pip install --upgrade pip-tools && \
-    pip install --upgrade setuptools && \
-    pip install --upgrade wheel
 
 ##########################################
 # Install any additional `npm` packages. #
