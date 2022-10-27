@@ -94,7 +94,7 @@ django-cors-headers==2.4.0
     # via -r dependencies/pip/requirements.in
 django-csp==3.5
     # via -r dependencies/pip/requirements.in
-django-debug-toolbar==1.4
+django-debug-toolbar==1.11.1
     # via -r dependencies/pip/requirements.in
 django-extensions==1.7.1
     # via -r dependencies/pip/requirements.in
@@ -339,7 +339,7 @@ six==1.12.0
     #   unittest2
 soupsieve==1.9.5
     # via beautifulsoup4
-sqlparse==0.1.19
+sqlparse==0.3.1
     # via
     #   -r dependencies/pip/requirements.in
     #   django-debug-toolbar
