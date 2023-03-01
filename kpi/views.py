@@ -11,7 +11,7 @@ from itertools import chain
 import constance
 
 from django.conf import settings
-from django.contrib.auth import login, get_user
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import transaction
@@ -1519,10 +1519,10 @@ class AssetViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
         # Check if the user is anonymous. The
         # django.contrib.auth.models.AnonymousUser object doesn't work for
         # queries.
-        user = get_user(self.request)
+        user = self.request.user
         if user.is_anonymous():
             user = get_anonymous_user()
-        serializer.save(owner=user)
+        serializer.save(owner=User.objects.get(username=user))
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()
