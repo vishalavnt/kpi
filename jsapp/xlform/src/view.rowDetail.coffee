@@ -1034,12 +1034,13 @@ module.exports = do ->
       types =
         text: ['contactdata', 'identifier']
         calculate: ['clinicaldata']
+        select_multiple: ['signature']
       types[@model_type()]
     html: ->
       @fieldTab = "active"
       @$el.addClass("card__settings__fields--#{@fieldTab}")
 
-      if @model_type() in ['calculate', 'text']
+      if @model_type() in ['calculate', 'text'] or (@model_type() == 'select_multiple' and @model._parent.isConsentItem())
         options = @getOptions()
         if options?
             options.unshift 'No'
@@ -1074,6 +1075,12 @@ module.exports = do ->
       hideMessage = () =>
         $select.closest('div').removeClass(fieldClass)
         $select.siblings('.message').remove()
+
+      showSignatureMessage = () =>
+        message = "Signature items must be Select Multiple questions with one option"
+        if $select.siblings('.message').length is 0
+          $message = $('<div/>').addClass('message').text(_t(message))
+          $select.after($message)
 
       addSelectContactDataType = () =>
         @$('.settings__input').append(@$label_select_contact_data_type)
@@ -1110,7 +1117,11 @@ module.exports = do ->
       modelValue = @model.get 'value'
       if $select.length > 0
         if modelValue == ''
-          $select.val('No')
+          if @model._parent.isConsentItem()
+            $select.val('signature')
+            @model.set 'value', $select.val()
+          else
+            $select.val('No')
         else
           $select.val(modelValue)
           Backbone.trigger('ocCustomEvent', { sender: @model, value: modelValue })
@@ -1144,6 +1155,8 @@ module.exports = do ->
                 showMessage()
             else if $select.val() == 'identifier'
               addSelectIdentifierType()
+            else if $select.val() == 'signature'
+              showSignatureMessage()
 
   viewRowDetail.DetailViewMixins.readonly =
     html: ->
