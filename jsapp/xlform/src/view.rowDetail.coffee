@@ -1120,6 +1120,7 @@ module.exports = do ->
           if @model._parent.isConsentItem()
             $select.val('signature')
             @model.set 'value', $select.val()
+            showSignatureMessage()
           else
             $select.val('No')
         else
@@ -1130,6 +1131,8 @@ module.exports = do ->
             addSelectContactDataType()
           else if modelValue == 'identifier'
             addSelectIdentifierType()
+          else if modelValue == 'signature'
+            showSignatureMessage()
 
         $select.change () =>
           Backbone.trigger('ocCustomEvent', { sender: @model, value: $select.val() })
