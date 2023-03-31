@@ -6,18 +6,18 @@ from hub.models import ExtraUserDetail
 from kpi.deployment_backends.kc_access.utils import get_kc_profile_data
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--all-users',
+    def add_arguments(self, parser):
+        parser.add_argument('--all-users',
                     action='store_true',
                     dest='all_users',
                     default=False,
-                    help="Copy all users' profiles"),
-        make_option('--username',
+                    help="Copy all users' profiles")
+        parser.add_argument('--username',
                     action='store',
                     dest='username',
                     default=False,
-                    help="Copy only a specific user's profiles"),
-        make_option('--again',
+                    help="Copy only a specific user's profiles")
+        parser.add_argument('--again',
                     action='store_true',
                     dest='again',
                     default=False,
@@ -26,8 +26,7 @@ class Command(BaseCommand):
                          'field without having the old value from KC '
                          'reappear. To copy previously copied profiles again, '
                          'use this option'
-                    ),
-    )
+                    )
 
     def handle(self, *args, **options):
         if options.get('all_users'):

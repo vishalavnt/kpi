@@ -1,6 +1,6 @@
 {
   "name": "kpi",
-  "version": "2.1.2",
+  "version": "2.1.8",
   "description": "form designer ui",
   "devDependencies": {
     "@mapbox/leaflet-omnivore": "^0.3.4",

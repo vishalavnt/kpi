@@ -18,14 +18,13 @@ NULL_CHAR_REPR = '\\u0000'
 
 
 class Command(BaseCommand):
-    option_list = BaseCommand.option_list + (
-        make_option('--users',
+    def add_arguments(self, parser):
+        parser.add_argument('--users',
                     action='store',
                     dest='filter_users_str',
                     default=False,
                     help='Only migrate asset versions for a comma-delimited'
-                         ' list of users (quicker)'),
-                    )
+                         ' list of users (quicker)')
 
     def handle(self, *args, **options):
         kw = {}
@@ -133,7 +132,7 @@ def _replace_deployment_ids(_AssetVersion, _Asset):
             a_ids_done += 1
             if a_ids_done % 100 == 0:
                 elapsed = time.time() - start_time
-                print 'Completed {}/{} ({}%); est\'d time left: {}s'.format(
+                print('Completed {}/{} ({}%); est\'d time left: {}s').format(
                     a_ids_done,
                     a_ids_len,
                     a_ids_done * float(100) / a_ids_len,

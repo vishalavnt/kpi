@@ -1522,7 +1522,7 @@ class AssetViewSet(NestedViewSetMixin, viewsets.ModelViewSet):
         user = self.request.user
         if user.is_anonymous():
             user = get_anonymous_user()
-        serializer.save(owner=user)
+        serializer.save(owner=User.objects.get(username=user))
 
     def partial_update(self, request, *args, **kwargs):
         instance = self.get_object()

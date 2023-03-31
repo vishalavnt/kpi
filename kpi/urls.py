@@ -3,6 +3,8 @@ from django.views.i18n import javascript_catalog
 from hub.views import ExtraDetailRegistrationView
 from rest_framework.routers import DefaultRouter
 from rest_framework_extensions.routers import ExtendedDefaultRouter
+from django.contrib.auth.views import logout
+from kobo.apps.superuser_stats.views import user_report, retrieve_user_report
 import private_storage.urls
 
 from kpi.views import (
@@ -110,8 +112,7 @@ urlpatterns = [
                                namespace='rest_framework')),
     url(r'^accounts/register/$', ExtraDetailRegistrationView.as_view(
         form_class=RegistrationForm), name='registration_register'),
-    url(r'^accounts/logout/', 'django.contrib.auth.views.logout',
-        {'next_page': '/'}),
+    url(r'^accounts/logout/', logout),
     url(r'^accounts/', include('registration.backends.default.urls')),
     url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     url(r'openid/openid/(?P<op_name>.+)$', oc_openid, name='oc_openid_with_op_name'),
@@ -135,9 +136,7 @@ urlpatterns = [
         ConfigurationFile.redirect_view, name='configurationfile'),
     url(r'^private-media/', include(private_storage.urls)),
     # Statistics for superusers
-    url(r'^superuser_stats/user_report/$',
-        'kobo.apps.superuser_stats.views.user_report'),
-    url(r'^superuser_stats/user_report/(?P<base_filename>[^/]+)$',
-        'kobo.apps.superuser_stats.views.retrieve_user_report'),
+    url(r'^superuser_stats/user_report/$', user_report),
+    url(r'^superuser_stats/user_report/(?P<base_filename>[^/]+)$', retrieve_user_report),
     url(r'app_info/$', app_info, name='app_info'),
 ]
