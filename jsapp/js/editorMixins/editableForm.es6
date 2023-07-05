@@ -399,7 +399,13 @@ export default assign({
       this.app.survey.settings.set('form_id', this.state.settings__form_id);
     }
 
-    const consentRows = this.app.survey.rows.filter(function(row) { return row.getValue('bind::oc:external') === 'signature' });
+    const consentRows = this.app.survey.rows.filter(function(row) { 
+      try {
+        return (row.getValue('bind::oc:external') === 'signature');
+      } catch (err) {
+        return false;
+      } 
+    });
     if (consentRows.length > 0) {
       if (consentRows.length > 1) {
         var errorMsg = `${t('Consent forms can have only one signature item.')}`;
