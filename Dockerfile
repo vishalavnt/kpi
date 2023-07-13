@@ -1,4 +1,4 @@
-FROM python:3.10 as build-python
+FROM python:3.10-bullseye as build-python
 
 ENV VIRTUAL_ENV=/opt/venv
 
@@ -9,7 +9,7 @@ COPY ./dependencies/pip/requirements.txt "/tmp/pip_dependencies.txt"
 RUN pip-sync "/tmp/pip_dependencies.txt" 1>/dev/null
 
 
-from python:3.10-slim
+from python:3.10-slim-bullseye
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG=en_US.UTF-8
