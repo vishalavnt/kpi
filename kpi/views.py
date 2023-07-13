@@ -219,7 +219,7 @@ class CollectionViewSet(viewsets.ModelViewSet):
         'usercollectionsubscription_set',
     ).all().order_by('-date_modified')
     serializer_class = CollectionSerializer
-    permission_classes = (IsOwnerOrReadOnly,)
+    # permission_classes = (IsOwnerOrReadOnly,)
     filter_backends = (KpiObjectPermissionsFilter, SearchFilter)
     lookup_field = 'uid'
 
@@ -258,7 +258,10 @@ class CollectionViewSet(viewsets.ModelViewSet):
             return self._clone()
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        user = self.request.user
+        if user.is_anonymous():
+            user = get_anonymous_user()
+        serializer.save(owner=User.objects.get(username=user))
 
     def perform_update(self, serializer, *args, **kwargs):
         ''' Only the owner is allowed to change `discoverable_when_public` '''
