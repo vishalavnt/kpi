@@ -13,7 +13,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_extensions.mixins import NestedViewSetMixin
-from bossoidc.models import Keycloak as KeycloakModel
+from bossoidc2.models import Keycloak as KeycloakModel
 
 from kpi.constants import (
     ASSET_TYPES,

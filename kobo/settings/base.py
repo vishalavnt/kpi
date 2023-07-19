@@ -138,7 +138,8 @@ INSTALLED_APPS = (
     'kobo.apps.project_views.ProjectViewAppConfig',
     'kobo.apps.audit_log.AuditLogAppConfig',
     'kobo.apps.trackers.TrackersConfig',
-    'bossoidc',
+    'bossoidc2',
+    'mozilla_django_oidc',
     'djangooidc',
 )
 
@@ -383,8 +384,8 @@ MARKITUP_FILTER = ('markdown.markdown', {'safe_mode': False})
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'kpi.backends.ObjectPermissionBackend',
+    'bossoidc2.backend.OpenIdConnectBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
-    'bossoidc.backend.OpenIdConnectBackend',
 )
 
 ROOT_URLCONF = 'kobo.urls'
@@ -514,7 +515,10 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         # SessionAuthentication and BasicAuthentication would be included by
         # default
+        'mozilla_django_oidc.contrib.drf.OIDCAuthentication',
         'rest_framework.authentication.SessionAuthentication',
+        'boss.authentication.TokenAuthentication',
+        'oidc_auth.authentication.BearerTokenAuthentication',
         'kpi.authentication.BasicAuthentication',
         'kpi.authentication.TokenAuthentication',
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
@@ -1115,5 +1119,5 @@ KEYCLOAK_ADMIN_CLIENT_ID = 'admin-cli'
 KEYCLOAK_ADMIN_CLIENT_SECRET = os.environ.get('KEYCLOAK_ADMIN_CLIENT_SECRET', '3fa0dfb9-43ca-4e74-9a46-4d9fe421ec1a')
 
 if KEYCLOAK_AUTH_URI != '' and KEYCLOAK_CLIENT_ID != '' and KEYCLOAK_CLIENT_SECRET != '' and PUBLIC_URI_FOR_KEYCLOAK != '':
-    from bossoidc.settings import *
+    from bossoidc2.settings import *
     configure_oidc('{}/auth/realms/{}'.format(KEYCLOAK_AUTH_URI, KEYCLOAK_DEFAULT_REALM), KEYCLOAK_CLIENT_ID, PUBLIC_URI_FOR_KEYCLOAK, client_secret=KEYCLOAK_CLIENT_SECRET)

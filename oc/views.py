@@ -18,7 +18,7 @@ from tldextract import extract
 
 from djangooidc.oidc import OIDCClients, OIDCError
 from djangooidc.views import DynamicProvider
-from bossoidc.settings import configure_oidc
+from bossoidc2.settings import configure_oidc
 
 from keycloak.realm import KeycloakRealm
 

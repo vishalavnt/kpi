@@ -38,7 +38,7 @@ from kpi.models.asset import UserAssetSubscription
 from kpi.models.asset_version import AssetVersion
 from kpi.utils.query_parser import get_parsed_parameters, parse, ParseError
 from kpi.utils.domain import get_subdomain
-from bossoidc.models import Keycloak as KeycloakModel
+from bossoidc2.models import Keycloak as KeycloakModel
 from kpi.utils.object_permission import (
     get_objects_for_user,
     get_anonymous_user,

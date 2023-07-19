@@ -16,10 +16,11 @@
 -e git+https://github.com/kobotoolbox/ssrf-protect@9b97d3f0fd8f737a38dd7a6b64efeffc03ab3cdd#egg=ssrf_protect
 
 # OC - Keycloak authentication integration
--e git+https://github.com/gushil/boss-oidc.git@2cbdb9ee3e483617dd4fbfb3a2a7f960601c9d54#egg=boss-oidc
+mozilla-django-oidc # requirement of boss-oidc2
+drf-oidc-auth # requirement of boss-oidc2
+-e git+https://github.com/gushil/boss-oidc2.git@69e1a75ea5e94933d81305c64dd500b4a327a5c5#egg=boss-oidc2
 -e git+https://github.com/gushil/django-oidc.git@1fbbe169e785bab04cd9da5410245c97a18f3e38#egg=django-oidc
--e git+https://github.com/jhuapl-boss/drf-oidc-auth.git@a6083cc58740587b6f765ddd7643234762d9f3b8#egg=drf-oidc-auth
--e git+https://github.com/gushil/python-keycloak-client.git@d0180624c704e77f7168119ec37371aaa38c1223#egg=python-keycloak-client
+-e git+https://github.com/gushil/python-keycloak-client.git@549c90f615fc2327bd47819290dd9c0d5c6de680#egg=python-keycloak-client
 
 # Regular PyPI packages
 Django>=3.2,<3.3

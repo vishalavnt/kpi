@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.utils.translation import gettext as t
 from rest_framework import serializers
-from bossoidc.models import Keycloak as KeycloakModel
+from bossoidc2.models import Keycloak as KeycloakModel
 
 from hub.models import ExtraUserDetail
 from kobo.apps.accounts.serializers import SocialAccountSerializer
