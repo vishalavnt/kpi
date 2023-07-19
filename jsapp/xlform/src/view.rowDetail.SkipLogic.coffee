@@ -308,8 +308,9 @@ module.exports = do ->
       handle_model_cid_change = () =>
         @val(@model.get 'cid')
 
-      @model.off 'change:cid', handle_model_cid_change
-      @model.on 'change:cid', handle_model_cid_change
+      if @model?
+        @model.off 'change:cid', handle_model_cid_change
+        @model.on 'change:cid', handle_model_cid_change
 
     constructor: (@responses, @model) ->
       super(_.map @responses.models, (response) ->
@@ -330,7 +331,7 @@ module.exports = do ->
         options = _.map(target_question.selectableRows(), (row) ->
           return {
             value: row.cid
-            text: row.getValue("label")
+            text: "#{row.getValue('label')} (${#{row.getValue('name')}})"
           }
         )
 

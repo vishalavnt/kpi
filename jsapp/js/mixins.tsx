@@ -646,7 +646,7 @@ mixins.clickAssets = {
               if (asset.asset_type === ASSET_TYPES.survey.id) {
                 goToUrl = `/forms/${asset.uid}/landing`;
               } else {
-                goToUrl = `/library/asset/${asset.uid}`;
+                goToUrl = `/library`;
               }
 
               history.push(goToUrl);
@@ -778,7 +778,7 @@ mixins.clickAssets = {
         }
         const dialog = alertify.dialog('confirm');
         const opts = {
-          title: t('Archive Project'),
+          title: t('Archive Form'),
           message: `${t('Are you sure you want to archive this project?')} <br/><br/>
             <strong>${t('Your form will not accept submissions while it is archived.')}</strong>`,
           labels: {ok: t('Archive'), cancel: t('Cancel')},
@@ -806,7 +806,7 @@ mixins.clickAssets = {
         }
         const dialog = alertify.dialog('confirm');
         const opts = {
-          title: t('Unarchive Project'),
+          title: t('Unarchive Form'),
           message: `${t('Are you sure you want to unarchive this project?')}`,
           labels: {ok: t('Unarchive'), cancel: t('Cancel')},
           onok: () => {

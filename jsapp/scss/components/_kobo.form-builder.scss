@@ -206,6 +206,19 @@ $s-form-builder-content-width: 1024px;
       margin-left: 5px;
     }
 
+    .formdesigner-support-url {
+      color: #8a8ea3;
+
+      &:hover {
+        color: $black;
+      }
+      
+      i {
+        font-size: 32px;
+        vertical-align: middle;
+      }
+    }
+
     // second row
     &.form-builder-header__cell--toolsButtons {
       margin: 0 10px;
@@ -234,6 +247,16 @@ $s-form-builder-content-width: 1024px;
           font-size: 24px;
           margin: 3px;
           vertical-align: middle;
+        }
+
+        &.add-questions-to-library {
+          .k-icon-plus {
+            color: $warm-green;
+            position: absolute;
+            font-size: 16px;
+            left: 13px;
+            top: 15px;
+          }
         }
       }
     }
@@ -293,6 +316,18 @@ $s-form-builder-content-width: 1024px;
     &:focus {
       background-color: darken(colors.$kobo-blue, 10%);
       font-weight: bold;
+    }
+  }
+  
+  &.formBuilder-header__button--back {
+    text-transform: uppercase;
+    color: $cool-blue;
+    background-color: $white;
+    border: 2px solid $cool-blue;
+    
+    &:hover {
+      border-color: darken($cool-blue, 5%);
+      color: darken($cool-blue, 5%);
     }
   }
 
@@ -507,9 +542,9 @@ $s-form-builder-content-width: 1024px;
     display: none;
   }
 
-  .form-builder-header__cell--buttonsTopRight {
-    .form-builder-header__button--save {
-      max-width: 120px;
+  .formBuilder-header__cell--buttonsTopRight {
+    .formBuilder-header__button--save {
+      max-width: 135px;
       text-overflow: ellipsis;
     }
   }

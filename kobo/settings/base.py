@@ -55,10 +55,24 @@ if SESSION_COOKIE_DOMAIN:
     # The trusted CSRF origins must encompass Enketo's subdomain. See
     # https://docs.djangoproject.com/en/2.2/ref/settings/#std:setting-CSRF_TRUSTED_ORIGINS
     CSRF_TRUSTED_ORIGINS = [SESSION_COOKIE_DOMAIN]
+    CSRF_COOKIE_SECURE = True
 ENKETO_CSRF_COOKIE_NAME = env.str('ENKETO_CSRF_COOKIE_NAME', '__csrf')
 
-# Limit sessions to 1 week (the default is 2 weeks)
-SESSION_COOKIE_AGE = 604800
+SESSION_COOKIE_AGE = 60*60*24 # Session age is 24 hour
+SESSION_SAVE_EVERY_REQUEST = True # Renew session every request made
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE  = 'None'
+
+# Instances of this model will be treated as allowed origins; see
+# https://github.com/ottoyiu/django-cors-headers#cors_model
+CORS_MODEL = None
+CORS_ORIGIN_REGEX_WHITELIST = (
+    r'^(https?://)?([A-Za-z0-9-]+\.){1,4}openclinica\.io$',
+    r'^(https?://)?([A-Za-z0-9-]+\.){1,4}openclinica-dev\.io$',
+    r'^(https?://)?([A-Za-z0-9-]+\.){1,4}openclinica-staging\.io$',
+    r'^(https?://)?([A-Za-z0-9-]+\.){1,4}openclinica-staging-2\.io$'
+)
+CORS_ALLOW_CREDENTIALS = True
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DJANGO_DEBUG", False)
@@ -76,6 +90,9 @@ LOGOUT_REDIRECT_URL = 'kobo_login'  # Use URL pattern instead of hard-coded valu
 INSTALLED_APPS = (
     # Always put `contenttypes` before `auth`; see
     # https://code.djangoproject.com/ticket/10827
+    # 'oc_hack',
+    # 'django.contrib.auth',
+    'oc',
     'django.contrib.contenttypes',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -121,22 +138,32 @@ INSTALLED_APPS = (
     'kobo.apps.project_views.ProjectViewAppConfig',
     'kobo.apps.audit_log.AuditLogAppConfig',
     'kobo.apps.trackers.TrackersConfig',
+    'bossoidc',
+    'djangooidc',
 )
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    # 'oc.middleware.OCSessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    # 'oc.middleware.OCCsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'csp.middleware.CSPMiddleware',
     'hub.middleware.UsernameInResponseHeaderMiddleware',
     'django_userforeignkey.middleware.UserForeignKeyMiddleware',
     'django_request_cache.middleware.RequestCacheMiddleware',
 ]
+
+CSP_FRAME_ANCESTORS = "https://*.openclinica-dev.io https://*.openclinica-staging.io https://*.openclinica-staging-2.io https://*.openclinica.io https://*.staging.openclinica.io"
+CSP_STYLE_SRC = "'self' 'unsafe-inline'"
+CSP_CONNECT_SRC = "'self' https://*.openclinica-dev.io https://*.openclinica-staging.io https://*.openclinica-staging-2.io https://*.openclinica.io https://*.staging.openclinica.io"
+CSP_FRAME_SRC = "'self' https://*.openclinica-dev.io https://*.openclinica-staging.io https://*.openclinica-staging-2.io https://*.openclinica.io https://*.staging.openclinica.io"
 
 if os.environ.get('DEFAULT_FROM_EMAIL'):
     DEFAULT_FROM_EMAIL = env.str('DEFAULT_FROM_EMAIL')
@@ -357,6 +384,7 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'kpi.backends.ObjectPermissionBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
+    'bossoidc.backend.OpenIdConnectBackend',
 )
 
 ROOT_URLCONF = 'kobo.urls'
@@ -634,6 +662,9 @@ csp_report_uri = env.url('CSP_REPORT_URI', None)
 if csp_report_uri:  # Let environ validate uri, but set as string
     CSP_REPORT_URI = csp_report_uri.geturl()
 CSP_REPORT_ONLY = env.bool("CSP_REPORT_ONLY", False)
+
+# OC Instance URL
+ENKETO_FORM_OC_INSTANCE_URL = os.environ.get('ENKETO_FORM_OC_INSTANCE_URL', '//build.openclinica-dev.io/form-service/api/storage/artifacts/clinicaldata.xml')
 
 ''' Celery configuration '''
 # Celery 4.0 New lowercase settings.
@@ -1068,3 +1099,21 @@ SERVICE_ACCOUNT = {
     ),
     'WHITELISTED_HOSTS': env.list('SERVICE_ACCOUNT_WHITELISTED_HOSTS', default=[]),
 }
+
+# OpenClinica Keycloak Settings
+X_OPENROSA_ACCEPT_CONTENT_LENGTH_DEFAULT = os.environ.get('X_OPENROSA_ACCEPT_CONTENT_LENGTH_DEFAULT', '100000000')
+OC_BUILD_URL = os.environ.get('OC_BUILD_URL', '')
+
+KEYCLOAK_AUTH_URI = os.environ.get('KEYCLOAK_AUTH_URI', 'https://auth.openclinica-dev.io')
+KEYCLOAK_DEFAULT_REALM = os.environ.get('KEYCLOAK_DEFAULT_REALM', 'cust2-aws-dev') 
+KEYCLOAK_CLIENT_ID = os.environ.get('KEYCLOAK_CLIENT_ID', 'formdesigner')
+KEYCLOAK_CLIENT_SECRET = os.environ.get('KEYCLOAK_CLIENT_SECRET', 'client-secret')
+PUBLIC_URI_FOR_KEYCLOAK = os.environ.get('PUBLIC_URI', 'https://cust2.formdesigner.openclinica-dev.io')
+
+KEYCLOAK_MASTER_REALM = 'master'
+KEYCLOAK_ADMIN_CLIENT_ID = 'admin-cli'
+KEYCLOAK_ADMIN_CLIENT_SECRET = os.environ.get('KEYCLOAK_ADMIN_CLIENT_SECRET', '3fa0dfb9-43ca-4e74-9a46-4d9fe421ec1a')
+
+if KEYCLOAK_AUTH_URI != '' and KEYCLOAK_CLIENT_ID != '' and KEYCLOAK_CLIENT_SECRET != '' and PUBLIC_URI_FOR_KEYCLOAK != '':
+    from bossoidc.settings import *
+    configure_oidc('{}/auth/realms/{}'.format(KEYCLOAK_AUTH_URI, KEYCLOAK_DEFAULT_REALM), KEYCLOAK_CLIENT_ID, PUBLIC_URI_FOR_KEYCLOAK, client_secret=KEYCLOAK_CLIENT_SECRET)

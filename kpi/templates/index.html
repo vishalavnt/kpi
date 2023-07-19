@@ -30,6 +30,9 @@
     {% if stripe_enabled %}<script async src="https://js.stripe.com/v3/pricing-table.js"></script>{% endif %}
 
     {% render_bundle 'app' 'css' %}
+    <!--[if lt IE 9]>
+      <script src="//cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+    <![endif]-->
 
     {% if config.logo %}
       <style>

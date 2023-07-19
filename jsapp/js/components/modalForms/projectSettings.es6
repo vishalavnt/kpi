@@ -169,7 +169,7 @@ class ProjectSettings extends React.Component {
   getBaseTitle() {
     switch (this.props.context) {
       case PROJECT_SETTINGS_CONTEXTS.NEW:
-        return t('Create project');
+        return t('Create form');
       case PROJECT_SETTINGS_CONTEXTS.REPLACE:
         return t('Replace form');
       case PROJECT_SETTINGS_CONTEXTS.EXISTING:
@@ -185,7 +185,7 @@ class ProjectSettings extends React.Component {
       case this.STEPS.CHOOSE_TEMPLATE: return t('Choose template');
       case this.STEPS.UPLOAD_FILE: return t('Upload XLSForm');
       case this.STEPS.IMPORT_URL: return t('Import XLSForm');
-      case this.STEPS.PROJECT_DETAILS: return t('Project details');
+      case this.STEPS.PROJECT_DETAILS: return t('Form details');
       default: return '';
     }
   }
@@ -510,6 +510,11 @@ class ProjectSettings extends React.Component {
       name: this.state.fields.name,
       settings: this.getSettingsForEndpoint(),
       asset_type: 'survey',
+      content: JSON.stringify({
+        settings: {
+          style: 'pages theme-grid'
+        }
+      })
     }).done((asset) => {
       this.goToFormBuilder(asset.uid);
     }).fail((r) => {
@@ -906,9 +911,9 @@ class ProjectSettings extends React.Component {
                 customModifiers='on-white'
                 value={this.state.fields.name}
                 onChange={this.onNameChange.bind(this)}
-                errors={this.hasFieldError('name') ? t('Please enter a title for your project!') : false}
+                errors={this.hasFieldError('name') ? t('Please enter a title for your form!') : false}
                 label={addRequiredToLabel(this.getNameInputLabel(this.state.fields.name))}
-                placeholder={t('Enter title of project here')}
+                placeholder={t('Enter title of form here')}
                 data-cy='title'
               />
             </bem.FormModal__item>
@@ -926,69 +931,6 @@ class ProjectSettings extends React.Component {
             />
           </bem.FormModal__item>
 
-          {sectorField &&
-            <bem.FormModal__item m={bothCountryAndSector ? 'sector' : null}>
-              <WrappedSelect
-                label={addRequiredToLabel(t('Sector'), sectorField.required)}
-                value={this.state.fields.sector}
-                onChange={this.onAnyFieldChange.bind(this, 'sector')}
-                options={sectors}
-                isLimitedHeight
-                menuPlacement='top'
-                isClearable
-                error={this.hasFieldError('sector') ? t('Please choose a sector') : false}
-                data-cy='sector'
-              />
-            </bem.FormModal__item>
-          }
-
-          {countryField &&
-            <bem.FormModal__item m={bothCountryAndSector ? 'country' : null}>
-              <WrappedSelect
-                label={addRequiredToLabel(t('Country'), countryField.required)}
-                isMulti
-                value={this.state.fields.country}
-                onChange={this.onAnyFieldChange.bind(this, 'country')}
-                options={countries}
-                isLimitedHeight
-                menuPlacement='top'
-                isClearable
-                error={this.hasFieldError('country') ? t('Please select at least one country') : false}
-                data-cy='country'
-              />
-            </bem.FormModal__item>
-          }
-
-          {operationalPurposeField &&
-            <bem.FormModal__item>
-              <WrappedSelect
-                label={addRequiredToLabel(t('Operational Purpose of Data'), operationalPurposeField.required)}
-                value={this.state.fields.operational_purpose}
-                onChange={this.onAnyFieldChange.bind(this, 'operational_purpose')}
-                options={operationalPurposes}
-                isLimitedHeight
-                isClearable
-                error={this.hasFieldError('operational_purpose') ? t('Please specify the operational purpose of your project') : false}
-              />
-            </bem.FormModal__item>
-          }
-
-          {collectsPiiField &&
-            <bem.FormModal__item>
-              <WrappedSelect
-                label={addRequiredToLabel(t('Does this project collect personally identifiable information?'), collectsPiiField.required)}
-                value={this.state.fields.collects_pii}
-                onChange={this.onAnyFieldChange.bind(this, 'collects_pii')}
-                options={[
-                  {value: 'Yes', label: t('Yes')},
-                  {value: 'No', label: t('No')},
-                ]}
-                isClearable
-                error={this.hasFieldError('collects_pii') ? t('Please indicate whether or not your project collects personally identifiable information') : false}
-              />
-            </bem.FormModal__item>
-          }
-
           {(this.props.context === PROJECT_SETTINGS_CONTEXTS.NEW || this.props.context === PROJECT_SETTINGS_CONTEXTS.REPLACE) &&
             <bem.Modal__footer>
               {/* Don't allow going back if asset already exist */}
@@ -1003,57 +945,19 @@ class ProjectSettings extends React.Component {
                 disabled={this.state.isSubmitPending}
               >
                 {this.state.isSubmitPending && t('Please wait…')}
-                {!this.state.isSubmitPending && this.props.context === PROJECT_SETTINGS_CONTEXTS.NEW && t('Create project')}
+                {!this.state.isSubmitPending && this.props.context === PROJECT_SETTINGS_CONTEXTS.NEW && t('Create form')}
                 {!this.state.isSubmitPending && this.props.context === PROJECT_SETTINGS_CONTEXTS.REPLACE && t('Save')}
               </bem.KoboButton>
             </bem.Modal__footer>
           }
 
-          {this.userCan('manage_asset', this.state.formAsset) && this.props.context === PROJECT_SETTINGS_CONTEXTS.EXISTING &&
-            <bem.FormModal__item>
-              <bem.FormModal__item m='inline'>
-                {this.isArchived() &&
-                  <Button
-                    type='frame'
-                    color='blue'
-                    size='l'
-                    label={t('Unarchive Project')}
-                    onClick={this.unarchiveProject}
-                  />
-                }
-
-                {this.isArchivable() &&
-                  <Button
-                    type='frame'
-                    color='red'
-                    size='l'
-                    label={t('Archive Project')}
-                    onClick={this.archiveProject}
-                  />
-                }
-              </bem.FormModal__item>
-
-              {this.isArchivable() &&
-                <bem.FormModal__item m='inline'>
-                  {t('Archive project to stop accepting submissions.')}
-                </bem.FormModal__item>
-              }
-              {this.isArchived() &&
-                <bem.FormModal__item m='inline'>
-                  {t('Unarchive project to resume accepting submissions.')}
-                </bem.FormModal__item>
-              }
-
-            </bem.FormModal__item>
-          }
-
-          {isSelfOwned && this.props.context === PROJECT_SETTINGS_CONTEXTS.EXISTING &&
+          {this.props.context === PROJECT_SETTINGS_CONTEXTS.EXISTING &&
             <bem.FormModal__item>
               <Button
                 type='full'
                 color='red'
                 size='l'
-                label={t('Delete Project and Data')}
+                label={t('Delete Form')}
                 onClick={this.deleteProject}
               />
             </bem.FormModal__item>

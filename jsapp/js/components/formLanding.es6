@@ -76,11 +76,6 @@ class FormLanding extends React.Component {
             <bem.FormView__cell m='version'>
               {dvcount > 0 ? `v${dvcount}` : ''}
             </bem.FormView__cell>
-            {undeployedVersion && userCanEdit &&
-              <bem.FormView__cell m='undeployed'>
-                &nbsp;{undeployedVersion}
-              </bem.FormView__cell>
-            }
             <bem.FormView__cell m='date'>
               {t('Last Modified')}&nbsp;:&nbsp;
               {formatTime(this.state.date_modified)}&nbsp;-&nbsp;
@@ -89,29 +84,6 @@ class FormLanding extends React.Component {
                 {t('questions')}
                 </span>
             </bem.FormView__cell>
-          </bem.FormView__cell>
-          <bem.FormView__cell m='buttons'>
-            {userCanEdit && this.state.has_deployment && this.state.deployment__active &&
-              <a
-                className='kobo-button kobo-button--blue'
-                onClick={this.deployAsset}>
-                  {t('redeploy')}
-              </a>
-            }
-            {userCanEdit && !this.state.has_deployment && !this.state.deployment__active &&
-              <a
-                className='kobo-button kobo-button--blue'
-                onClick={this.deployAsset}>
-                  {t('deploy')}
-              </a>
-            }
-            {userCanEdit && this.state.has_deployment && !this.state.deployment__active &&
-              <a
-                className='kobo-button kobo-button--blue'
-                onClick={this.callUnarchiveAsset}>
-                  {t('unarchive')}
-              </a>
-            }
           </bem.FormView__cell>
         </bem.FormView__cell>
       );
@@ -488,22 +460,15 @@ class FormLanding extends React.Component {
 
           {userCanEdit &&
             <bem.PopoverMenu__link onClick={this.showSharingModal}>
-              <i className='k-icon k-icon-user-share'/>
-              {t('Share this project')}
+              <i className='k-icon-share'/>
+              {t('Share this form')}
             </bem.PopoverMenu__link>
           }
 
-          {(
-            isLoggedIn &&
-            this.userCanRemoveSharedProject(this.state)
-          ) &&
-            <bem.PopoverMenu__link
-              onClick={this.nonOwnerSelfRemoval}
-            >
-              <i className='k-icon k-icon-trash'/>
-              {t('Remove shared project')}
-            </bem.PopoverMenu__link>
-          }
+          <bem.PopoverMenu__link onClick={this.saveCloneAs}>
+            <i className='k-icon-clone'/>
+            {t('Clone this form')}
+          </bem.PopoverMenu__link>
 
           {isLoggedIn &&
             <bem.PopoverMenu__link onClick={this.saveCloneAs}>
@@ -548,7 +513,7 @@ class FormLanding extends React.Component {
           <strong>{t('Languages:')}</strong>
           &nbsp;
           {!this.hasLanguagesDefined(translations) &&
-            t('This project has no languages defined yet')
+            t('This form has no languages defined yet')
           }
           {this.hasLanguagesDefined(translations) &&
             <ul>
@@ -585,7 +550,7 @@ class FormLanding extends React.Component {
     }
 
     return (
-      <DocumentTitle title={`${docTitle} | KoboToolbox`}>
+      <DocumentTitle title={`${docTitle} | OpenClinica`}>
         <bem.FormView m='form'>
           <bem.FormView__row>
             <bem.FormView__cell m={['columns', 'first']}>
@@ -599,15 +564,6 @@ class FormLanding extends React.Component {
               </bem.FormView__cell>
             </bem.FormView__cell>
             <bem.FormView__cell m='box'>
-              {this.isFormRedeploymentNeeded() &&
-                <bem.FormView__cell>
-                  <InlineMessage
-                    icon='alert'
-                    type='warning'
-                    message={t('If you want to make these changes public, you must deploy this form.')}
-                  />
-                </bem.FormView__cell>
-              }
               {this.renderFormInfo(userCanEdit)}
               {this.renderLanguages(userCanEdit)}
             </bem.FormView__cell>

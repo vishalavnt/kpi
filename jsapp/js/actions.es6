@@ -21,6 +21,9 @@ import {
   notify,
   replaceSupportEmail,
 } from 'utils';
+import {
+  getCrossStorageClient,
+} from './ocutils';
 
 // Configure Reflux
 Reflux.use(RefluxPromise(window.Promise));
@@ -50,7 +53,8 @@ actions.auth = Reflux.createActions({
 });
 
 actions.survey = Reflux.createActions({
-  addExternalItemAtPosition: {children: ['completed', 'failed']}
+  addExternalItemAtPosition: {children: ['completed', 'failed']},
+  addItemAtPosition: {children: ['completed', 'failed']},
 });
 
 actions.search = Reflux.createActions({
@@ -190,11 +194,40 @@ actions.resources.listTags.listen(function(data){
 
 actions.resources.listTags.completed.listen(function(results){
   if (results.next && window.Raven) {
-    Raven.captureMessage('MAX_TAGS_EXCEEDED: Too many tags');
+    Raven.captureMessage('MAX_TAGS_EXCEEDED: Too many labels');
   }
 });
 
 actions.resources.updateAsset.listen(function(uid, values, params={}) {
+  const crossStorage = getCrossStorageClient();
+  crossStorage.onConnect()
+    .then(function() {
+      return crossStorage.get('currentUser');
+    })
+    .then(function(res) {
+      if (!res || res == '') {
+        actions.auth.logout();
+      } else {
+        window.parent.postMessage('form_saveinprogress', '*');
+        dataInterface.patchAsset(uid, values)
+          .done((asset) => {
+            window.parent.postMessage('form_savecomplete', '*');
+            actions.resources.updateAsset.completed(asset);
+            if (typeof params.onComplete === 'function') {
+              params.onComplete(asset, uid, values);
+            }
+            notify(t('successfully updated'));
+          })
+          .fail(function(resp){
+            actions.resources.updateAsset.failed(resp);
+            if (params.onFailed) {
+              params.onFailed(resp);
+            }
+          });
+      }
+    });
+  
+  
   dataInterface.patchAsset(uid, values)
     .done((asset) => {
       actions.resources.updateAsset.completed(asset);
@@ -429,13 +462,13 @@ actions.search.assets.listen(function(searchData, params = {}){
 // reload so a new csrf token is issued
 actions.auth.logout.completed.listen(function(){
   window.setTimeout(function(){
-    window.location.replace('', '');
+    window.location.reload();
   }, 1);
 });
 
 actions.auth.logout.listen(function(){
   dataInterface.logout().done(actions.auth.logout.completed).fail(function(){
-    console.error('logout failed for some reason. what should happen now?');
+      console.error('logout failed for some reason. what should happen now?');
   });
 });
 actions.auth.verifyLogin.listen(function(){

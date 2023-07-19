@@ -36,9 +36,9 @@
   }
 
   .header__logo {
-    width: 180px;
+    width: 165px;
     height: 40px;
-    background: url("../img/kobologo.svg") no-repeat 50% 50%;
+    background: url("../img/oclogo.svg") no-repeat left center;
     background-size: contain;
     display: block;
   }
@@ -361,10 +361,6 @@
       border-radius: 0;
     }
 
-    .header__logo {
-      background-image: url("../img/kobologo_symbol.svg");
-      width: 40px;
-    }
   }
 }
 

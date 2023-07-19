@@ -219,8 +219,18 @@ stores.allAssets = Reflux.createStore({
       if (!this._waitingOn[uid]) {
         this._waitingOn[uid] = [];
       }
-      this._waitingOn[uid].push(cb);
+      that._waitingOn[uid].push(cb);
       actions.resources.loadAsset({id: uid});
+    }
+
+    if (this.byUid[uid] && this.byUid[uid].content) {
+      if (this.byUid[uid].content.survey[0].type === 'group') {
+        waitAndLoadAsset();
+      } else {
+        cb.call(this, this.byUid[uid]);  
+      }
+    } else {
+      waitAndLoadAsset();
     }
   },
 

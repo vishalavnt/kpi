@@ -120,16 +120,7 @@ export default class PopoverMenu extends React.Component<
       const rowOffsetTop = $assetRow?.offset()?.top;
       const rowHeight = $assetRow?.outerHeight();
       const menuHeight = $popoverMenu?.outerHeight();
-      if (
-        rowOffsetTop &&
-        rowHeight &&
-        menuHeight &&
-        rowOffsetTop > menuHeight + rowHeight + 20
-      ) {
-        this.setState({placement: 'above'});
-      } else {
-        this.setState({placement: 'below'});
-      }
+      this.setState({placement: 'below'});
     }
 
     if (typeof this.props.popoverSetVisible === 'function' && !this.state.popoverVisible) {

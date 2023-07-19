@@ -167,7 +167,7 @@ export default class SingleProcessingRoute extends React.Component<
   }
 
   render() {
-    const pageTitle = 'Data | KoboToolbox';
+    const pageTitle = 'Data | OpenClinica';
 
     if (
       !singleProcessingStore.isReady() ||

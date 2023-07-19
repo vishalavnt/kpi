@@ -19,7 +19,9 @@ from formpack.utils.flatten_content import flatten_content
 from formpack.utils.json_hash import json_hash
 from formpack.utils.kobo_locking import strip_kobo_locking_profile
 from jsonschema import validate as jsonschema_validate
-
+from bs4 import BeautifulSoup
+from pyxform import builder, xls2json
+from pyxform.errors import PyXFormError
 
 from kobo.apps.reports.constants import (
     SPECIFIC_REPORTS_KEY,
@@ -73,6 +75,7 @@ from kpi.mixins import (
     ObjectPermissionMixin,
     XlsExportableMixin,
     StandardizeSearchableFieldMixin,
+    OCFormUtilsMixin,
 )
 from kpi.models.asset_file import AssetFile
 from kpi.models.asset_snapshot import AssetSnapshot
@@ -149,6 +152,7 @@ class Asset(ObjectPermissionMixin,
             XlsExportableMixin,
             FormpackXLSFormUtilsMixin,
             StandardizeSearchableFieldMixin,
+            OCFormUtilsMixin,
             models.Model):
     name = models.CharField(max_length=255, blank=True, default='')
     date_created = models.DateTimeField(auto_now_add=True)
@@ -485,13 +489,42 @@ class Asset(ObjectPermissionMixin,
                                               self.advanced_features,
                                               url=url)
 
+    def _survey_column_oc_save_adjustments(self):
+        survey = self.content.get('survey', [])
+        if len(survey) > 0:
+            select_one_file_col_found = False
+            select_one_file_col = 'select_one_from_file'
+            select_one_filename_col = 'select_one_from_file_filename'
+            for survey_col_idx in range(len(survey)):
+                survey_col = survey[survey_col_idx]
+                if 'type' in survey_col:
+                    if survey_col['type'].find(select_one_file_col) is not -1:
+                        select_one_file_col_found = True
+
+            for survey_col_idx in range(len(survey)):
+                survey_col = survey[survey_col_idx]
+                if select_one_file_col_found and select_one_filename_col not in survey_col:
+                    survey_col[select_one_filename_col] = ''
+
+            for survey_col_idx in range(len(survey)):
+                survey_col = survey[survey_col_idx]
+                if 'type' in survey_col:
+                    type_col = survey_col['type']
+                    if type_col.find(select_one_file_col) is not -1 and len(type_col) != len(select_one_file_col):
+                        survey_col[select_one_filename_col] = type_col[type_col.find(select_one_file_col) + len(select_one_file_col):].strip()
+                        survey_col['type'] = select_one_file_col
+    
     def adjust_content_on_save(self):
         """
         This is called on save by default if content exists.
         Can be disabled / skipped by calling with parameter:
         asset.save(adjust_content=False)
         """
+        self._adjust_content_custom_column(self.content)
+        self._adjust_content_media_column_before_standardize(self.content)
         self._standardize(self.content)
+        self._adjust_content_media_column(self.content)
+        self._revert_custom_column(self.content)
 
         self._make_default_translation_first(self.content)
         self._strip_empty_rows(self.content)
@@ -908,6 +941,8 @@ class Asset(ObjectPermissionMixin,
                 self._deployment_data.pop('_stored_data_key', None)
                 self.__copy_hidden_fields()
 
+        self._survey_column_oc_save_adjustments()
+        
         super().save(
             force_insert=force_insert,
             force_update=force_update,

@@ -119,6 +119,9 @@ bem.LibList__label = makeBem(bem.LibList, 'label');
 bem.LibList__dragbox = makeBem(bem.LibList, 'dragbox');
 bem.LibList__qtype = makeBem(bem.LibList, 'qtype');
 
+// bem.Library__actions = bem.Library.__('actions');
+// bem.Library__actionIcon  = bem.Library.__('action-icon', '<a>');
+
 bem.TableMeta = makeBem(null, 'table-meta');
 bem.TableMeta__counter = makeBem(bem.TableMeta, 'counter');
 bem.TableMeta__additionalText = makeBem(bem.TableMeta, 'additional-text', 'span'); // generally text not needed on smaller screens

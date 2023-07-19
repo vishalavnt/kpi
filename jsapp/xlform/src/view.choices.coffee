@@ -59,6 +59,9 @@ module.exports = do ->
         @addEmptyOption("Option #{i+1}")
         @model.getSurvey()?.trigger('change')
         @$el.children().eq(0).children().eq(i).find('input.option-view-input').select()
+        setTimeout =>
+          @ul.find('li').last().find('.editable-wrapper').trigger('click')
+        , 1
       )
 
       @$el.append(btn)
@@ -96,12 +99,15 @@ module.exports = do ->
       @t = $("<i class=\"k-icon k-icon-trash js-remove-option\">")
       @pw = $("<div class=\"editable-wrapper js-option-label-input js-cancel-select-row\">")
       @p = $("<input placeholder=\"#{t("This option has no name")}\" class=\"js-cancel-select-row option-view-input\"  data-cy=\"option\">")
-      @c = $("<code><label>#{t("XML value:")}</label> <input type=\"text\" class=\"js-option-name-input js-cancel-select-row\"></input></code>")
+      @c = $("<code><label>#{t("Value:")}</label> <input type=\"text\" class=\"js-option-name-input js-cancel-select-row\"></input></code>")
+      @i = $("<code><label>#{t("Image:")}</label> <input type=\"text\" class=\"js-option-name-input js-cancel-select-row\"></input></code>")
       @d = $('<div>')
+      @optionImageField = 'image'
       if @model
         @p.val @model.get("label") || 'Empty'
         @$el.attr("data-option-id", @model.cid)
         $('input', @c).val @model.get("name") || 'AUTOMATIC'
+        $('input', @i).html @model.get(@optionImageField)
         @model.set('setManually', true)
       else
         @model = new $choices.Option()
@@ -119,11 +125,14 @@ module.exports = do ->
         other_names = @options.cl.getNames()
         if @model.get('name')? && val.toLowerCase() == @model.get('name').toLowerCase()
           other_names.splice _.indexOf(other_names, @model.get('name')), 1
+        valChanged = false
         if val is ''
+          valChanged = true if val isnt @model.get('name')
           @model.unset('name')
-          @model.set('setManually', false)
           val = 'AUTOMATIC'
           @$el.trigger("choice-list-update", @options.cl.cid)
+          @model.getSurvey()?.trigger('change') if valChanged
+          return
         else
           val = $modelUtils.sluggify(val, {
                     preventDuplicates: other_names
@@ -134,11 +143,32 @@ module.exports = do ->
                     validXmlTag: false
                     nonWordCharsExceptions: '+-.'
                   })
+          valChanged = true if val isnt @model.get('name')
           @model.set('name', val)
-          @model.set('setManually', true)
           @$el.trigger("choice-list-update", @options.cl.cid)
-        newValue: val
-      ).bind @
+          @model.getSurvey()?.trigger('change') if valChanged
+          return newValue: @model.get('name')
+
+      @j = $('input', @i)
+      $viewUtils.makeEditable @, @model, @j, edit_callback: (val) =>
+        valChanged = false
+        if val is ''
+          valChanged = true if val isnt @model.get(@optionImageField)
+          @model.unset(@optionImageField)
+          val = 'None'
+          @$el.trigger("choice-list-update", @options.cl.cid)
+          @model.getSurvey()?.trigger('change') if valChanged
+        else
+          valChanged = true if val isnt @model.get(@optionImageField)
+          if val is 'None' and @model.get(@optionImageField) is undefined
+            valChanged = false
+            
+          if valChanged
+            @model.set(@optionImageField, val)
+            @$el.trigger("choice-list-update", @options.cl.cid)
+            @model.getSurvey()?.trigger('change') 
+        return
+
       @pw.html(@p)
 
       @pw.on 'click', (event) =>
@@ -148,6 +178,7 @@ module.exports = do ->
       @d.append(@pw)
       @d.append(@t)
       @d.append(@c)
+      @d.append(@i)
       @$el.html(@d)
       @
     keyupinput: (evt)->
@@ -192,6 +223,8 @@ module.exports = do ->
 
       if nval
         nval = nval.replace /\t/g, ' '
+        valChanged = false
+        valChanged = true if nval isnt @model.get('label')
         @model.set("label", nval, silent: true)
         other_names = @options.cl.getNames()
         if !@model.get('setManually')
@@ -204,7 +237,8 @@ module.exports = do ->
             validXmlTag: true
           @model.set("name", $modelUtils.sluggify(nval, sluggifyOpts))
         @$el.trigger("choice-list-update", @options.cl.cid)
-        @model.getSurvey()?.trigger('change')
+
+        @model.getSurvey()?.trigger('change') if valChanged
         return
       else
         return newValue: @model.get "label"

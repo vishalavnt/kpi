@@ -767,6 +767,20 @@ interface DataInterface {
 
 const $ajax = (o: {}) => $.ajax(assign({}, {dataType: 'json', method: 'GET'}, o));
 
+$.ajaxError((_event: any, request: any, settings: any) => {
+  if (request.status === 403 || request.status === 401 || request.status === 404) {
+    dataInterface.selfProfile().done((data: any) => {
+      if (data.message === 'user is not logged in') {
+        dataInterface.checkKeycloakStatus().done(() => {
+          console.log('retry ajax request');
+          $.ajax(settings);
+          return;
+        });
+      }
+    });
+  }
+});
+
 export const dataInterface: DataInterface = {
   getProfile: () => fetch(`${ROOT_URL}/me/`).then((response) => response.json()),  // TODO replace selfProfile
   selfProfile: (): JQuery.jqXHR<AccountResponse | UserNotLoggedInResponse> => $ajax({url: `${ROOT_URL}/me/`}),
@@ -799,6 +813,36 @@ export const dataInterface: DataInterface = {
           d.reject(data);
         }
       }).fail(d.fail);
+    });
+    return d.promise();
+  },
+
+  keycloakLogout: (): JQuery.Promise<any> => {
+    const d = $.Deferred();
+    $ajax({ url: `${ROOT_URL}/openid/logout` }).done(d.resolve).fail(function (resp: { status: number; }, etype: any, emessage: any) {
+      if (resp.status === 200) {
+        d.resolve();
+      } else {
+        d.fail('keycloak logout failed');
+      }
+    });
+    return d.promise();
+  },
+
+  checkKeycloakStatus: (): JQuery.Promise<any> => {
+    var d = $.Deferred();
+    $ajax({ url: `${ROOT_URL}` }).done(function(resp: any) {
+      console.log('checkKeycloakStatus resp', resp);
+      d.resolve();
+    }).fail(function (resp: { status: number; }, etype: any, emessage: any) {
+      console.log('checkKeycloakStatus resp', resp);
+      console.log('checkKeycloakStatus etype', etype);
+      console.log('checkKeycloakStatus emessage', emessage);
+      if (resp.status === 200) {
+        d.resolve();
+      } else {
+        d.fail('checkKeycloakStatus failed');
+      }
     });
     return d.promise();
   },

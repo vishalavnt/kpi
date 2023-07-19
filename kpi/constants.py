@@ -110,3 +110,6 @@ ASSET_SEARCH_DEFAULT_FIELD_LOOKUPS = [
     'tags__name__icontains',
     'uid__icontains',
 ]
+
+# OpenClinica
+X_OPENROSA_ACCEPT_CONTENT_LENGTH = "X-OpenRosa-Accept-Content-Length"

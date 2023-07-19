@@ -51,7 +51,7 @@ import { usePrompt } from 'js/router/promptBlocker';
 const ErrorMessage = makeBem(null, 'error-message');
 const ErrorMessage__strong = makeBem(null, 'error-message__header', 'strong');
 
-const WEBFORM_STYLES_SUPPORT_URL = 'alternative_enketo.html';
+var FORM_DESIGNER_SUPPORT_URL = 'https://docs.openclinica.com/oc4/help-index/form-designer/';
 
 const UNSAVED_CHANGES_WARNING = t('You have unsaved changes. Leave form without saving?');
 /** Use usePrompt directly instead for functional components */
@@ -60,8 +60,8 @@ const Prompt = () => {
   return <></>;
 };
 
-
 const ASIDE_CACHE_NAME = 'kpi.editable-form.aside';
+const FORM_STYLE_CACHE_NAME = 'kpi.editable-form.form-style';
 
 const LOCKING_SUPPORT_URL = 'library_locking.html';
 const RECORDING_SUPPORT_URL = 'recording-interviews.html';
@@ -96,6 +96,8 @@ export default assign({
           this.launchAppForSurveyContent(asset.content, {
             name: asset.name,
             settings__style: asset.settings__style,
+            settings__version: asset.settings__version,
+            settings__form_id: asset.settings__form_id,
             asset_uid: asset.uid,
             asset_type: asset.asset_type,
             asset: asset,
@@ -115,6 +117,7 @@ export default assign({
       document.querySelector('.page-wrapper__content').removeEventListener('scroll', this.handleScroll);
       this.app.survey.off('change');
     }
+    sessionStorage.removeItem(FORM_STYLE_CACHE_NAME);
     this.unpreventClosingTab();
   },
 
@@ -161,6 +164,29 @@ export default assign({
     this.setState({
       settings__style: settingsStyle
     });
+    sessionStorage.setItem(FORM_STYLE_CACHE_NAME, settingsStyle);
+    this.onSurveyChange();
+  },
+
+  onVersionChange(val) {
+    let settingsVersion = null;
+    if (val !== null) {
+      settingsVersion = val;
+    }
+    this.setState({
+      settings__version: settingsVersion
+    });
+    this.onSurveyChange();
+  },
+
+  onFormIdChange(val) {
+    let settingsFormId = null;
+    if (val !== null) {
+      settingsFormId = val;
+    }
+    this.setState({
+      settings__form_id: settingsFormId
+    });
     this.onSurveyChange();
   },
 
@@ -171,9 +197,7 @@ export default assign({
   },
 
   onSurveyChange: _.debounce(function () {
-    if (!this.state.asset_updated !== update_states.UNSAVED_CHANGES) {
-      this.preventClosingTab();
-    }
+    window.parent.postMessage('form_saveneeded', '*');
     this.setState({
       asset_updated: update_states.UNSAVED_CHANGES,
     });
@@ -202,6 +226,18 @@ export default assign({
     this.app.groupSelectedRows();
   },
 
+  deleteQuestions() {
+    this.app.deleteSelectedRows();
+  },
+
+  duplicateQuestions() {
+    this.app.duplicateSelectedRows();
+  },
+
+  addQuestionsToLibrary() {
+    this.app.addSelectedRowsToLibrary();
+  },
+
   showAll(evt) {
     evt.preventDefault();
     evt.currentTarget.blur();
@@ -214,6 +250,14 @@ export default assign({
       this.state.asset.asset_type === ASSET_TYPES.template.id ||
       this.state.desiredAssetType === ASSET_TYPES.template.id
     );
+  },
+
+  hideMetadata() {
+    return true;
+  },
+
+  hideDetails() {
+    return true;
   },
 
   needsSave() {
@@ -271,7 +315,52 @@ export default assign({
       this.app.survey.settings.set('style', this.state.settings__style);
     }
 
-    let surveyJSON = surveyToValidJson(this.app.survey);
+    if (this.state.settings__version !== undefined) {
+      this.app.survey.settings.set('version', this.state.settings__version);
+    }
+
+    if (this.state.settings__form_id !== undefined) {
+      this.app.survey.settings.set('form_id', this.state.settings__form_id);
+    }
+
+    const consentRows = this.app.survey.rows.filter(function(row) { 
+      try {
+        return (row.getValue('bind::oc:external') === 'signature');
+      } catch (err) {
+        return false;
+      } 
+    });
+    if (consentRows.length > 0) {
+      if (consentRows.length > 1) {
+        var errorMsg = `${t('Consent forms can have only one signature item.')}`;
+        alertify.defaults.theme.ok = 'ajs-cancel';
+        let dialog = alertify.dialog('alert');
+        let opts = {
+          title: t('Error saving form'),
+          message: errorMsg,
+          label: t('Dismiss'),
+        };
+        dialog.set(opts).show();
+        return;
+      } else {
+        const consentRow = consentRows[0];
+        const consentRowChoiceValue = consentRow.getConsentItemChoiceValue()
+        if (consentRowChoiceValue !== '1') {
+          errorMsg = `${t('Consent items must have a value of "1"')}`;
+          alertify.defaults.theme.ok = 'ajs-cancel';
+          let dialog = alertify.dialog('alert');
+          let opts = {
+            title: t('Error saving form'),
+            message: errorMsg,
+            label: t('Dismiss'),
+          };
+          dialog.set(opts).show();
+          return;
+        }
+      }
+    }
+
+    let surveyJSON = surveyToValidJson(this.app.survey)
     if (this.state.asset) {
       let surveyJSONWithMatrix = koboMatrixParser({source: surveyJSON}).source;
       surveyJSON = unnullifyTranslations(surveyJSONWithMatrix, this.state.asset.content);
@@ -323,7 +412,8 @@ export default assign({
       }
       actions.resources.createResource.triggerAsync(params)
         .then(() => {
-          this.props.router.navigate(this.state.backRoute);
+          window.parent.postMessage('form_savecomplete', '*');
+          hashHistory.push('/library');
         });
     } else {
       // update existing asset
@@ -331,6 +421,7 @@ export default assign({
 
       actions.resources.updateAsset.triggerAsync(uid, params)
         .then(() => {
+          window.parent.postMessage('form_savecomplete', '*');
           this.unpreventClosingTab();
           this.setState({
             asset_updated: update_states.UP_TO_DATE,
@@ -338,7 +429,7 @@ export default assign({
           });
         })
         .catch((resp) => {
-          var errorMsg = `${t('Your changes could not be saved, likely because of a lost internet connection.')}&nbsp;${t('Keep this window open and try saving again while using a better connection.')}`;
+          var errorMsg = `${t('Your changes could not be saved, likely because of a lost internet connection.')}&nbsp;${t('Keep this window open and try saving again while using a better connection.')}&nbsp;${t('Please contact your administrator if this message persists.')}`;
           if (resp.statusText !== 'error') {
             errorMsg = escapeHtml(resp.statusText);
           }
@@ -401,14 +492,27 @@ export default assign({
       ooo.name = this.state.name;
       ooo.hasSettings = this.state.backRoute === ROUTES.FORMS;
       ooo.styleValue = this.state.settings__style;
+      ooo.versionValue = this.state.settings__version;
+      ooo.formIdValue = this.state.settings__form_id;
     }
-    if (this.state.isNewAsset) {
+
+    var saveButtonText = 'save';
+    var backButtonText = 'back';
+    if (this.state.asset_type === 'survey') {
+      saveButtonText = 'save draft';
+    } else {
+      saveButtonText = 'save changes';
+      backButtonText = 'back to library';
+    }
+
+    if (this.state.editorState === 'new') {
       ooo.saveButtonText = t('create');
     } else if (this.state.surveySaveFail) {
-      ooo.saveButtonText = `${t('save')} (${t('retry')}) `;
+      ooo.saveButtonText = `${t(saveButtonText)} (${t('retry')}) `;
     } else {
-      ooo.saveButtonText = t('save');
+      ooo.saveButtonText = `${t(saveButtonText)}`;
     }
+    ooo.backButtonText = `${t(backButtonText)}`;
     return ooo;
   },
 
@@ -457,6 +561,8 @@ export default assign({
     // asset content is being mutated somewhere during form builder initialisation
     // so we need to make sure this stays untouched
     const rawAssetContent = Object.freeze(clonedeep(assetContent));
+
+    sessionStorage.setItem(FORM_STYLE_CACHE_NAME, _state.settings__style);
 
     let isEmptySurvey = (
         assetContent &&
@@ -521,7 +627,8 @@ export default assign({
         message: '',
         labels: {ok: t('Yes, leave form'), cancel: t('Cancel')},
         onok: () => {
-          this.props.router.navigate(route);
+          window.parent.postMessage('form_savecomplete', '*');
+          hashHistory.push(route);
         },
         oncancel: dialog.destroy
       };
@@ -547,6 +654,11 @@ export default assign({
       targetRoute = ROUTES.LIBRARY_ITEM.replace(':uid', this.state.asset_uid);
     }
     this.safeNavigateToRoute(targetRoute);
+  },
+
+  canNavigateToList() {
+    return this.state.surveyAppRendered && 
+      (this.state.asset_type !== 'survey' || this.props.location.pathname.startsWith('/library/new'));
   },
 
   isAddingQuestionsRestricted() {
@@ -587,6 +699,11 @@ export default assign({
     )[0].attributes.value;
   },
 
+  canNavigateToList() {
+    return this.state.surveyAppRendered && 
+      (this.state.asset_type !== 'survey' || this.props.location.pathname.startsWith('/library/new'));
+  },
+
   // rendering methods
 
   renderFormBuilderHeader () {
@@ -596,21 +713,12 @@ export default assign({
       showAllOpen,
       showAllAvailable,
       saveButtonText,
+      backButtonText,
     } = this.buttonStates();
 
     return (
       <bem.FormBuilderHeader>
         <bem.FormBuilderHeader__row m='primary'>
-          <bem.FormBuilderHeader__cell
-            m={'logo'}
-            data-tip={t('Return to list')}
-            className='left-tooltip'
-            tabIndex='0'
-            onClick={this.safeNavigateToList}
-          >
-            <i className='k-icon k-icon-kobo' />
-          </bem.FormBuilderHeader__cell>
-
           <bem.FormBuilderHeader__cell m={'name'} >
             <bem.FormModal__item>
               {this.renderAssetLabel()}
@@ -626,6 +734,17 @@ export default assign({
           </bem.FormBuilderHeader__cell>
 
           <bem.FormBuilderHeader__cell m={'buttonsTopRight'} >
+
+            {this.canNavigateToList() &&
+              <bem.FormBuilderHeader__button
+                m={['back']}
+                onClick={this.safeNavigateToList}
+                disabled={!this.state.surveyAppRendered || !!this.state.surveyLoadError}
+              >
+                {backButtonText}
+              </bem.FormBuilderHeader__button>
+            }
+
             <bem.FormBuilderHeader__button
               m={['save', {
                 savepending: this.state.asset_updated === update_states.PENDING_UPDATE,
@@ -640,12 +759,6 @@ export default assign({
               {saveButtonText}
             </bem.FormBuilderHeader__button>
 
-            <bem.FormBuilderHeader__close
-              m={[{'close-warning': this.needsSave()}]}
-              onClick={this.safeNavigateToAsset}
-            >
-              <i className='k-icon k-icon-close'/>
-            </bem.FormBuilderHeader__close>
           </bem.FormBuilderHeader__cell>
         </bem.FormBuilderHeader__row>
 
@@ -680,6 +793,36 @@ export default assign({
               <i className='k-icon k-icon-group' />
             </bem.FormBuilderHeader__button>
 
+            <bem.FormBuilderHeader__button
+              m={['group', {groupable: groupable}]}
+              onClick={this.deleteQuestions}
+              disabled={!groupable}
+              data-tip={groupable ? t('Delete selected questions') : t('Delete questions disabled. Please select at least one question.')}
+            >
+              <i className='k-icon-trash' />
+            </bem.FormBuilderHeader__button>
+
+            <bem.FormBuilderHeader__button
+              m={['group', {groupable: groupable}]}
+              onClick={this.duplicateQuestions}
+              disabled={!groupable}
+              data-tip={groupable ? t('Duplicate selected questions') : t('Duplicate questions disabled. Please select at least one question.')}
+            >
+              <i className='k-icon-clone' />
+            </bem.FormBuilderHeader__button>
+
+            <bem.FormBuilderHeader__button
+              m={['group', {groupable: groupable}]}
+              onClick={this.addQuestionsToLibrary}
+              disabled={!groupable}
+              data-tip={groupable ? t('Add selected questions to library') : t('Add selected questions to library disabled. Please select at least one question.')}
+              className='add-questions-to-library'
+            >
+              <i class='k-icon-folder'>
+                <i className='k-icon-plus' />
+              </i>
+            </bem.FormBuilderHeader__button>
+
             { this.toggleCascade !== undefined &&
               <bem.FormBuilderHeader__button
                 m={['cascading']}
@@ -695,6 +838,17 @@ export default assign({
           <bem.FormBuilderHeader__cell m='verticalRule'/>
 
           <bem.FormBuilderHeader__cell m='spacer'/>
+
+          <bem.FormBuilderHeader__cell>
+            <a
+              class="formdesigner-support-url"
+              href={formDesignerSupportUrl}
+              target='_blank'
+              data-tip={t('Learn more about Form Designer')}
+            >
+              <i className='k-icon k-icon-help'/>
+            </a>
+          </bem.FormBuilderHeader__cell>
 
           <bem.FormBuilderHeader__cell m='verticalRule'/>
 
@@ -766,6 +920,8 @@ export default assign({
   renderAside() {
     let {
       styleValue,
+      versionValue,
+      formIdValue,
       hasSettings
     } = this.buttonStates();
 
@@ -781,17 +937,6 @@ export default assign({
             <bem.FormBuilderAside__row>
               <bem.FormBuilderAside__header>
                 {t('Form style')}
-
-                { envStore.isReady &&
-                  envStore.data.support_url &&
-                  <a
-                    href={envStore.data.support_url + WEBFORM_STYLES_SUPPORT_URL}
-                    target='_blank'
-                    data-tip={t('Read more about form styles')}
-                  >
-                    <i className='k-icon k-icon-help'/>
-                  </a>
-                }
               </bem.FormBuilderAside__header>
 
               <label
@@ -821,7 +966,31 @@ export default assign({
               />
             </bem.FormBuilderAside__row>
 
-            {this.hasMetadataAndDetails() &&
+            <bem.FormBuilderAside__row>
+              <bem.FormBuilderAside__header>
+                {t('Form information')}
+              </bem.FormBuilderAside__header>
+
+              <bem.FormModal__item>
+                <TextBox
+                  type='text'
+                  label={t('Form ID')}
+                  value={formIdValue}
+                  onChange={this.onFormIdChange}
+                />
+              </bem.FormModal__item>
+
+              <bem.FormModal__item>
+                <TextBox
+                  type='text'
+                  label={t('Version number')}
+                  value={versionValue}
+                  onChange={this.onVersionChange}
+                />
+              </bem.FormModal__item>
+            </bem.FormBuilderAside__row>
+
+            {this.hasMetadataAndDetails() && !this.hideMetadata() &&
               <bem.FormBuilderAside__row>
                 <bem.FormBuilderAside__header>
                   {t('Metadata')}
@@ -836,7 +1005,7 @@ export default assign({
               </bem.FormBuilderAside__row>
             }
 
-            {this.hasMetadataAndDetails() &&
+            {this.hasMetadataAndDetails() && !this.hideDetails() &&
               <bem.FormBuilderAside__row>
                 <bem.FormBuilderAside__header>
                   {t('Details')}
@@ -876,7 +1045,7 @@ export default assign({
       return (
         <ErrorMessage>
           <ErrorMessage__strong>
-            {t('Error loading survey:')}
+            {t('Error loading form:')}
           </ErrorMessage__strong>
           <p>
             {this.state.surveyLoadError}
@@ -890,6 +1059,12 @@ export default assign({
 
   renderAssetLabel() {
     let assetTypeLabel = getFormBuilderAssetType(this.state.asset.asset_type, this.state.desiredAssetType)?.label;
+    if (
+      assetTypeLabel &&
+      assetTypeLabel === ASSET_TYPES.survey.label
+    ) {
+      assetTypeLabel = `${assetTypeLabel} title`;
+    }
 
     // Case 1: there is no asset yet (creting a new) or asset is not locked
     if (
@@ -929,14 +1104,14 @@ export default assign({
 
     if (!this.state.isNewAsset && !this.state.asset) {
       return (
-        <DocumentTitle title={`${docTitle} | KoboToolbox`}>
+        <DocumentTitle title={`${docTitle} | OpenClinica`}>
           <LoadingSpinner/>
         </DocumentTitle>
       );
     }
 
     return (
-      <DocumentTitle title={`${docTitle} | KoboToolbox`}>
+      <DocumentTitle title={`${docTitle} | OpenClinica`}>
         <>
         {
           /*

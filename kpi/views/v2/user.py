@@ -22,6 +22,7 @@ class UserViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     filter_backends = (SearchFilter,)
     serializer_class = UserSerializer
     lookup_field = 'username'
+    lookup_value_regex = '[^/]+'
     pagination_class = LimitOffsetPagination
     search_default_field_lookups = [
         'username__icontains',

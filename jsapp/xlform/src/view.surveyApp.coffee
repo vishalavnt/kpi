@@ -56,6 +56,7 @@ module.exports = do ->
       "click .js-add-to-question-library": "clickAddRowToQuestionLibrary"
       "click .js-add-group-to-library": "clickAddGroupToLibrary"
       "click .js-clone-question": "clickCloneQuestion"
+      "click .js-clone-group": "clickCloneGroup"
       "update-sort": "updateSort"
       "click .js-select-row": "selectRow"
       "click .js-select-row--force": "forceSelectRow"
@@ -157,6 +158,8 @@ module.exports = do ->
       @onSave = options.save || $.noop
       @onPreview = options.preview || $.noop
 
+      @sortCancelled = false
+
       @expand_all_multioptions = () -> @$('.survey__row:not(.survey__row--deleted) .card--expandedchoices:visible').length > 0
 
       # Keyboard Navigation
@@ -181,7 +184,9 @@ module.exports = do ->
           else
             focusedElement.trigger('click')
 
-        @onEscapeKeydown(evt)  if evt.keyCode is 27
+        @onEscapeKeydown(evt) if evt.keyCode is 27
+
+      @isAlertifyDialogShown = false
 
     getView: (cid)->
       @__rowViews.get(cid)
@@ -429,6 +434,26 @@ module.exports = do ->
       return i
 
     # responsible for groups and questions sortable
+    cancelSortable: (ui) ->
+      sortable_elements = ui.item.data('sortable_elements')
+      ui.item.data('sortable_elements', null)
+      @formEditorEl.sortable 'cancel'
+      group_rows = @formEditorEl.find('.group__rows')
+      if group_rows? and group_rows.length > 0
+        group_rows.each (index) =>
+          $(group_rows[index]).sortable 'cancel'
+      
+      if ui.item.hasClass('survey__row--group')
+        ui.item.find('.survey__row--selected.hidden').removeClass('hidden')
+
+      if (ui.item.data('is_multi_select')) and (sortable_elements? and sortable_elements.length > 1)
+        for el in sortable_elements
+          row_id = $(el).attr('data-row-id')
+          if row_id != ui.item.attr('data-row-id')
+            $row = $("li.survey__row--selected.hidden[data-row-id='#{row_id}']")
+            $row.removeClass('hidden')
+            $row.find('.survey__row--selected.hidden').removeClass('hidden')
+
     activateSortable: ->
       $el = @formEditorEl
       survey = @survey
@@ -440,9 +465,58 @@ module.exports = do ->
 
         @survey.trigger evt.type
 
-      sortable_stop = (evt, ui)=>
-        $(ui.item).trigger('survey__row-sortablestop')
-        @survey.trigger 'sortablestop'
+      sortable_activate_check_esc = (ui) =>
+        @sortCancelled = false
+        @onEscapeKeydown = () =>
+          @sortCancelled = true
+          @cancelSortable(ui)
+
+
+      sortable_stop = (evt, ui) =>
+        if not @sortCancelled
+          elements = ui.item.data('sortable_elements')
+          elements_array = _.toArray(elements)
+          elements_before = []
+          elements_after = []
+          itemElementsIndex = elements_array.findIndex (el) => $(el).attr('data-row-id') == ui.item.attr('data-row-id')
+          if itemElementsIndex > -1
+            elements_before = elements_array.slice(0, itemElementsIndex).map((el) => @__rowViews.get($(el).attr('data-row-id')).$el)
+            elements_after = elements_array.slice(itemElementsIndex + 1).map((el) => @__rowViews.get($(el).attr('data-row-id')).$el)
+          if elements_before.length > 0
+            ui.item.before(elements_before)
+          if elements_after.length > 0
+            ui.item.after(elements_after)
+          ui.item.closest('.survey-editor__list').find('.survey__row--selected.hidden').removeClass('hidden')
+          if elements? and elements.length > 0
+            for el in elements
+              row_id = $(el).attr('data-row-id')
+              $row = $("li.survey__row--selected:not('.hidden')[data-row-id='#{row_id}']")
+              $row.trigger('survey__row-sortablestop')
+          @survey.trigger 'sortablestop'
+          if not ui.item.data('is_multi_select')
+            ui.item.closest('.survey-editor__list').find('.survey__row--selected').removeClass('survey__row--selected')
+
+      sortable_helper = (evt, item) =>
+        item.data('is_multi_select', true)
+        if not item.hasClass('survey__row--selected')
+          item.closest('.survey-editor__list').find('.survey__row--selected').removeClass('survey__row--selected')
+          item.addClass('survey__row--selected')
+          item.data('is_multi_select', false)
+        selected_elements = item.closest('.survey-editor__list').find('.survey__row--selected:not(".hidden")').clone()
+        selected_row_ids = _.map(selected_elements, (el) => $(el).attr('data-row-id'))
+        selected_in_group_row_ids = []
+        for el in selected_elements
+          row_id = $(el).attr('data-row-id')
+          $row = $("li[data-row-id='#{row_id}']")
+          if $row.attr('data-row-id') != item.attr('data-row-id')
+            $row.addClass("hidden")
+          parent_row_id = $row.parents('.survey__row--group').attr('data-row-id')
+          selected_in_group_row_ids.push(row_id) if parent_row_id in selected_row_ids
+        selected_elements = _.filter(selected_elements, (el) => $(el).attr('data-row-id') not in selected_in_group_row_ids)
+        item.data('sortable_elements', selected_elements)
+        helper = $('<ul/>')
+        helper.append item.data('sortable_elements')
+        helper
 
       @formEditorEl.sortable({
           # PM: commented out axis, because it's better if cards move horizontally and vertically
@@ -461,6 +535,9 @@ module.exports = do ->
           create: =>
             @formEditorEl.addClass('js-sortable-enabled')
             return
+          helper: sortable_helper
+          change: (evt, ui) =>
+            sortable_activate_check_esc(ui)
           receive: (evt, ui) =>
             itemUid = ui.item.data().uid
             if @ngScope.handleItem and itemUid
@@ -500,9 +577,14 @@ module.exports = do ->
             @survey.trigger('group-sortable-created', group_rows[index])
             $(group_rows[index]).addClass('js-sortable-enabled')
             return
+          helper: sortable_helper
+          change: (evt, ui) =>
+            sortable_activate_check_esc(ui)
           receive: (evt, ui) =>
-            itemUid = ui.item.data().uid
-            if @ngScope.handleItem and itemUid
+            if ui.sender.hasClass('group__rows') || ui.sender.hasClass('survey-editor__list')
+              return
+            prevItem = ui.item.prev()
+            if @ngScope.handleItem
               uiItemParentWithId = $(ui.item).parents('[data-row-id]')[0]
               if uiItemParentWithId
                 groupId = uiItemParentWithId.dataset.rowId
@@ -657,43 +739,102 @@ module.exports = do ->
     clickCloneQuestion: (evt)->
       @_getViewForTarget(evt).clone()
 
+    clickCloneGroup: (evt)->
+      $group_item = $(evt.target).closest('.survey__row--group')
+      uiItemParentWithId = $group_item.parents('[data-row-id]')[0]
+      if uiItemParentWithId # group in group
+        groupId = uiItemParentWithId.dataset.rowId
+
+      view = @_getViewForTarget(evt)
+      viewModel = view.model
+      viewParent = viewModel._parent
+      view.clone(viewParent.models.indexOf(viewModel) + 1, groupId)
+
     clickRemoveRow: (evt)->
       evt.preventDefault()
-      if confirm(t("Are you sure you want to delete this question?") + " " +
-          t("This action cannot be undone."))
-        @survey.trigger('change')
 
-        $et = $(evt.target)
-        rowEl = $et.parents(".survey__row").eq(0)
-        rowId = rowEl.data("rowId")
-
-        matchingRow = false
-        findMatch = (r)->
-          if r.cid is rowId
-            matchingRow = r
+      dialog = alertify.dialog('confirm')
+      opts = 
+        title: t('Delete question')
+        message: t('Are you sure you want to delete this question?') + " " + t("This action cannot be undone.")
+        labels:
+          ok: t('Yes')
+          cancel: t('No')
+        onshow: =>
+          @isAlertifyDialogShown = true
           return
 
-        @survey.forEachRow findMatch, {
-          includeGroups: false
-        }
+        onclose: =>
+          @isAlertifyDialogShown = false
+          $et = $(evt.target)
+          $deleteButton = $et.closest('.card__buttons__button')
+          $deleteButton.trigger('mouseleave')
+          return
 
-        if !matchingRow
-          throw new Error("Matching row was not found.")
+        onok: =>
+          @survey.trigger('change')
 
-        parent = matchingRow._parent._parent
-        matchingRow.detach()
-        # this slideUp is for add/remove row animation
-        rowEl.addClass('survey__row--deleted')
-        rowEl.slideUp 175, "swing", ()=>
-          rowEl.remove()
-          @survey.rows.remove matchingRow
-          # remove group if after deleting row the group is empty
-          if parent.constructor.kls == "Group" && parent.rows.length == 0
-            parent_view = @__rowViews.get(parent.cid)
-            if !parent_view
-              Raven?.captureException("parent view is not defined", matchingRow.get('name').get('value'))
-            parent_view._deleteGroup()
-      return
+          $et = $(evt.target)
+          rowEl = $et.parents(".survey__row").eq(0)
+          rowId = rowEl.data("rowId")
+
+          matchingRow = false
+          findMatch = (r)->
+            if r.cid is rowId
+              matchingRow = r
+            return
+
+          @survey.forEachRow findMatch, {
+            includeGroups: false
+          }
+
+          if !matchingRow
+            throw new Error("Matching row was not found.")
+          
+          @_deleteRow matchingRow
+
+          return
+        oncancel: =>
+          dialog.destroy()
+          return
+
+      dialog.set(opts).show()
+
+    _deleteRow: (row) ->
+      $row = $("li[data-row-id='#{row.cid}']")
+      parent = row._parent._parent
+      row.detach()
+      # this slideUp is for add/remove row animation
+      $row.addClass('survey__row--deleted')
+      $row.slideUp 175, "swing", ()=>
+        $row.remove()
+        @survey.rows.remove row
+        if parent.constructor.kls == "Group" && parent.rows.length == 0
+          parent_view = @__rowViews.get(parent.cid)
+          if !parent_view
+            Raven?.captureException("parent view is not defined", row.get('name').get('value'))
+          parent_view._deleteGroup()
+
+    deleteSelectedRows: ->
+      dialog = alertify.dialog('confirm')
+      rows = @selectedRows()
+      opts = 
+        title: t('Delete selected questions')
+        message: t('Are you sure you want to delete these questions?') + " " + t("This action cannot be undone.")
+        labels:
+          ok: t('Yes')
+          cancel: t('No')
+        onok: =>
+          @survey.trigger('change')
+
+          for row in rows
+            @_deleteRow row
+
+          return
+        oncancel: =>
+          dialog.destroy()
+          return
+      dialog.set(opts).show()
 
     groupSelectedRows: ->
       rows = @selectedRows()
@@ -707,6 +848,31 @@ module.exports = do ->
         return true
       else
         return false
+
+    _duplicateRows: (rows) ->
+      for row, row_idx in rows
+        view = @__rowViews.get(row.cid)
+        viewModel = view.model
+        viewParent = viewModel._parent
+        if row.constructor.kls isnt "Group"  
+          viewModel.getSurvey().insert_row.call viewParent._parent, viewModel, viewParent.models.indexOf(viewModel) + 1
+        else # duplicate group
+          $group_item = $("li[data-row-id='#{row.cid}']")
+          uiItemParentWithId = $group_item.parents('[data-row-id]')[0]
+          if uiItemParentWithId # group in group
+            groupId = uiItemParentWithId.dataset.rowId
+          view.clone(viewParent.models.indexOf(viewModel) + 1, groupId)
+
+    duplicateSelectedRows: () ->
+      rows = @selectedRows()
+      rows_length = rows.length
+
+      if rows_length > 0
+        @_duplicateRows rows
+
+    addSelectedRowsToLibrary: () ->
+      rows = @selectedRows()
+      @ngScope.add_rows_to_question_library(rows, @survey._initialParams)
 
     selectedRows: ()->
       rows = []
@@ -748,6 +914,8 @@ module.exports = do ->
       return
     buttonHoverOut: (evt)->
       evt.stopPropagation()
+      if @isAlertifyDialogShown
+        return
       $et = $(evt.currentTarget)
       buttonName = $et.data('buttonName')
       $et.closest('.card__header').removeClass(buttonName)

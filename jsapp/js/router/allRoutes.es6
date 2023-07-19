@@ -16,6 +16,7 @@ import LoadingSpinner from 'js/components/common/loadingSpinner';
 import {PERMISSIONS_CODENAMES} from 'js/constants';
 import {isRootRoute, redirectToLogin} from 'js/router/routerUtils';
 import RequireAuth from 'js/router/requireAuth';
+import RequireAdmin from 'js/router/RequireAdmin';
 import PermProtectedRoute from 'js/router/permProtectedRoute';
 import sessionStore from 'js/stores/session';
 import {Tracking} from './useTracking';
@@ -127,7 +128,8 @@ const AllRoutes = class AllRoutes extends React.Component {
         <Tracking />
         <Routes>
           <Route path={ROUTES.ROOT} element={<App />}>
-            <Route path='' element={<Navigate to={ROUTES.FORMS} replace />} />
+            <Route path='' element={<Navigate to={ROUTES.LIBRARY} replace />} />
+            <Route path={ROUTES.FORMS} element={<Navigate to={ROUTES.LIBRARY} replace />} />
             <Route path={ROUTES.ACCOUNT_ROOT}>{accountRoutes()}</Route>
             <Route path={ROUTES.PROJECTS_ROOT}>{projectsRoutes()}</Route>
             <Route path={ROUTES.LIBRARY}>
@@ -138,70 +140,65 @@ const AllRoutes = class AllRoutes extends React.Component {
               <Route
                 path={ROUTES.MY_LIBRARY}
                 element={
-                  <RequireAuth>
+                  <RequireAdmin>
                     <MyLibraryRoute />
-                  </RequireAuth>
+                  </RequireAdmin>
                 }
               />
-              <Route
+              {/* <Route
                 path={ROUTES.PUBLIC_COLLECTIONS}
                 element={
                   <RequireAuth>
                     <PublicCollectionsRoute />
                   </RequireAuth>
                 }
-              />
+              /> */}
               <Route
                 path={ROUTES.NEW_LIBRARY_ITEM}
                 element={
-                  <RequireAuth>
+                  <RequireAdmin>
                     <LibraryAssetEditor />
-                  </RequireAuth>
+                  </RequireAdmin>
                 }
               />
               <Route
                 path={ROUTES.LIBRARY_ITEM}
                 element={
-                  <PermProtectedRoute
-                    requiredPermissions={[PERMISSIONS_CODENAMES.view_asset]}
-                    protectedComponent={AssetRoute}
-                  />
+                  <RequireAdmin>
+                    <AssetRoute />
+                  </RequireAdmin>
                 }
               />
               <Route
                 path={ROUTES.EDIT_LIBRARY_ITEM}
                 element={
-                  <PermProtectedRoute
-                    requiredPermissions={[PERMISSIONS_CODENAMES.change_asset]}
-                    protectedComponent={LibraryAssetEditor}
-                  />
+                  <RequireAdmin>
+                    <LibraryAssetEditor />
+                  </RequireAdmin>
                 }
               />
               <Route
                 path={ROUTES.NEW_LIBRARY_CHILD}
                 element={
-                  <PermProtectedRoute
-                    requiredPermissions={[PERMISSIONS_CODENAMES.change_asset]}
-                    protectedComponent={LibraryAssetEditor}
-                  />
+                  <RequireAdmin>
+                    <LibraryAssetEditor />
+                  </RequireAdmin>
                 }
               />
               <Route
                 path={ROUTES.LIBRARY_ITEM_JSON}
                 element={
-                  <PermProtectedRoute
-                    requiredPermissions={[PERMISSIONS_CODENAMES.view_asset]}
-                    protectedComponent={FormJson}
-                  />
+                  <RequireAdmin>
+                    <FormJson />
+                  </RequireAdmin>
                 }
               />
               <Route
                 path={ROUTES.LIBRARY_ITEM_XFORM}
                 element={
-                  <PermProtectedRoute
-                    requiredPermissions={[PERMISSIONS_CODENAMES.view_asset]}
-                    protectedComponent={FormXform}
-                  />
+                  <RequireAdmin>
+                    <FormXform />
+                  </RequireAdmin>
                 }
               />
             </Route>
@@ -244,7 +241,7 @@ const AllRoutes = class AllRoutes extends React.Component {
                   }
                 />
 
-                <Route path={ROUTES.FORM_DATA}>
+                {/* <Route path={ROUTES.FORM_DATA}>
                   <Route
                     path=''
                     element={<Navigate to={'./table'} replace />}
@@ -335,9 +332,9 @@ const AllRoutes = class AllRoutes extends React.Component {
                       />
                     }
                   />
-                </Route>
+                </Route> */}
 
-                <Route path={ROUTES.FORM_SETTINGS}>
+                {/* <Route path={ROUTES.FORM_SETTINGS}>
                   <Route
                     index
                     element={
@@ -405,7 +402,7 @@ const AllRoutes = class AllRoutes extends React.Component {
                       />
                     }
                   />
-                </Route>
+                </Route> */}
 
                 <Route
                   path={ROUTES.FORM_JSON}

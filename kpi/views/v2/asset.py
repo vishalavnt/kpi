@@ -7,10 +7,13 @@ from operator import itemgetter
 from django.db.models import Count, Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import User
 from rest_framework import exceptions, renderers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from rest_framework_extensions.mixins import NestedViewSetMixin
+from bossoidc.models import Keycloak as KeycloakModel
 
 from kpi.constants import (
     ASSET_TYPES,
@@ -310,7 +313,7 @@ class AssetViewSet(
 
     lookup_field = 'uid'
     pagination_class = AssetPagination
-    permission_classes = (AssetPermission,)
+    permission_classes = (IsAuthenticated,)
     ordering_fields = [
         'asset_type',
         'date_modified',
@@ -724,7 +727,7 @@ class AssetViewSet(
 
     def perform_create(self, serializer):
         user = get_database_user(self.request.user)
-        serializer.save(owner=user)
+        serializer.save(owner=User.objects.get(username=user))
 
     def perform_destroy(self, instance):
         if hasattr(instance, 'has_deployment') and instance.has_deployment:
@@ -794,10 +797,18 @@ class AssetViewSet(
         else:
             source_version = original_asset.asset_versions.first()
 
-        view_perm = get_perm_name('view', original_asset)
-        if not self.request.user.has_perm(view_perm, original_asset):
+        kc_user = None
+        try:
+            kc_user = KeycloakModel.objects.get(user=self.request.user)
+        except KeycloakModel.DoesNotExist:
             raise Http404
 
+        if kc_user is not None:
+            subdomain = kc_user.subdomain
+            subdomain_userIds = KeycloakModel.objects.filter(subdomain=subdomain).values_list('user_id', flat=True)
+            if original_asset.owner.id not in subdomain_userIds:
+                raise Http404
+        
         partial_update = isinstance(current_asset, Asset)
         cloned_data = self._prepare_cloned_data(original_asset, source_version, partial_update)
         if partial_update:

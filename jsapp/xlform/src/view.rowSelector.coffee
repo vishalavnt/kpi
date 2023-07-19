@@ -171,18 +171,19 @@ module.exports = do ->
       # if question name not provided by user, use default one for type or general one
       if @question_name
         questionLabelValue = @question_name.replace(/\t/g, ' ')
-      else if rowType of $configs.defaultsForType
-        questionLabelValue = $configs.defaultsForType[rowType].label.value
       else
-        questionLabelValue = $configs.defaultsGeneral.label.value
+        questionLabelValue = ''
 
       rowDetails =
         type: rowType
 
-      if rowType is 'calculate'
-        rowDetails.calculation = questionLabelValue
+      rowDetails.label = questionLabelValue
+
+      if questionLabelValue != ''
+        rowDetails.name = questionLabelValue.toLowerCase().replace(/ /g,"_").replace(/\W/g, '')
       else
-        rowDetails.label = questionLabelValue
+        if rowType is 'calculate'
+          rowDetails.name = 'calculation'
 
       options = {}
       if (rowBefore = @options.spawnedFromView?.model)
@@ -191,6 +192,8 @@ module.exports = do ->
       else
         survey = @options.survey
         options.at = 0
+
+      rowDetails.isNewRow = true
 
       newRow = survey.addRow(rowDetails, options)
       newRow.linkUp(warnings: [], errors: [])

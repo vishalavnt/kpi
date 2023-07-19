@@ -28,6 +28,7 @@ multiConfirm = require('js/alertify').multiConfirm
 alertify = require('alertifyjs')
 constants = require('js/constants')
 notify = require('js/utils').notify
+arrayMiddleOut = require('js/ocutils').processArrayMiddleOut
 
 module.exports = do ->
   class BaseRowView extends Backbone.View
@@ -46,6 +47,16 @@ module.exports = do ->
       @model.on "detail-change", (key, value, ctxt)=>
         customEventName = $viewUtils.normalizeEventName("row-detail-change-#{key}")
         @$(".on-#{customEventName}").trigger(customEventName, key, value, ctxt)
+      @repeatGroups = []
+      @nonRepeatGroups = []
+      @nonGroups = []
+      @repeatGroupsItemGroupNames = []
+      @repeatGroupsIntVals = []
+      @nonRepeatGroupsItemGroupNames = []
+      @nonRepeatGroupsIntVals = []
+      @nonGroupsItemGroupNames = []
+      @nonGroupsIntVals = []
+      @itemGroupKey = 'bind::oc:itemgroup'
       return
 
     drop: (evt, index)->
@@ -76,8 +87,194 @@ module.exports = do ->
 
     isLockable: ->
       return isAssetLockable(@ngScope.assetType?.id)
+    isGroup: (model) ->
+      model.constructor.kls is "Group"
+
+    isInGroup: (model) ->
+      model._parent?._parent?.constructor.kls is "Group"
+
+    isInRepeatGroup: (model) ->
+      model._parent?._parent?._isRepeat() is true
+
+    getFirstRepeatGroupUntilRoot: (model) ->
+      if not model.hasOwnProperty('_parent')
+        return null
+      else
+        if @isInGroup(model) and @isInRepeatGroup(model)
+          return model._parent._parent
+        else
+          return @getFirstRepeatGroupUntilRoot(model._parent._parent)
+
+    isInRepeatGroupUntilRoot: (model) ->
+      @getFirstRepeatGroupUntilRoot(model)?
+
+    processAllModels: (models) ->
+      for model in models
+        if @isGroup model
+          if model.get('_isRepeat').get('value')?
+            @repeatGroups.push model
+          else
+            @nonRepeatGroups.push model
+          @processAllModels model.rows?.models
+        else
+          if not @isInGroup(model) and (model.cid != @model.cid) and (model.attributes[@itemGroupKey].get('value') isnt '')
+            @nonGroups.push model
+
+    processFieldModels: (models) ->
+      if models.length > 0
+        for model in models
+          groupNames = @nonGroupsItemGroupNames
+          groupIntVals = @nonGroupsIntVals
+          if @isInGroup(model)
+            groupNames = @nonRepeatGroupsItemGroupNames
+            groupIntVals = @nonRepeatGroupsIntVals
+            if @isInRepeatGroupUntilRoot model
+              groupNames = @repeatGroupsItemGroupNames
+              groupIntVals = @repeatGroupsIntVals
+          itemGroupName = model.attributes[@itemGroupKey].get('value')
+          if itemGroupName && itemGroupName != ''
+            groupNames.push(itemGroupName)
+            itemGroupIntVal = parseInt(itemGroupName.replace(/\D/g, ''), 10)
+            groupIntVals.push(itemGroupIntVal) if not isNaN(itemGroupIntVal)
+        _.uniq(groupNames)
+        _.uniq(groupIntVals)
+
+    processAllGroupFieldModels: () ->
+      itemGroups = [@repeatGroups, @nonRepeatGroups]
+      for itemGroup in itemGroups
+        for group in itemGroup
+          groupRowModels = group?.rows?.models?.filter (model) => model?.constructor.kls isnt "Group" and model.cid != @model.cid
+          @processFieldModels groupRowModels
+      @processFieldModels @nonGroups
+
+    processAllNonRepeatFieldModels: (models, nonRepeatFieldModels) ->
+      for model in models
+        if @isGroup model
+          if not model.get('_isRepeat').get('value')?
+            @processAllNonRepeatFieldModels model.rows?.models, nonRepeatFieldModels
+        else
+          nonRepeatFieldModels.push model
+
+    processGetCurrentAndChildModels: (group, currentAndChildModels) ->
+      if group.rows?.models?.length > 0
+        groupModels = group.rows?.models
+        for model in groupModels
+          if @isGroup model
+            @processGetCurrentAndChildModels model, currentAndChildModels
+          else
+            currentAndChildModels.push model
+
+    # expandRowSelector: ->
+    #   new $rowSelector.RowSelector(el: @$el.find(".survey__row__spacer").get(0), ngScope: @ngScope, spawnedFromView: @).expand()
 
     render: (opts={})->
+      isNewRow = false
+      if @model.get('isNewRow') && @model.get('isNewRow').get('value') is true
+        isNewRow = true
+        delete @model.attributes.isNewRow
+
+        if @model.get('type').get('typeId') isnt 'note'
+
+          itemGroupPrependVal = 'group'
+          itemGroupVal = ''
+
+          @processAllModels @ngScope.survey.rows?.models
+
+          @repeatGroupsItemGroupNames = []
+          @repeatGroupsIntVals = []
+          @nonRepeatGroupsItemGroupNames = []
+          @nonRepeatGroupsIntVals = []
+          @nonGroupsItemGroupNames = []
+          @nonGroupsIntVals = []
+          @processAllGroupFieldModels()
+
+          if @isInRepeatGroupUntilRoot @model
+            repeatGroup = @getFirstRepeatGroupUntilRoot @model
+            repeatGroupRowsModel = repeatGroup.rows?.models.find (model) => model?.constructor.kls isnt "Group" and model.cid != @model.cid and model.attributes[@itemGroupKey].get('value') != ''
+            if repeatGroupRowsModel?
+              itemGroupVal = repeatGroupRowsModel.attributes[@itemGroupKey].get('value')
+            else
+              repeatGroupModels = []
+              @processGetCurrentAndChildModels repeatGroup, repeatGroupModels
+
+              if repeatGroupModels.length > 0
+                repeatGroupModels = repeatGroupModels.filter (model) => 
+                  if model.cid == model.cid
+                    model
+                  else
+                    if model.attributes[@itemGroupKey].get('value') isnt ''
+                      model
+                currentModelIndex = repeatGroupModels.findIndex (model) => model.cid == @model.cid
+
+                if currentModelIndex != -1 # found
+                  repeatGroupModelsMiddleOut = arrayMiddleOut repeatGroupModels, currentModelIndex, 'left'
+                  for model in repeatGroupModelsMiddleOut[1..]
+                    if @itemGroupKey of model.attributes
+                      itemGroupName = model.attributes[@itemGroupKey].get('value')
+                      if itemGroupName && itemGroupName != ''
+                        itemGroupVal = itemGroupName
+                        break
+              
+              if itemGroupVal is ''
+                maxIntVal = 0
+                allIntVals = _.union(@repeatGroupsIntVals, @nonRepeatGroupsIntVals, @nonGroupsIntVals)
+                if allIntVals.length > 0
+                  maxIntVal = Math.max.apply null, allIntVals
+                  maxIntVal = 0 if isNaN(maxIntVal)
+                itemGroupVal = itemGroupPrependVal + (maxIntVal + 1)
+          else
+            if @nonRepeatGroups.length == 0 and @nonGroups.length == 0
+              maxIntVal = 0
+              if @repeatGroupsIntVals.length > 0
+                maxIntVal = Math.max.apply null, @repeatGroupsIntVals
+                maxIntVal = 0 if isNaN(maxIntVal)
+              itemGroupVal = itemGroupPrependVal + (maxIntVal + 1)
+            else
+              if @model.collection?.models?.length > 0
+                currentLevelModels = @model.collection?.models.filter (model) => 
+                  if model.cid == model.cid
+                    model
+                  else
+                    if model.attributes[@itemGroupKey].get('value') isnt ''
+                      model
+                currentModelCollectionIndex = currentLevelModels.findIndex (model) => model.cid == @model.cid
+                if currentModelCollectionIndex != -1 # found
+                  modelCollectionMiddleOut = arrayMiddleOut currentLevelModels, currentModelCollectionIndex, 'left'
+                  for model in modelCollectionMiddleOut[1..]
+                    if @isGroup(model) and (not model.get('_isRepeat').get('value')?)
+                      currentGroupFieldModels = []
+                      @processAllNonRepeatFieldModels model.rows?.models, currentGroupFieldModels
+                      for fieldModel in currentGroupFieldModels
+                        if @itemGroupKey of fieldModel.attributes
+                          itemGroupName = fieldModel.attributes[@itemGroupKey].get('value')
+                          if itemGroupName && itemGroupName != ''
+                            itemGroupVal = itemGroupName
+                            break
+                      if itemGroupVal != ''
+                        break
+                    else
+                      if @itemGroupKey of model.attributes
+                        itemGroupName = model.attributes[@itemGroupKey].get('value')
+                        if itemGroupName && itemGroupName != ''
+                          itemGroupVal = itemGroupName
+                          break
+
+              if itemGroupVal is ''
+                groupNames = _.uniq(_.union(@nonGroupsItemGroupNames, @nonRepeatGroupsItemGroupNames))
+                if groupNames.length > 0
+                  itemGroupVal =  _.first(groupNames)
+                else
+                  maxIntVal = 0
+                  if @repeatGroupsIntVals.length > 0
+                    maxIntVal = Math.max.apply null, @repeatGroupsIntVals
+                    maxIntVal = 0 if isNaN(maxIntVal)
+                  itemGroupVal = itemGroupPrependVal + (maxIntVal + 1)
+
+          @model.attributes[@itemGroupKey].set('value', itemGroupVal)
+
+      if @model.get('type').get('typeId') is 'note'
+        @model.attributes['readonly'].set('value', true)
+
       fixScroll = opts.fixScroll
 
       if @already_rendered
@@ -92,6 +289,9 @@ module.exports = do ->
         @_renderError()
       else
         @_renderRow()
+        if isNewRow
+          @toggleSettings(true)
+
       @is_expanded = @$card?.hasClass('card--expandedchoices')
 
       if fixScroll
@@ -112,6 +312,7 @@ module.exports = do ->
       @$header = @$card.find('> .card__header').eq(0)
       @$label = @$header.find('.js-card-label').eq(0)
       @$hint = @$header.find('.js-card-hint').eq(0)
+      @$name = @$header.find('.card__header-name').eq(0)
 
       context = {warnings: []}
 
@@ -131,6 +332,7 @@ module.exports = do ->
          questionType is 'hidden' or
          questionType is constants.QUESTION_TYPES['xml-external']
         @$hint.hide()
+        @$label.prop('placeholder', _t('Label not needed for Calculate questions'))
 
       if 'getList' of @model and (cl = @model.getList())
         @$card.addClass('card--selectquestion card--expandedchoices')
@@ -140,6 +342,11 @@ module.exports = do ->
           @hasRestriction(LOCKING_RESTRICTIONS.choice_order_edit.name)
         )
         @listView = new $viewChoices.ListView(model: cl, rowView: @).render(isSortableDisabled)
+
+      if @model.getValue('name')?
+        name_detail = @model.get('name')
+        name_detail.set 'value', name_detail.deduplicate(@model.getSurvey(), @model.getSurvey().rowItemNameMaxLength, '-')
+        @$name.html(@model.getValue('name'))
 
       @cardSettingsWrap = @$('.card__settings').eq(0)
       @defaultRowDetailParent = @cardSettingsWrap.find('.js-card-settings-row-options').eq(0)
@@ -167,7 +374,6 @@ module.exports = do ->
       if show and !@_settingsExpanded
         @_expandedRender()
         @$card.addClass('card--expanded-settings')
-        @hideMultioptions?()
         @_settingsExpanded = true
         # rerender locking (if applies to class extending BaseRowView)
         if @applyLocking
@@ -194,6 +400,7 @@ module.exports = do ->
     addItemToLibrary: (evt) =>
       evt.stopPropagation()
       @ngScope?.addItemToLibrary @model, @model.getSurvey()._initialParams
+      # @ngScope?.add_row_to_question_library @model, @model.getSurvey()._initialParams
 
   class GroupView extends BaseRowView
     className: "survey__row survey__row--group  xlf-row-view xlf-row-view--depr"
@@ -217,6 +424,24 @@ module.exports = do ->
 
     deleteGroup: (evt) =>
       evt.preventDefault()
+      skipConfirm = $(evt.currentTarget).hasClass('js-force-delete-group')
+      if !skipConfirm
+        dialog = alertify.dialog('confirm')
+        opts = 
+          title: _t('Delete group')
+          message: _t('Are you sure you want to split apart this group?')
+          labels:
+            ok: _t('Yes')
+            cancel: _t('No')
+          onok: =>
+            @_deleteGroup()
+            return
+          oncancel: =>
+            dialog.destroy()
+            return
+        dialog.set(opts).show()
+      else
+        @_deleteGroup()
 
       # force delete is only used in test
       skipConfirm = $(evt.currentTarget).hasClass('js-force-delete-group')
@@ -270,6 +495,10 @@ module.exports = do ->
         @$rows = @$card.find('> .group__rows').eq(0)
         @$header = @$card.find('> .card__header, > .group__header').eq(0)
         @$label = @$header.find('.js-card-label').eq(0)
+
+      if @model.getValue('name')?
+        name_detail = @model.get('name')
+        name_detail.set 'value', name_detail.deduplicate(@model.getSurvey(), @model.getSurvey().rowItemNameMaxLength)
 
       @model.rows.each (row)=>
         @getApp().ensureElInView(row, @, @$rows).render()
@@ -376,18 +605,8 @@ module.exports = do ->
       @cardSettingsWrap = @$('.card__settings').eq(0)
       @defaultRowDetailParent = @cardSettingsWrap.find('.card__settings__fields--active').eq(0)
       for [key, val] in @model.attributesArray()
-        if key in ["name", "_isRepeat", "appearance", "relevant"] or key.match(/^.+::.+/)
+        if key in ["name", "_isRepeat", "repeat_count", "appearance", "relevant"] or key.match(/^.+::.+/)
           new $viewRowDetail.DetailView(model: val, rowView: @).render().insertInDOM(@)
-
-      @model.on 'add', (row) =>
-        if row.constructor.key == 'group'
-          $appearanceField = @$('.xlf-dv-appearance').eq(0)
-          $appearanceField.hide()
-          $appearanceField.find('input:checkbox').prop('checked', false)
-          appearanceModel = @model.get('appearance')
-          if appearanceModel.getValue()
-            notify.warning(t("You can't display nested groups on the same screen - the setting has been removed from the parent group"))
-          appearanceModel.set('value', '')
 
       @model.on 'remove', (row) =>
         if row.constructor.key == 'group' && !@hasNestedGroups()
@@ -405,6 +624,14 @@ module.exports = do ->
       )
       return
 
+    clone: (position, groupId) =>
+      @ngScope?.handleCloneGroup({
+        position: position
+        itemDict: @model,
+        assetContent: @model.getSurvey()._initialParams,
+        groupId: groupId
+      })
+
   class RowView extends BaseRowView
     initialize: (opts) ->
       super(opts)
@@ -421,37 +648,43 @@ module.exports = do ->
       @$header.after($viewTemplates.row.rowSettingsView())
       @cardSettingsWrap = @$('.card__settings').eq(0)
       @defaultRowDetailParent = @cardSettingsWrap.find('.js-card-settings-row-options').eq(0)
+      questionType = @model.get('type').get('typeId')
 
       # don't display columns that start with a $
-      hiddenFields = ['label', 'hint', 'type', 'select_from_list_name', 'kobo--matrix_list', 'parameters']
+      hiddenFields = ['label', 'hint', 'type', 'select_from_list_name', 'kobo--matrix_list', 'parameters', 'tags', 'instance::oc:contactdata', 'instance::oc:identifier']
       for [key, val] in @model.attributesArray() when !key.match(/^\$/) and key not in hiddenFields
         if key is 'required'
-          @mandatorySetting = new $viewMandatorySetting.MandatorySettingView({
-            model: @model.get('required')
-          }).render().insertInDOM(@)
+          if questionType isnt 'note'
+            @mandatorySetting = new $viewMandatorySetting.MandatorySettingView({
+              model: @model.get('required')
+            }).render().insertInDOM(@)
         else if key is '_isRepeat' and @model.getValue('type') is 'kobomatrix'
           # don't display repeat checkbox for matrix groups
           continue
         else
-          new $viewRowDetail.DetailView(model: val, rowView: @).render().insertInDOM(@)
+          if questionType is 'select_one_from_file'
+            new $viewRowDetail.DetailView(model: val, rowView: @).render().insertInDOM(@)
+          else if questionType is 'calculate'
+            if key not in ['readonly', 'select_one_from_file_filename']
+              new $viewRowDetail.DetailView(model: val, rowView: @).render().insertInDOM(@)
+          else if questionType is 'note'
+            if key not in ['readonly', 'bind::oc:itemgroup', 'bind::oc:external', 'calculation', 'bind::oc:briefdescription', 'bind::oc:description', 'select_one_from_file_filename', 'default', 'trigger']
+              new $viewRowDetail.DetailView(model: val, rowView: @).render().insertInDOM(@)
+          else
+            if key isnt 'select_one_from_file_filename'
+              new $viewRowDetail.DetailView(model: val, rowView: @).render().insertInDOM(@)
 
-      questionType = @model.get('type').get('typeId')
       if (
         $configs.questionParams[questionType] and
         'getParameters' of @model and
         questionType isnt 'range'
       )
-        @paramsView = new $viewParams.ParamsView({
-          rowView: @,
-          parameters: @model.getParameters(),
-          questionType: questionType
-        }).render().insertInDOM(@)
-
-      if questionType is 'file'
-        @acceptedFilesView = new $acceptedFilesView.AcceptedFilesView({
-          rowView: @,
-          acceptedFiles: @model.getAcceptedFiles()
-        }).render().insertInDOM(@)
+        if questionType not in ['select_one', 'select_multiple']
+          @paramsView = new $viewParams.ParamsView({
+            rowView: @,
+            parameters: @model.getParameters(),
+            questionType: questionType
+          }).render().insertInDOM(@)
 
       @applyLocking()
 
@@ -598,10 +831,6 @@ module.exports = do ->
 
       for [key, val] in @model.attributesArray() when key is 'label' or key is 'type'
         view = new $viewRowDetail.DetailView(model: val, rowView: @)
-        if key == 'label' and @model.get('type').get('value') == 'calculate'
-          view.model = @model.get('calculation')
-          @model.finalize()
-          val.set('value', '')
         view.render().insertInDOM(@)
       return @
 

@@ -106,8 +106,9 @@ module.exports = do ->
             <div class="noop card__indicator__icon"><i class="card__header-icon"></i></div>
           </div>
           <div class="card__text">
-            <input type="text" placeholder="#{t("Question label is required")}" class="card__header-title js-card-label js-cancel-select-row js-cancel-sort">
-            <input type="text" placeholder="#{t("Question hint")}" class="card__header-hint js-card-hint js-cancel-select-row js-cancel-sort">
+            <div class="card__header-name js-cancel-select-row js-cancel-sort"></div>
+            <textarea rows="1" placeholder="#{_t("Enter question label (required for item to be visible)")}" class="card__header-title js-card-label js-cancel-select-row js-cancel-sort"></textarea>
+            <input type="text" placeholder="#{_t("Enter question hint (optional)")}" class="card__header-hint js-card-hint js-cancel-select-row js-cancel-sort">
           </div>
           <div class="card__buttons">
             <span class="card__buttons__button card__buttons__button--settings card__buttons__button--gray js-toggle-card-settings" data-button-name="settings"><i class="k-icon k-icon-settings"></i></span>
@@ -143,7 +144,11 @@ module.exports = do ->
             <i class="k-icon k-icon-trash"></i>
           </span>
 
-          <span class="card__buttons__button card__buttons__button--add card__buttons__button--green js-add-group-to-library">
+          <span class="card__buttons__button card__buttons__button--clone card__buttons__button--gray js-clone-group" data-button-name="duplicate">
+            <i class="k-icon k-icon-trash"></i>
+          </span>
+
+          <span class="card__buttons__button card__buttons__button--add card__buttons__button--green js-add-group-to-library" data-button-name="add-group-to-library">
             <i class="k-icon k-icon-folder-plus"></i>
           </span>
         </div>
@@ -162,7 +167,7 @@ module.exports = do ->
             <div class="noop card__indicator__icon"><i class="card__header-icon k-icon k-icon-matrix"></i></div>
           </div>
           <div class="card__text">
-            <input type="text" placeholder="#{t("Question label is required")}" class="card__header-title js-card-label js-cancel-select-row js-cancel-sort">
+            <input type="text" placeholder="#{t("Item label is required")}" class="card__header-title js-card-label js-cancel-select-row js-cancel-sort">
           </div>
           <div class="card__buttons">
             <span class="card__buttons__button card__buttons__button--settings card__buttons__button--gray js-toggle-card-settings" data-button-name="settings"><i class="k-icon k-icon-settings"></i></span>
@@ -309,7 +314,7 @@ module.exports = do ->
 
     """
     <div class="card__settings__fields__field">
-      <label>#{t('Mandatory response')}:</label>
+      <label>#{t('Required')}:</label>
       <span class="settings__input">
         <div class="radio">
           <label class="radio__row mandatory-setting__row mandatory-setting__row--true">
@@ -319,7 +324,7 @@ module.exports = do ->
               name="#{uniqueName}"
               value="true" #{if modifier is 'true' then 'checked' else ''}
             >
-            <span class="radio__label">#{t('Yes')}</span>
+            <span class="radio__label">#{t('Always')}</span>
           </label>
           <label class="radio__row mandatory-setting__row mandatory-setting__row--false">
             <input
@@ -328,7 +333,7 @@ module.exports = do ->
               name="#{uniqueName}"
               value="false" #{if modifier is 'false' then 'checked' else ''}
             >
-            <span class="radio__label">#{t('No')}</span>
+            <span class="radio__label">#{t('Never')}</span>
           </label>
           <label class="radio__row mandatory-setting__row mandatory-setting__row--custom">
             <input
@@ -337,13 +342,13 @@ module.exports = do ->
               name="#{uniqueName}"
               value="custom" #{if modifier is 'custom' then 'checked' else ''}
             >
-            <span class="radio__label">#{t('Custom logic')}</span>
+            <span class="radio__label">#{t('Conditional')}</span>
             <label class="text-box text-box--on-white">
               <input
                 type="text"
                 class="text-box__input js-mandatory-setting-custom-text"
                 value=""
-                placeholder="#{t('Mandatory when this formula is true')}"
+                placeholder="#{t('Conditional value')}"
               >
             </label>
           </label>

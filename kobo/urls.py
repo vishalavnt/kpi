@@ -2,8 +2,10 @@
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.views import logout
 from django.urls import include, path, re_path
 from django.views.generic.base import RedirectView
+from kobo.apps.service_health.views import service_health
 
 from kobo.apps.service_health.views import service_health
 
@@ -19,6 +21,7 @@ urlpatterns = [
     # Disable admin login form
     re_path(r'^admin/', admin.site.urls),
     path('', include('kobo.apps.accounts.mfa.urls')),
+    re_path(r'^accounts/logout/', logout),
     path('accounts/', include('allauth.urls')),  # Must be after kpi.url, login
     re_path(
         r'^accounts/register/?',

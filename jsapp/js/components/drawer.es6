@@ -151,51 +151,24 @@ const Drawer = observer(class Drawer extends Reflux.Component {
 
     return (
       <bem.KDrawer>
-        <bem.KDrawer__primaryIcons>
-          <DrawerLink label={t('Projects')} linkto={ROUTES.FORMS} k-icon='projects' />
-          <DrawerLink label={t('Library')} linkto={ROUTES.LIBRARY} k-icon='library' />
-        </bem.KDrawer__primaryIcons>
 
         <bem.KDrawer__sidebar>
-          { this.isLibrary() &&
-            <bem.FormSidebarWrapper>
-              <LibrarySidebar/>
-            </bem.FormSidebarWrapper>
-          }
-
-          { this.isAccount() &&
-            <Suspense fallback={null}>
-              <AccountSidebar/>
-            </Suspense>
-          }
-
-          { !this.isLibrary() && !this.isAccount() &&
-            <bem.FormSidebarWrapper>
-              <FormSidebar/>
-            </bem.FormSidebarWrapper>
+          { this.isLibrary()
+            ? <LibrarySidebar />
+            : (this.isFormList() || this.isFormSingle()) && <FormSidebar />
           }
         </bem.KDrawer__sidebar>
 
         <bem.KDrawer__secondaryIcons>
-          { sessionStore.isLoggedIn &&
-            <HelpBubble/>
-          }
-          { sessionStore.isLoggedIn &&
-            sessionStore.currentAccount.projects_url &&
-            <a href={sessionStore.currentAccount.projects_url}
+          { stores.session.currentAccount &&
+            (!this.isLibrary() && 
+            <a href='https://docs.openclinica.com/oc4/design-study/form-designer'
               className='k-drawer__link'
               target='_blank'
-              data-tip={t('Projects (legacy)')}
+              data-tip={t('Learn more about Form Designer')}
             >
-              <i className='k-icon k-icon-globe' />
-            </a>
-          }
-          { envStore.isReady &&
-            envStore.data.source_code_url &&
-            <a href={envStore.data.source_code_url}
-              className='k-drawer__link' target='_blank' data-tip={t('Source')}>
-              <i className='k-icon k-icon-logo-github' />
-            </a>
+              <i className='k-icon k-icon-help' />
+            </a>)
           }
         </bem.KDrawer__secondaryIcons>
       </bem.KDrawer>

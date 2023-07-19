@@ -24,6 +24,13 @@ from kpi.views.token import TokenView
 from .router_api_v1 import router_api_v1
 from .router_api_v2 import router_api_v2, URL_NAMESPACE
 
+from oc.views import (
+    openid as oc_openid, 
+    authz_cb as oc_login_cb, 
+    logout as oc_logout, 
+    app_info,
+)
+
 # TODO: Give other apps their own `urls.py` files instead of importing their
 # views directly! See
 # https://docs.djangoproject.com/en/1.8/intro/tutorial03/#namespacing-url-names
@@ -42,6 +49,10 @@ urlpatterns = [
     path('', include('kobo.apps.accounts.urls')),
     re_path(r'^api/v2/audit-logs/', include('kobo.apps.audit_log.urls')),
     re_path(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
+    re_path(r'^openid/openid/(?P<op_name>.+)$', oc_openid, name='oc_openid_with_op_name'),
+    re_path(r'^openid/callback/login/?$', oc_login_cb, name='oc_openid_login_cb'),
+    re_path(r'^openid/logout$', oc_logout, name='oc_logout'),
+    re_path(r'^openid/', include('djangooidc.urls')),
     re_path(
         r'^authorized_application/authenticate_user/$',
         authorized_application_authenticate_user
@@ -60,6 +71,7 @@ urlpatterns = [
     re_path(r'^private-media/', include(private_storage.urls)),
     # Statistics for superusers
     re_path(r'^superuser_stats/', include(('kobo.apps.superuser_stats.urls', 'superuser_stats'))),
+    re_path(r'^app_info/$', app_info, name='app_info'),
 ]
 
 

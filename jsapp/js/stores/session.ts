@@ -5,6 +5,12 @@ import type {AccountResponse} from 'js/dataInterface';
 import {log} from 'js/utils';
 import type {Json} from 'js/components/common/common.interfaces';
 import type {ProjectViewsSettings} from 'js/projects/customViewStore';
+import { actions } from 'js/actions';
+import {
+  checkCrossStorageTimeOut,
+  checkCrossStorageUser,
+  updateCrossStorageTimeOut
+} from 'js/ocutils';
 
 class SessionStore {
   currentAccount: AccountResponse | {username: string} = {
@@ -34,6 +40,24 @@ class SessionStore {
           if ('email' in account) {
             this.currentAccount = account;
             this.isLoggedIn = true;
+            const currentUserName = this.currentAccount.username;
+            if (currentUserName !== '') {
+              const crossStorageUserName = currentUserName.slice(0, currentUserName.lastIndexOf('+'))
+              console.log('verifyLogin check');
+              checkCrossStorageUser(crossStorageUserName)
+                .then(checkCrossStorageTimeOut)
+                .then(updateCrossStorageTimeOut)
+                .catch(function(err: string) {
+                  if (err == 'logout') {
+                    console.log('triggerLoggedIn logout');
+                    actions.auth.logout();
+                  } else if (err == 'user-changed') {
+                    console.log('triggerLoggedIn user changed');
+                    actions.auth.logout();
+                  }
+                });
+            }
+            window.parent.postMessage('fd_loggedin', '*');
           }
           this.isAuthStateKnown = true;
         }

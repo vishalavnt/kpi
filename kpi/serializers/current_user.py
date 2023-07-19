@@ -12,6 +12,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.utils.translation import gettext as t
 from rest_framework import serializers
+from bossoidc.models import Keycloak as KeycloakModel
 
 from hub.models import ExtraUserDetail
 from kobo.apps.accounts.serializers import SocialAccountSerializer
@@ -33,6 +34,7 @@ class CurrentUserSerializer(serializers.ModelSerializer):
     social_accounts = SocialAccountSerializer(
         source="socialaccount_set", many=True, read_only=True
     )
+    user_type = serializers.SerializerMethodField()
 
 
     class Meta:
@@ -54,6 +56,7 @@ class CurrentUserSerializer(serializers.ModelSerializer):
             'new_password',
             'git_rev',
             'social_accounts',
+            'user_type',
         )
         read_only_fields = ('email',)
 
@@ -80,6 +83,12 @@ class CurrentUserSerializer(serializers.ModelSerializer):
             return settings.GIT_REV
         else:
             return False
+    
+    def get_user_type(self, obj):
+        request = self.context.get('request', False)
+        if request and request.user:
+            return KeycloakModel.objects.get(user=request.user).user_type
+        return False
 
     def to_representation(self, obj):
         if obj.is_anonymous:

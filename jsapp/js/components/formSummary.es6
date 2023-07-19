@@ -234,7 +234,7 @@ class FormSummary extends React.Component {
         {this.userCan('change_asset', this.state) &&
           <button onClick={this.sharingModal}>
             <i className='k-icon k-icon-user-share'/>
-            {t('Share project')}
+            {t('Share form')}
             <Icon name='angle-right' size='s'/>
           </button>
         }
@@ -380,7 +380,7 @@ class FormSummary extends React.Component {
     // }
 
     return (
-      <DocumentTitle title={`${docTitle} | KoboToolbox`}>
+      <DocumentTitle title={`${docTitle} | OpenClinica`}>
         <bem.FormView m='summary'>
           <bem.FormView__column m='left'>
             {/* Project information */}
@@ -394,7 +394,7 @@ class FormSummary extends React.Component {
                     <bem.FormView__group m={['items', 'description-cols']}>
                       {hasCountry &&
                         <bem.FormView__cell m='padding'>
-                          <bem.FormView__label m='country'>{t('Country')}</bem.FormView__label>
+                          <bem.FormView__label m='country'>{t('Form country')}</bem.FormView__label>
                           {assetUtils.getCountryDisplayString(this.state)}
                         </bem.FormView__cell>
                       }

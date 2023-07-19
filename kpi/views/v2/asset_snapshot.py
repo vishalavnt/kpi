@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.reverse import reverse
 
 from kpi.authentication import DigestAuthentication, EnketoSessionAuthentication
-from kpi.constants import PERM_VIEW_ASSET
+from kpi.constants import PERM_VIEW_ASSET, X_OPENROSA_ACCEPT_CONTENT_LENGTH
 from kpi.exceptions import SubmissionIntegrityError
 from kpi.filters import RelatedAssetPermissionsFilter
 from kpi.highlighters import highlight_xform
@@ -68,6 +68,8 @@ class AssetSnapshotViewSet(OpenRosaViewSetMixin, NoUpdateModelViewSet):
                 and self.request.accepted_renderer.format == 'xml'
             )
         ):
+            if self.request.method == 'HEAD':
+                return queryset.none()
             # The XML renderer is totally public and serves anyone, so
             # /asset_snapshot/valid_uid.xml is world-readable, even though
             # /asset_snapshot/valid_uid/ requires ownership. Return the
@@ -84,6 +86,17 @@ class AssetSnapshotViewSet(OpenRosaViewSetMixin, NoUpdateModelViewSet):
                 owned_snapshots = queryset.filter(owner=user)
             return owned_snapshots | RelatedAssetPermissionsFilter(
                 ).filter_queryset(self.request, queryset, view=self)
+        
+    def retrieve(self, request, *args, **kwargs):
+        if request.method == 'HEAD':
+            return Response(None, headers={
+                X_OPENROSA_ACCEPT_CONTENT_LENGTH : 
+                    settings.X_OPENROSA_ACCEPT_CONTENT_LENGTH_DEFAULT
+            })
+
+        return super(AssetSnapshotViewSet, self).retrieve(
+            request, *args, **kwargs
+        )
 
     @action(
         detail=True,

@@ -69,6 +69,18 @@
               font-size: 15px;
             }
         }
+
+        .ui-resizable-handle {
+            color: $cool-gray;
+        }
+
+        .ui-resizable-s {
+            border-top: 1px solid $cool-lightgray;
+
+            &:hover {
+                border-top: 1px solid darken($cool-lightgray, 20%);
+            }
+        }
     }
 
     .card__header-title,
@@ -78,6 +90,15 @@
       }
     }
 
+    .card__header-name {
+        text-align: right;
+        padding-bottom: 10px;
+        color: $cool-gray;
+
+        &:focus {
+            color: $black;
+        }
+    }
     .card__header-title {
         color: colors.$kobo-gray-40;
 
@@ -277,6 +298,18 @@ $cardIndicatorIconWidth: 21px;
 
     &.card__buttons__button--teal {
         color: colors.$kobo-teal;
+    }
+    
+    &.card__buttons__button--delete {
+        top: 32px;
+    }
+    
+    &.card__buttons__button--copy {
+        top: 45px;
+    }
+    
+    &.card__buttons__button--add {
+       top: 68px;
     }
 
     &.card__buttons__button--activated {

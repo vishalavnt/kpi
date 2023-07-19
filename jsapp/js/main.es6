@@ -13,6 +13,17 @@ import React from 'react';
 import {Cookies} from 'react-cookie';
 import {render} from 'react-dom';
 import {csrfSafeMethod, currentLang} from 'utils';
+import {
+  initCrossStorageClient,
+  addCustomEventListener,
+  setPeriodicCrossStorageCheck,
+  checkCrossStorageTimeOut,
+  checkCrossStorageUser,
+  updateCrossStorageTimeOut
+} from 'ocutils';
+import actions from './actions';
+import sessionStore from './stores/session';
+
 require('../scss/main.scss');
 import Modal from 'react-modal';
 
@@ -37,6 +48,58 @@ $.ajaxSetup({
     }
   },
 });
+
+initCrossStorageClient();
+
+function crossStorageCheck() {
+  const currentUserName = sessionStore.currentAccount.username;
+  if (currentUserName !== '') {
+    // console.log('crossStorageCheck');
+    const crossStorageUserName = currentUserName.slice(0, currentUserName.lastIndexOf('+'))
+    checkCrossStorageUser(crossStorageUserName)
+      .then(checkCrossStorageTimeOut)
+      .catch(function(err) {
+        if (err == 'logout' || err == 'user-changed') {
+          logout();
+        }
+      });
+  }
+}
+
+function crossStorageCheckAndUpdate() {
+  const currentUserName = sessionStore.currentAccount.username;
+  if (currentUserName !== '') {
+    // console.log('crossStorageCheckAndUpdate');
+    const crossStorageUserName = currentUserName.slice(0, currentUserName.lastIndexOf('+'))
+    checkCrossStorageUser(crossStorageUserName)
+      .then(checkCrossStorageTimeOut)
+      .then(updateCrossStorageTimeOut)
+      .catch(function(err) {
+        if (err == 'logout' || err == 'user-changed') {
+          logout();
+        }
+      });
+  }
+}
+
+function logout() {
+  console.log('main logout');
+  actions.auth.logout();
+}
+
+[ { element: 'button', event: 'click' },
+  { element: '.btn', event: 'click' },
+  { element: '.questiontypelist__item', event: 'click' },
+  { element: '.group__header__buttons__button', event: 'click' },
+  { element: '.card__settings', event: 'click' },
+  { element: 'body', event: 'keydown' }
+].forEach(function(elementEvent) {
+  addCustomEventListener(elementEvent.element, elementEvent.event, function() {
+    crossStorageCheckAndUpdate();
+  });
+});
+
+setPeriodicCrossStorageCheck(crossStorageCheck);
 
 if (document.head.querySelector('meta[name=kpi-root-path]')) {
   // Create the element for rendering the app into

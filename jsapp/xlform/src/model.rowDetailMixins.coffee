@@ -69,7 +69,7 @@ module.exports = do ->
         # When the row's name changes, trigger the row's [finalize] function.
         return
     name:
-      deduplicate: (survey) ->
+      deduplicate: (survey, character_limit=30, chars_exception=false) ->
         names = []
         survey.forEachRow (r)=>
           if r.get('name') != @
@@ -77,5 +77,5 @@ module.exports = do ->
             names.push(name)
         , includeGroups: true
 
-        $modelUtils.sluggifyLabel @get('value'), names
+        $modelUtils.sluggifyLabel @get('value'), names, character_limit, chars_exception
   rowDetailMixins
