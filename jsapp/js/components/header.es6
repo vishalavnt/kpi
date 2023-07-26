@@ -189,7 +189,7 @@ const MainHeader = class MainHeader extends Reflux.Component {
       var accountMenuLabel = <bem.AccountBox__initials style={initialsStyle}>{accountName.charAt(0)}</bem.AccountBox__initials>;
 
       return (
-        <bem.AccountBox></bem.AccountBox>
+        <bem.AccountBox />
       );
     }
 

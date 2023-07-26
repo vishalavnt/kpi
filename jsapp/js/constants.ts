@@ -34,6 +34,7 @@ export const ROOT_URL = (() => {
 })();
 
 export const ANON_USERNAME = 'AnonymousUser';
+export const ANON_USER_TYPE = 'AnonymousUserType';
 
 export type PermissionCodename =
   | 'add_submissions'

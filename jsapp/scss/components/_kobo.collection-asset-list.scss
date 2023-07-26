@@ -83,12 +83,12 @@
     .library__action-icon {
       margin-left: 0px;
       font-weight: 400;
-      color: $cool-gray;
+      color: colors.$kobo-gray-65;
       cursor: pointer;
 
       &:hover {
         background-color: transparent;
-        color: $cool-blue;
+        color: colors.$kobo-light-blue;
       }
 
       i::before {
@@ -99,7 +99,7 @@
 
     &.library__actions--display-all-tags .library__action-icon--tagsToggle {
       background-color: transparent;
-      color: $cool-blue;
+      color: colors.$kobo-light-blue;
     }
   }
 }

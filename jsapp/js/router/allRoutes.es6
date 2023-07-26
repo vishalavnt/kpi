@@ -16,7 +16,7 @@ import LoadingSpinner from 'js/components/common/loadingSpinner';
 import {PERMISSIONS_CODENAMES} from 'js/constants';
 import {isRootRoute, redirectToLogin} from 'js/router/routerUtils';
 import RequireAuth from 'js/router/requireAuth';
-import RequireAdmin from 'js/router/RequireAdmin';
+import RequireAdmin from 'js/router/requireAdmin';
 import PermProtectedRoute from 'js/router/permProtectedRoute';
 import sessionStore from 'js/stores/session';
 import {Tracking} from './useTracking';

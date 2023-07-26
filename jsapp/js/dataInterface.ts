@@ -636,6 +636,7 @@ export interface AccountResponse {
   email: string;
   server_time: string;
   date_joined: string;
+  user_type: string;
   projects_url: string;
   is_superuser: boolean;
   gravatar: string;
@@ -767,19 +768,19 @@ interface DataInterface {
 
 const $ajax = (o: {}) => $.ajax(assign({}, {dataType: 'json', method: 'GET'}, o));
 
-$.ajaxError((_event: any, request: any, settings: any) => {
-  if (request.status === 403 || request.status === 401 || request.status === 404) {
-    dataInterface.selfProfile().done((data: any) => {
-      if (data.message === 'user is not logged in') {
-        dataInterface.checkKeycloakStatus().done(() => {
-          console.log('retry ajax request');
-          $.ajax(settings);
-          return;
-        });
-      }
-    });
-  }
-});
+// JQuery.ajaxError((_event: any, request: any, settings: any) => {
+//   if (request.status === 403 || request.status === 401 || request.status === 404) {
+//     dataInterface.selfProfile().done((data: any) => {
+//       if (data.message === 'user is not logged in') {
+//         dataInterface.checkKeycloakStatus().done(() => {
+//           console.log('retry ajax request');
+//           $.ajax(settings);
+//           return;
+//         });
+//       }
+//     });
+//   }
+// });
 
 export const dataInterface: DataInterface = {
   getProfile: () => fetch(`${ROOT_URL}/me/`).then((response) => response.json()),  // TODO replace selfProfile
@@ -819,12 +820,13 @@ export const dataInterface: DataInterface = {
 
   keycloakLogout: (): JQuery.Promise<any> => {
     const d = $.Deferred();
-    $ajax({ url: `${ROOT_URL}/openid/logout` }).done(d.resolve).fail(function (resp: { status: number; }, etype: any, emessage: any) {
-      if (resp.status === 200) {
-        d.resolve();
-      } else {
-        d.fail('keycloak logout failed');
-      }
+    $ajax({ url: `${ROOT_URL}/openid/logout` }).done(d.resolve).fail(function (_resp: { status: number; }, _etype: any, _emessage: any) {
+      // if (resp.status === 200) {
+      //   d.resolve();
+      // } else {
+      //   d.fail('keycloak logout failed');
+      // }
+      d.resolve();
     });
     return d.promise();
   },
@@ -838,11 +840,12 @@ export const dataInterface: DataInterface = {
       console.log('checkKeycloakStatus resp', resp);
       console.log('checkKeycloakStatus etype', etype);
       console.log('checkKeycloakStatus emessage', emessage);
-      if (resp.status === 200) {
-        d.resolve();
-      } else {
-        d.fail('checkKeycloakStatus failed');
-      }
+      // if (resp.status === 200) {
+      //   d.resolve();
+      // } else {
+      //   d.fail('checkKeycloakStatus failed');
+      // }
+      d.resolve();
     });
     return d.promise();
   },

@@ -71,14 +71,14 @@
         }
 
         .ui-resizable-handle {
-            color: $cool-gray;
+            color: colors.$kobo-gray-65;
         }
 
         .ui-resizable-s {
-            border-top: 1px solid $cool-lightgray;
+            border-top: 1px solid colors.$kobo-gray-85;
 
             &:hover {
-                border-top: 1px solid darken($cool-lightgray, 20%);
+                border-top: 1px solid darken(colors.$kobo-gray-85, 20%);
             }
         }
     }
@@ -93,10 +93,10 @@
     .card__header-name {
         text-align: right;
         padding-bottom: 10px;
-        color: $cool-gray;
+        color: colors.$kobo-gray-65;
 
         &:focus {
-            color: $black;
+            color: colors.$kobo-gray-14;
         }
     }
     .card__header-title {

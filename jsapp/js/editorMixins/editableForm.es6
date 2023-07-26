@@ -22,6 +22,7 @@ import {
 import {ROUTES} from 'js/router/routerConstants';
 import LoadingSpinner from 'js/components/common/loadingSpinner';
 import Modal from 'js/components/common/modal';
+import TextBox from '../components/common/textBox';
 import bem, {makeBem} from 'js/bem';
 import {stores} from '../stores';
 import {actions} from '../actions';
@@ -508,11 +509,11 @@ export default assign({
     if (this.state.editorState === 'new') {
       ooo.saveButtonText = t('create');
     } else if (this.state.surveySaveFail) {
-      ooo.saveButtonText = `${t(saveButtonText)} (${t('retry')}) `;
+      ooo.saveButtonText = `t(${saveButtonText}) (${t('retry')}) `;
     } else {
-      ooo.saveButtonText = `${t(saveButtonText)}`;
+      ooo.saveButtonText = `t(${saveButtonText})`;
     }
-    ooo.backButtonText = `${t(backButtonText)}`;
+    ooo.backButtonText = `t(${backButtonText})`;
     return ooo;
   },
 
@@ -654,11 +655,6 @@ export default assign({
       targetRoute = ROUTES.LIBRARY_ITEM.replace(':uid', this.state.asset_uid);
     }
     this.safeNavigateToRoute(targetRoute);
-  },
-
-  canNavigateToList() {
-    return this.state.surveyAppRendered && 
-      (this.state.asset_type !== 'survey' || this.props.location.pathname.startsWith('/library/new'));
   },
 
   isAddingQuestionsRestricted() {

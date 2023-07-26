@@ -11,6 +11,8 @@ from rest_framework.relations import HyperlinkedIdentityField
 from rest_framework.reverse import reverse
 from rest_framework.utils.serializer_helpers import ReturnList
 
+from bossoidc2.models import Keycloak as KeycloakModel
+
 from kobo.apps.reports.constants import FUZZY_VERSION_PATTERN
 from kobo.apps.reports.report_data import build_formpack
 from kpi.constants import (
@@ -452,7 +454,7 @@ class AssetSerializer(serializers.HyperlinkedModelSerializer):
             read_only=True,
             context=self.context,
         ).data
-
+    
     def get_access_types(self, obj):
         """
         Handles the detail endpoint but also takes advantage of the
@@ -472,7 +474,20 @@ class AssetSerializer(serializers.HyperlinkedModelSerializer):
         access_types = []
         if request.user == obj.owner:
             access_types.append('owned')
+        
+        # User with same subdomain can view the collection
+        kc_user = None
+        kc_owner = None
+        try:
+            kc_user = KeycloakModel.objects.get(user=request.user)
+            kc_owner = KeycloakModel.objects.get(user=obj.owner)
+        except KeycloakModel.DoesNotExist:
+            pass
 
+        if kc_user is not None and kc_owner is not None:
+            if kc_user.subdomain == kc_owner.subdomain:
+                access_types.append('subdomain')
+        
         # User can view the collection.
         try:
             # The list view should provide a cache

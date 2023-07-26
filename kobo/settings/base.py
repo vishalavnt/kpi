@@ -65,7 +65,6 @@ SESSION_COOKIE_SAMESITE  = 'None'
 
 # Instances of this model will be treated as allowed origins; see
 # https://github.com/ottoyiu/django-cors-headers#cors_model
-CORS_MODEL = None
 CORS_ORIGIN_REGEX_WHITELIST = (
     r'^(https?://)?([A-Za-z0-9-]+\.){1,4}openclinica\.io$',
     r'^(https?://)?([A-Za-z0-9-]+\.){1,4}openclinica-dev\.io$',
@@ -92,7 +91,6 @@ INSTALLED_APPS = (
     # https://code.djangoproject.com/ticket/10827
     # 'oc_hack',
     # 'django.contrib.auth',
-    'oc',
     'django.contrib.contenttypes',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -138,20 +136,20 @@ INSTALLED_APPS = (
     'kobo.apps.project_views.ProjectViewAppConfig',
     'kobo.apps.audit_log.AuditLogAppConfig',
     'kobo.apps.trackers.TrackersConfig',
+    'oc',
     'bossoidc2',
     'mozilla_django_oidc',
-    'djangooidc',
 )
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    # 'oc.middleware.OCSessionMiddleware',
+    # 'oc.middleware.session.OCSessionMiddleware',
+    'django.middleware.security.SecurityMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    # 'oc.middleware.OCCsrfViewMiddleware',
+    # 'oc.middleware.csrf.OCCsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -384,7 +382,7 @@ MARKITUP_FILTER = ('markdown.markdown', {'safe_mode': False})
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'kpi.backends.ObjectPermissionBackend',
-    'bossoidc2.backend.OpenIdConnectBackend',
+    'oc.backend.OpenIdConnectBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 )
 
@@ -517,7 +515,6 @@ REST_FRAMEWORK = {
         # default
         'mozilla_django_oidc.contrib.drf.OIDCAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-        'boss.authentication.TokenAuthentication',
         'oidc_auth.authentication.BearerTokenAuthentication',
         'kpi.authentication.BasicAuthentication',
         'kpi.authentication.TokenAuthentication',
@@ -1108,16 +1105,26 @@ SERVICE_ACCOUNT = {
 X_OPENROSA_ACCEPT_CONTENT_LENGTH_DEFAULT = os.environ.get('X_OPENROSA_ACCEPT_CONTENT_LENGTH_DEFAULT', '100000000')
 OC_BUILD_URL = os.environ.get('OC_BUILD_URL', '')
 
+OIDC_RP_CLIENT_ID = os.environ.get('KEYCLOAK_CLIENT_ID', 'formdesigner')
+OIDC_RP_SCOPES = 'openid profile email'
+OIDC_RP_SIGN_ALGO = "RS256"
+OIDC_CALLBACK_CLASS = "oc.views.OCAuthenticationCallbackView"
+OIDC_AUTHENTICATE_CLASS = "oc.views.OCAuthenticationRequestView"
+
+PUBLIC_URI_FOR_KEYCLOAK = os.environ.get('PUBLIC_URI', 'http://cust2.kobo.local')
 KEYCLOAK_AUTH_URI = os.environ.get('KEYCLOAK_AUTH_URI', 'https://auth.openclinica-dev.io')
 KEYCLOAK_DEFAULT_REALM = os.environ.get('KEYCLOAK_DEFAULT_REALM', 'cust2-aws-dev') 
+KEYCLOAK_MASTER_REALM = os.environ.get('KEYCLOAK_MASTER_REALM', 'master')
 KEYCLOAK_CLIENT_ID = os.environ.get('KEYCLOAK_CLIENT_ID', 'formdesigner')
 KEYCLOAK_CLIENT_SECRET = os.environ.get('KEYCLOAK_CLIENT_SECRET', 'client-secret')
-PUBLIC_URI_FOR_KEYCLOAK = os.environ.get('PUBLIC_URI', 'https://cust2.formdesigner.openclinica-dev.io')
-
-KEYCLOAK_MASTER_REALM = 'master'
-KEYCLOAK_ADMIN_CLIENT_ID = 'admin-cli'
-KEYCLOAK_ADMIN_CLIENT_SECRET = os.environ.get('KEYCLOAK_ADMIN_CLIENT_SECRET', '3fa0dfb9-43ca-4e74-9a46-4d9fe421ec1a')
+KEYCLOAK_ADMIN_CLIENT_ID = os.environ.get('KEYCLOAK_ADMIN_CLIENT_ID', 'admin-cli')
+KEYCLOAK_ADMIN_CLIENT_SECRET = os.environ.get('KEYCLOAK_ADMIN_CLIENT_SECRET', 'admin-client-secret')
 
 if KEYCLOAK_AUTH_URI != '' and KEYCLOAK_CLIENT_ID != '' and KEYCLOAK_CLIENT_SECRET != '' and PUBLIC_URI_FOR_KEYCLOAK != '':
-    from bossoidc2.settings import *
-    configure_oidc('{}/auth/realms/{}'.format(KEYCLOAK_AUTH_URI, KEYCLOAK_DEFAULT_REALM), KEYCLOAK_CLIENT_ID, PUBLIC_URI_FOR_KEYCLOAK, client_secret=KEYCLOAK_CLIENT_SECRET)
+    from oc.settings import *
+    configure_oidc(
+        auth_uri='{}/auth/realms/{}'.format(KEYCLOAK_AUTH_URI, KEYCLOAK_DEFAULT_REALM),
+        client_id=KEYCLOAK_CLIENT_ID, 
+        public_uri=PUBLIC_URI_FOR_KEYCLOAK,
+        client_secret=KEYCLOAK_CLIENT_SECRET
+    )

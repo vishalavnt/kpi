@@ -33,7 +33,7 @@ from kpi.exceptions import (
     QueryParserNotSupportedFieldLookup,
     SearchQueryTooShortException,
 )
-from kpi.models import Asset, ObjectPermission, Collection
+from kpi.models import Asset, ObjectPermission
 from kpi.models.asset import UserAssetSubscription
 from kpi.models.asset_version import AssetVersion
 from kpi.utils.query_parser import get_parsed_parameters, parse, ParseError
@@ -127,9 +127,9 @@ class KpiObjectPermissionsFilter:
                 if model_name == 'asset':
                     subdomain_assetIds = Asset.objects.filter(owner__in=subdomain_userIds).values_list('id', flat=True)
                     return queryset.filter(pk__in=subdomain_assetIds)
-                elif model_name == 'collection':
-                    subdomain_collectionIds = Collection.objects.filter(owner__in=subdomain_userIds).values_list('id', flat=True)
-                    return queryset.filter(pk__in=subdomain_collectionIds)
+                # elif model_name == 'collection':
+                #     subdomain_collectionIds = Collection.objects.filter(owner__in=subdomain_userIds).values_list('id', flat=True)
+                #     return queryset.filter(pk__in=subdomain_collectionIds)
 
         if user.is_superuser and view.action != 'list':
             # For a list, we won't deluge the superuser with everyone else's

@@ -4,7 +4,7 @@
 #
 #    pip-compile --config=pyproject.toml dependencies/pip/requirements.in
 #
--e git+https://github.com/gushil/boss-oidc2.git@69e1a75ea5e94933d81305c64dd500b4a327a5c5#egg=boss-oidc2
+-e git+https://github.com/gushil/boss-oidc2.git@6b7fd20a0ea72444b79e128f1dcadd90932ed90c#egg=boss-oidc2
     # via -r dependencies/pip/requirements.in
 -e git+https://github.com/dimagi/django-digest@419f7306443f9a800b07d832b2cc147941062d59#egg=django_digest
     # via -r dependencies/pip/requirements.in
@@ -42,6 +42,8 @@ azure-storage-blob==12.12.0
     # via django-storages
 beaker==1.12.1
     # via oic
+beautifulsoup4==4.12.2
+    # via -r dependencies/pip/requirements.in
 begins==0.9
     # via formpack
 billiard==3.6.4.0
@@ -481,6 +483,8 @@ six==1.16.0
     #   requests-file
 smsapi-client==2.6.0
     # via django-trench
+soupsieve==2.4.1
+    # via beautifulsoup4
 sqlparse==0.4.2
     # via
     #   -r dependencies/pip/requirements.in

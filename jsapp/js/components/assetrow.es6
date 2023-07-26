@@ -340,7 +340,7 @@ class AssetRow extends React.Component {
                   );
               })}
               { this.props.asset_type && this.props.asset_type != ASSET_TYPES.survey.id &&
-                <ui.PopoverMenu
+                <PopoverMenu
                   type='assetrow-menu'
                   triggerLabel={<i className='k-icon-folder-move-to' />}
                   triggerTip={t('Manage collection')}
@@ -372,7 +372,7 @@ class AssetRow extends React.Component {
                       })}
                     </bem.PopoverMenu__moveTo>
                   }
-                </ui.PopoverMenu>
+                </PopoverMenu>
               }
               { this.props.asset_type && this.props.asset_type === ASSET_TYPES.survey.id && this.props.has_deployment && this.props.deployment__active && userCanEdit &&
                 <bem.AssetRow__actionIcon

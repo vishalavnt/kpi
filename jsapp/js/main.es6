@@ -20,7 +20,7 @@ import {
   checkCrossStorageTimeOut,
   checkCrossStorageUser,
   updateCrossStorageTimeOut
-} from 'ocutils';
+} from './ocutils';
 import actions from './actions';
 import sessionStore from './stores/session';
 

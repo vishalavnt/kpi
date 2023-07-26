@@ -1,312 +1,267 @@
-# coding: utf-8
+import time
+from urllib.parse import urlencode
 
-import logging
-import requests
-import os
-import json
-from requests import Response
+from django.contrib import auth
 from django.conf import settings
-from django.contrib.auth import authenticate, login, logout as auth_logout
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.views import login as auth_login_view, logout as auth_logout_view
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponseNotFound
-from django.shortcuts import redirect, render, resolve_url
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework import serializers
-from urlparse import parse_qs, urlparse
-from tldextract import extract
+from django.core.exceptions import SuspiciousOperation
+from django.http import HttpResponseRedirect, HttpResponseNotAllowed
+from django.urls import reverse
+from django.utils.crypto import get_random_string
+from django.shortcuts import resolve_url
 
-from djangooidc.oidc import OIDCClients, OIDCError
-from djangooidc.views import DynamicProvider
-from bossoidc2.settings import configure_oidc
+try:
+    from django.utils.http import url_has_allowed_host_and_scheme
+except ImportError:
+    # Django <= 2.2
+    from django.utils.http import is_safe_url as url_has_allowed_host_and_scheme
 
-from keycloak.realm import KeycloakRealm
+from django.utils.module_loading import import_string
+from django.views.generic import View
 
-from kpi.utils.domain import get_subdomain
-from kpi.utils.log import logging as kpi_logging
-from kobo.apps.service_health.views import get_response
+from mozilla_django_oidc.utils import (
+    absolutify,
+    add_state_and_nonce_to_session,
+    import_from_settings,
+)
 
-logger = logging.getLogger(__name__)
+from oc.backend import get_client_secret, get_realm_name
 
-class OCKeycloakSettings:
-    OIDC_PROVIDERS = {
-        'KeyCloak': {
-            'srv_discovery_url': None,
-            'behaviour': {
-                'response_type': 'code',
-                'scope': ['openid', 'profile', 'email'],
-            },
-            'client_registration': {
-                'client_id': None,
-                'redirect_uris': [],
-                'post_logout_redirect_uris': [],
-            },
-        }
-    }
 
-oc_settings = OCKeycloakSettings()
-CLIENTS = OIDCClients(settings)
+class OCAuthenticationCallbackView(View):
+    """OIDC client authentication callback HTTP endpoint"""
 
-def __configure_oidc(auth_uri, client_id, public_uri, scope=None, client_secret=None):
-    oidc_providers = oc_settings.OIDC_PROVIDERS
-    oidc_providers['KeyCloak']['srv_discovery_url'] = auth_uri
-    oidc_providers['KeyCloak']['client_registration']['client_id'] = client_id
-    login_uri = public_uri + '/openid/callback/login/'
-    logout_uri = public_uri + '/openid/callback/logout/'
-    oidc_providers['KeyCloak']['client_registration']['redirect_uris'] = [login_uri]
-    oidc_providers['KeyCloak']['client_registration']['post_logout_redirect_uris'] = [logout_uri]
+    http_method_names = ["get"]
 
-    # Add a client secret to the config if one is provided:
-    if client_secret:
-        oidc_providers['KeyCloak']['client_registration']['client_secret'] = client_secret
+    @staticmethod
+    def get_settings(attr, *args):
+        return import_from_settings(attr, *args)
 
-    if scope:
-        # DP NOTE: Scope is only set for django-oidc / session based auth
-        #          as it is up to the caller to request the scope when
-        #          retrieving the JWT Bearer token that is used by drf-oidc-auth
-        oidc_providers['KeyCloak']['behaviour']['scope'] = scope
+    @property
+    def failure_url(self):
+        return self.get_settings("LOGIN_REDIRECT_URL_FAILURE", "/")
 
-def __get_realm(request):
-    subdomain = get_subdomain(request)
-    realm_name = subdomain
+    @property
+    def success_url(self):
+        # Pull the next url from the session or settings--we don't need to
+        # sanitize here because it should already have been sanitized.
+        next_url = self.request.session.get("oidc_login_next", None)
+        return next_url or resolve_url(self.get_settings("LOGIN_REDIRECT_URL", "/"))
 
-    allowed_connections_url = '{}/customer-service/api/allowed-connections'.format(settings.OC_BUILD_URL)
-    allowed_connections_response = None
-    try:
-        allowed_connections_response = requests.get(
-                allowed_connections_url,
-                params = { 'subdomain': subdomain }
-            )
-    except Exception as e:
-        kpi_logging.error("oc_views {}".format(str(e)), exc_info=True)
+    def login_failure(self):
+        return HttpResponseRedirect(self.failure_url)
 
-    if isinstance(allowed_connections_response, Response):
-        realm_name = allowed_connections_response.json()[0]
-    
-    return realm_name
+    def login_success(self):
+        # If the user hasn't changed (because this is a session refresh instead of a
+        # normal login), don't call login. This prevents invaliding the user's current CSRF token
+        request_user = getattr(self.request, "user", None)
+        if (
+            not request_user
+            or not request_user.is_authenticated
+            or request_user != self.user
+        ):
+            auth.login(self.request, self.user)
 
-def __configure(request):
-    full_uri_with_path = request.build_absolute_uri()
-    parsed_full_uri_with_path = urlparse(full_uri_with_path)
-    extracted_full_uri_with_path = extract(full_uri_with_path)
-
-    current_root_uri = '{}://{}'.format(parsed_full_uri_with_path.scheme, parsed_full_uri_with_path.netloc)
-
-    realm_name = __get_realm(request)
-
-    master_realm = KeycloakRealm(server_url=settings.KEYCLOAK_AUTH_URI, realm_name=settings.KEYCLOAK_MASTER_REALM)
-    master_realm_client = master_realm.open_id_connect(
-            client_id=settings.KEYCLOAK_ADMIN_CLIENT_ID,
-            client_secret=settings.KEYCLOAK_ADMIN_CLIENT_SECRET
+        # Figure out when this id_token will expire. This is ignored unless you're
+        # using the SessionRefresh middleware.
+        expiration_interval = self.get_settings(
+            "OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS", 60 * 15
         )
-    token = master_realm_client.client_credentials()
-    access_token = token['access_token']
-    
-    admin_client = master_realm.admin
-    admin_client.set_token(access_token)
+        self.request.session["oidc_id_token_expiration"] = (
+            time.time() + expiration_interval
+        )
 
-    clients = admin_client.realms.by_name(realm_name).clients.all()
-    clientId = settings.KEYCLOAK_CLIENT_ID
-    client_id = None
-    for client in clients:
-        if client['clientId'] == clientId:
-            client_id = client['id']
-            break
-    
-    client_secret = None
-    if client_id is not None:
-        client_secret = admin_client.realms.by_name(realm_name).clients.by_id(client_id).client_secret()['value']
+        return HttpResponseRedirect(self.success_url)
 
-    if client_secret is not None:
-        KEYCLOAK_CLIENT_ID = clientId
-        KEYCLOAK_CLIENT_SECRET = client_secret
-        PUBLIC_URI_FOR_KEYCLOAK = current_root_uri
+    def get(self, request):
+        """Callback handler for OIDC authorization code flow"""
+        if request.GET.get("error"):
+            # Ouch! Something important failed.
 
-        __configure_oidc('{}/auth/realms/{}'.format(settings.KEYCLOAK_AUTH_URI, realm_name), KEYCLOAK_CLIENT_ID, PUBLIC_URI_FOR_KEYCLOAK, client_secret=KEYCLOAK_CLIENT_SECRET)
+            # Delete the state entry also for failed authentication attempts
+            # to prevent replay attacks.
+            if (
+                "state" in request.GET
+                and "oidc_states" in request.session
+                and request.GET["state"] in request.session["oidc_states"]
+            ):
+                del request.session["oidc_states"][request.GET["state"]]
+                request.session.save()
 
-        CLIENTS = OIDCClients(oc_settings)
+            # Make sure the user doesn't get to continue to be logged in
+            # otherwise the refresh middleware will force the user to
+            # redirect to authorize again if the session refresh has
+            # expired.
+            if request.user.is_authenticated:
+                auth.logout(request)
+            assert not request.user.is_authenticated
+        elif "code" in request.GET and "state" in request.GET:
 
-        return CLIENTS
+            # Check instead of "oidc_state" check if the "oidc_states" session key exists!
+            if "oidc_states" not in request.session:
+                return self.login_failure()
 
-def openid(request, op_name=None):
-    CLIENTS = __configure(request)
+            # State and Nonce are stored in the session "oidc_states" dictionary.
+            # State is the key, the value is a dictionary with the Nonce in the "nonce" field.
+            state = request.GET.get("state")
+            if state not in request.session["oidc_states"]:
+                msg = "OIDC callback state not found in session `oidc_states`!"
+                raise SuspiciousOperation(msg)
 
-    client = None
-    request.session["next"] = request.GET["next"] if "next" in request.GET.keys() else "/"
-    try:
-        dyn = settings.OIDC_ALLOW_DYNAMIC_OP or False
-    except:
-        dyn = True
+            # Get the nonce from the dictionary for further processing and delete the entry to
+            # prevent replay attacks.
+            nonce = request.session["oidc_states"][state]["nonce"]
+            del request.session["oidc_states"][state]
 
-    try:
-        template_name = settings.OIDC_LOGIN_TEMPLATE
-    except AttributeError:
-        template_name = 'djangooidc/login.html'
+            # Authenticating is slow, so save the updated oidc_states.
+            request.session.save()
+            # Reset the session. This forces the session to get reloaded from the database after
+            # fetching the token from the OpenID connect provider.
+            # Without this step we would overwrite items that are being added/removed from the
+            # session in parallel browser tabs.
+            request.session = request.session.__class__(request.session.session_key)
 
-    # Internal login?
-    if request.method == 'POST' and "internal_login" in request.POST:
-        ilform = AuthenticationForm(request.POST)
-        return auth_login_view(request)
-    else:
-        ilform = AuthenticationForm()
+            kwargs = {
+                "request": request,
+                "nonce": nonce,
+            }
 
-    # Try to find an OP client either from the form or from the op_name URL argument
-    if request.method == 'GET' and op_name is not None:
-        client = CLIENTS[op_name]
-        request.session["op"] = op_name
+            self.user = auth.authenticate(**kwargs)
 
-    if request.method == 'POST' and dyn:
-        form = DynamicProvider(request.POST)
-        if form.is_valid():
-            try:
-                client = CLIENTS.dynamic_client(form.cleaned_data["hint"])
-                request.session["op"] = client.provider_info["issuer"]
-            except Exception as e:
-                logger.exception("could not create OOID client")
-                return render(request, ERROR_TEMPLATE, context={"error": e})
-    else:
-        form = DynamicProvider()
+            if self.user and self.user.is_active:
+                return self.login_success()
+        return self.login_failure()
 
-    # If we were able to determine the OP client, just redirect to it with an authentication request
-    if client:
-        try:
-            return client.create_authn_request(request.session)
-        except Exception as e:
-            return render(request, ERROR_TEMPLATE, context={"error": e})
 
-    # Otherwise just render the list+form.
-    return render(request, template_name,
-                  context={"op_list": [i for i in settings.OIDC_PROVIDERS.keys() if i], 'dynamic': dyn,
-                           'form': form, 'ilform': ilform, "next": request.session["next"]}, )
+def get_next_url(request, redirect_field_name):
+    """Retrieves next url from request
 
-def authz_cb(request):
-    CLIENTS = __configure(request)
-    
-    client = CLIENTS[request.session["op"]]
+    Note: This verifies that the url is safe before returning it. If the url
+    is not safe, this returns None.
 
-    query = None
+    :arg HttpRequest request: the http request
+    :arg str redirect_field_name: the name of the field holding the next url
 
-    try:
-        query = parse_qs(request.META['QUERY_STRING'])
-        userinfo = client.callback(query, request.session)
-        request.session["userinfo"] = userinfo
-        request.session["subdomain"] = get_subdomain(request)
-        user = authenticate(request=request, **userinfo)
-        if user:
-            login(request, user)
-            return redirect(request.session["next"])
-        else:
-            raise Exception('this login is not valid in this application')
-    except OIDCError as e:
-        logging.getLogger('djangooidc.views.authz_cb').exception('Problem logging user in')
-        return render(request, ERROR_TEMPLATE, context={"error": e, "callback": query})
+    :returns: safe url or None
 
-def logout(request, next_page=None):
-    if not "op" in request.session.keys():
-        return auth_logout_view(request, next_page)
-
-    CLIENTS = __configure(request)
-    
-    client = CLIENTS[request.session["op"]]
-
-    # User is by default NOT redirected to the app - it stays on an OP page after logout.
-    # Here we determine if a redirection to the app was asked for and is possible.
-    if next_page is None and "next" in request.GET.keys():
-        next_page = request.GET['next']
-    if next_page is None and "next" in request.session.keys():
-        next_page = request.session['next']
-    extra_args = {}
-    if "post_logout_redirect_uris" in client.registration_response.keys() and len(
-            client.registration_response["post_logout_redirect_uris"]) > 0:
-        if next_page is not None:
-            # First attempt a direct redirection from OP to next_page
-            next_page_url = resolve_url(next_page)
-            urls = [url for url in client.registration_response["post_logout_redirect_uris"] if next_page_url in url]
-            if len(urls) > 0:
-                extra_args["post_logout_redirect_uri"] = urls[0]
-            else:
-                # It is not possible to directly redirect from the OP to the page that was asked for.
-                # We will try to use the redirection point - if the redirection point URL is registered that is.
-                next_page_url = resolve_url('openid_logout_cb')
-                urls = [url for url in client.registration_response["post_logout_redirect_uris"] if
-                        next_page_url in url]
-                if len(urls) > 0:
-                    extra_args["post_logout_redirect_uri"] = urls[0]
-                else:
-                    # Just take the first registered URL as a desperate attempt to come back to the application
-                    extra_args["post_logout_redirect_uri"] = client.registration_response["post_logout_redirect_uris"][
-                        0]
-    else:
-        # No post_logout_redirect_uris registered at the OP - no redirection to the application is possible anyway
-        pass
-
-    # Redirect client to the OP logout page
-    try:
-        # DP HACK: Needed to get logout to actually logout from the OIDC Provider
-        # According to ODIC session spec (http://openid.net/specs/openid-connect-session-1_0.html#RPLogout)
-        # the user should be directed to the OIDC provider to logout after being
-        # logged out here.
-
-        request_args = {
-            'id_token_hint': request.session['access_token'],
-            'state': request.session['state'],
+    """
+    next_url = request.GET.get(redirect_field_name)
+    if next_url:
+        kwargs = {
+            "url": next_url,
+            "require_https": import_from_settings(
+                "OIDC_REDIRECT_REQUIRE_HTTPS", request.is_secure()
+            ),
         }
-        request_args.update(extra_args)  # should include the post_logout_redirect_uri
 
-        # id_token iss is the token issuer, the url of the issuing server
-        # the full url works for the BOSS OIDC Provider, not tested on any other provider
-        url = request.session['id_token']['iss'] + "/protocol/openid-connect/logout"
-        url += "?" + urlencode(request_args)
-        return HttpResponseRedirect(url)
+        hosts = list(import_from_settings("OIDC_REDIRECT_ALLOWED_HOSTS", []))
+        hosts.append(request.get_host())
+        kwargs["allowed_hosts"] = hosts
 
-        # Looks like they are implementing back channel logout, without checking for
-        # support?
-        # http://openid.net/specs/openid-connect-backchannel-1_0.html#Backchannel
-        """
-        request_args = None
-        if 'id_token' in request.session.keys():
-            request_args = {'id_token': oic.oic.message.IdToken(**request.session['id_token'])}
-        res = client.do_end_session_request(state=request.session["state"],
-                                            extra_args=extra_args, request_args=request_args)
-        content_type = res.headers.get("content-type", "text/html") # In case the logout response doesn't set content-type (Seen with Keycloak)
-        resp = HttpResponse(content_type=content_type, status=res.status_code, content=res._content)
-        for key, val in res.headers.items():
-            resp[key] = val
-        return resp
-        """
-    finally:
-        # Always remove Django session stuff - even if not logged out from OP. Don't wait for the callback as it may never come.
-        auth_logout(request)
-        if next_page:
-            request.session['next'] = next_page
+        is_safe = url_has_allowed_host_and_scheme(**kwargs)
+        if is_safe:
+            return next_url
+    return None
 
-@csrf_exempt
-def app_info(request):
-    if request.method == 'GET':
-        package_info = {}
-        try:
-            config_file = os.path.join(settings.BASE_DIR, 'package.json')
-            with open(config_file, "r") as f:
-                package_info = json.loads(f.read())
-        except IOError:
-            return HttpResponseNotFound()
 
-        failure, kobocat_message, kobocat_content = get_response(settings.KOBOCAT_INTERNAL_URL + '/app_info/')
+class OCAuthenticationRequestView(View):
+    """OIDC client authentication HTTP endpoint"""
+
+    http_method_names = ["get"]
+
+    def __init__(self, *args, **kwargs):
+        super(OCAuthenticationRequestView, self).__init__(*args, **kwargs)
+
+        self.OIDC_OP_AUTH_ENDPOINT = self.get_settings("OIDC_OP_AUTHORIZATION_ENDPOINT", None)
+        self.OIDC_RP_CLIENT_ID = self.get_settings("OIDC_RP_CLIENT_ID", None)
+
+    def configure(self, request):
+        realm_name = get_realm_name(request)
+        if isinstance(realm_name, str):
+            client_secret = get_client_secret(realm_name)
+            if client_secret is not None:
+                self.OIDC_OP_AUTHORIZATION_ENDPOINT = '{}/auth/realms/{}/protocol/openid-connect/auth'.format(settings.KEYCLOAK_AUTH_URI, realm_name)
+                self.OIDC_OP_TOKEN_ENDPOINT = '{}/auth/realms/{}/protocol/openid-connect/token'.format(settings.KEYCLOAK_AUTH_URI, realm_name)
+                self.OIDC_OP_USER_ENDPOINT = '{}/auth/realms/{}/protocol/openid-connect/userinfo'.format(settings.KEYCLOAK_AUTH_URI, realm_name)
+                self.OIDC_OP_JWKS_ENDPOINT = '{}/auth/realms/{}/protocol/openid-connect/certs'.format(settings.KEYCLOAK_AUTH_URI, realm_name)
+                self.OIDC_RP_CLIENT_SECRET = client_secret
+                self.OIDC_OP_AUTH_ENDPOINT = self.OIDC_OP_AUTHORIZATION_ENDPOINT
+    
+    @staticmethod
+    def get_settings(attr, *args):
+        return import_from_settings(attr, *args)
+
+    def get(self, request):
+        """OIDC client authentication initialization HTTP endpoint"""
         
-        kobocat_data = {}
-        if not failure:
-            kobocat_data = json.loads(kobocat_content)
-            kobocat_data["status"] = "passing"
-        else:
-            kobocat_data["status"] = "failed"
+        if self.OIDC_OP_AUTH_ENDPOINT is None:
+            self.configure(request)
 
-        kpi_data = {
-            "name": package_info["name"],
-            "description": package_info["description"],
-            "version": package_info["version"],
-            "status": "passing"
+        state = get_random_string(self.get_settings("OIDC_STATE_SIZE", 32))
+        redirect_field_name = self.get_settings("OIDC_REDIRECT_FIELD_NAME", "next")
+        reverse_url = self.get_settings(
+            "OIDC_AUTHENTICATION_CALLBACK_URL", "oidc_authentication_callback"
+        )
+
+        params = {
+            "response_type": "code",
+            "scope": self.get_settings("OIDC_RP_SCOPES", "openid email"),
+            "client_id": self.OIDC_RP_CLIENT_ID,
+            "redirect_uri": absolutify(request, reverse(reverse_url)),
+            "state": state,
         }
 
-        data = [kpi_data, kobocat_data]
+        params.update(self.get_extra_params(request))
 
-        return JsonResponse(data, safe=False)
+        if self.get_settings("OIDC_USE_NONCE", True):
+            nonce = get_random_string(self.get_settings("OIDC_NONCE_SIZE", 32))
+            params.update({"nonce": nonce})
+
+        add_state_and_nonce_to_session(request, state, params)
+        
+        request.session["oidc_login_next"] = get_next_url(request, redirect_field_name)
+
+        query = urlencode(params)
+        redirect_url = "{url}?{query}".format(
+            url=self.OIDC_OP_AUTH_ENDPOINT, query=query
+        )
+        return HttpResponseRedirect(redirect_url)
+
+    def get_extra_params(self, request):
+        return self.get_settings("OIDC_AUTH_REQUEST_EXTRA_PARAMS", {})
+
+
+class OCLogoutView(View):
+    """Logout helper view"""
+
+    http_method_names = ["get", "post"]
+
+    @staticmethod
+    def get_settings(attr, *args):
+        return import_from_settings(attr, *args)
+
+    @property
+    def redirect_url(self):
+        """Return the logout url defined in settings."""
+        return self.get_settings("LOGOUT_REDIRECT_URL", "/")
+
+    def post(self, request):
+        """Log out the user."""
+        logout_url = self.redirect_url
+
+        if request.user.is_authenticated:
+            # Check if a method exists to build the URL to log out the user
+            # from the OP.
+            logout_from_op = self.get_settings("OIDC_OP_LOGOUT_URL_METHOD", "")
+            if logout_from_op:
+                logout_url = import_string(logout_from_op)(request)
+
+            # Log out the Django user if they were logged in.
+            auth.logout(request)
+
+        return HttpResponseRedirect(logout_url)
+
+    def get(self, request):
+        """Log out the user."""
+        if self.get_settings("ALLOW_LOGOUT_GET_METHOD", False):
+            return self.post(request)
+        return HttpResponseNotAllowed(["POST"])

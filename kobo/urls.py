@@ -2,7 +2,7 @@
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth.views import logout
+from django.contrib.auth import logout
 from django.urls import include, path, re_path
 from django.views.generic.base import RedirectView
 from kobo.apps.service_health.views import service_health

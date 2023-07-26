@@ -1,10 +1,5 @@
 import clonedeep from 'lodash.clonedeep';
 import {ASSET_TYPES} from 'js/constants';
-import _ from 'underscore';
-import moment from 'moment';
-import alertify from 'alertifyjs';
-import { Cookies } from 'react-cookie';
-import { CrossStorageClient } from 'cross-storage';
 
 /**
  * Asset type could be either the loaded asset type (editing an existing form)

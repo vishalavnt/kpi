@@ -18,7 +18,7 @@
 # OC - Keycloak authentication integration
 mozilla-django-oidc # requirement of boss-oidc2
 drf-oidc-auth # requirement of boss-oidc2
--e git+https://github.com/gushil/boss-oidc2.git@69e1a75ea5e94933d81305c64dd500b4a327a5c5#egg=boss-oidc2
+-e git+https://github.com/gushil/boss-oidc2.git@6b7fd20a0ea72444b79e128f1dcadd90932ed90c#egg=boss-oidc2
 -e git+https://github.com/gushil/django-oidc.git@1fbbe169e785bab04cd9da5410245c97a18f3e38#egg=django-oidc
 -e git+https://github.com/gushil/python-keycloak-client.git@549c90f615fc2327bd47819290dd9c0d5c6de680#egg=python-keycloak-client
 
@@ -28,6 +28,7 @@ Markdown
 Pygments
 amqp
 billiard
+beautifulsoup4
 celery
 celery[redis]
 dict2xml

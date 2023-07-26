@@ -160,7 +160,7 @@ const Drawer = observer(class Drawer extends Reflux.Component {
         </bem.KDrawer__sidebar>
 
         <bem.KDrawer__secondaryIcons>
-          { stores.session.currentAccount &&
+          { sessionStore.currentAccount &&
             (!this.isLibrary() && 
             <a href='https://docs.openclinica.com/oc4/design-study/form-designer'
               className='k-drawer__link'
