@@ -1,5 +1,5 @@
 import {action, makeAutoObservable} from 'mobx';
-import {ANON_USERNAME, ANON_USER_TYPE} from 'js/constants';
+import {ANON_USERNAME, ANON_USER_TYPE, ANON_USER_SUBDOMAIN} from 'js/constants';
 import {dataInterface} from 'js/dataInterface';
 import type {AccountResponse} from 'js/dataInterface';
 import {log} from 'js/utils';
@@ -13,9 +13,10 @@ import {
 } from 'js/ocutils';
 
 class SessionStore {
-  currentAccount: AccountResponse | {username: string, user_type: string} = {
+  currentAccount: AccountResponse | {username: string; user_type: string; subdomain: string} = {
     username: ANON_USERNAME,
-    user_type: ANON_USER_TYPE
+    user_type: ANON_USER_TYPE,
+    subdomain: ANON_USER_SUBDOMAIN,
   };
   isAuthStateKnown = false;
   isLoggedIn = false;

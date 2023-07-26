@@ -35,6 +35,7 @@ export const ROOT_URL = (() => {
 
 export const ANON_USERNAME = 'AnonymousUser';
 export const ANON_USER_TYPE = 'AnonymousUserType';
+export const ANON_USER_SUBDOMAIN = 'AnonymousSubdomain';
 
 export type PermissionCodename =
   | 'add_submissions'

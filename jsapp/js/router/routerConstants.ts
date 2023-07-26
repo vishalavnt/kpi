@@ -1,6 +1,6 @@
 // List of server routes
 export const PATHS = Object.freeze({
-  LOGIN: '/accounts/login',
+  LOGIN: '/openid/authenticate/',
   RESET: '/accounts/password/reset/',
   MS_SSO: '/accounts/microsoft/login/',
 });

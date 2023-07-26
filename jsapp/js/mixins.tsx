@@ -1006,6 +1006,16 @@ mixins.permissions = {
   },
 
   /**
+   * @param {Object} asset
+   */
+  userWithSameSubdomainAsAssetOwner(asset: AssetResponse) {
+    const currentUserSubdomain = sessionStore.currentAccount.subdomain;
+    const ownerUserSubdomain = asset.owner__subdomain;
+
+    return currentUserSubdomain === ownerUserSubdomain;
+  },
+  
+  /**
    * @param {string} permName
    * @param {Object} asset
    */

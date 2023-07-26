@@ -476,6 +476,7 @@ export interface AssetResponse extends AssetRequestObject {
   url: string;
   owner: string;
   owner__username: string;
+  owner__subdomain: string;
   date_created: string;
   summary: AssetSummary;
   date_modified: string;
@@ -666,6 +667,7 @@ export interface AccountResponse {
     tag: boolean;
   };
   social_accounts: SocialAccount[];
+  subdomain: string;
 }
 
 interface UserNotLoggedInResponse {

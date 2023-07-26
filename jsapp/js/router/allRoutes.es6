@@ -25,6 +25,7 @@ import accountRoutes from 'js/account/routes';
 import projectsRoutes from 'js/projects/routes';
 
 // Workaround https://github.com/remix-run/react-router/issues/8139
+// eslint-disable-next-line no-duplicate-imports
 import {unstable_HistoryRouter as HistoryRouter, Route} from 'react-router-dom';
 
 const Reports = React.lazy(() =>
@@ -145,60 +146,65 @@ const AllRoutes = class AllRoutes extends React.Component {
                   </RequireAdmin>
                 }
               />
-              {/* <Route
+              <Route
                 path={ROUTES.PUBLIC_COLLECTIONS}
                 element={
                   <RequireAuth>
                     <PublicCollectionsRoute />
                   </RequireAuth>
                 }
-              /> */}
+              />
               <Route
                 path={ROUTES.NEW_LIBRARY_ITEM}
                 element={
-                  <RequireAdmin>
+                  <RequireAuth>
                     <LibraryAssetEditor />
-                  </RequireAdmin>
+                  </RequireAuth>
                 }
               />
               <Route
                 path={ROUTES.LIBRARY_ITEM}
                 element={
-                  <RequireAdmin>
-                    <AssetRoute />
-                  </RequireAdmin>
+                  <PermProtectedRoute
+                    requiredPermissions={[PERMISSIONS_CODENAMES.view_asset]}
+                    protectedComponent={AssetRoute}
+                  />
                 }
               />
               <Route
                 path={ROUTES.EDIT_LIBRARY_ITEM}
                 element={
-                  <RequireAdmin>
-                    <LibraryAssetEditor />
-                  </RequireAdmin>
+                  <PermProtectedRoute
+                    requiredPermissions={[PERMISSIONS_CODENAMES.change_asset]}
+                    protectedComponent={LibraryAssetEditor}
+                  />
                 }
               />
               <Route
                 path={ROUTES.NEW_LIBRARY_CHILD}
                 element={
-                  <RequireAdmin>
-                    <LibraryAssetEditor />
-                  </RequireAdmin>
+                  <PermProtectedRoute
+                    requiredPermissions={[PERMISSIONS_CODENAMES.change_asset]}
+                    protectedComponent={LibraryAssetEditor}
+                  />
                 }
               />
               <Route
                 path={ROUTES.LIBRARY_ITEM_JSON}
                 element={
-                  <RequireAdmin>
-                    <FormJson />
-                  </RequireAdmin>
+                  <PermProtectedRoute
+                    requiredPermissions={[PERMISSIONS_CODENAMES.view_asset]}
+                    protectedComponent={FormJson}
+                  />
                 }
               />
               <Route
                 path={ROUTES.LIBRARY_ITEM_XFORM}
                 element={
-                  <RequireAdmin>
-                    <FormXform />
-                  </RequireAdmin>
+                  <PermProtectedRoute
+                    requiredPermissions={[PERMISSIONS_CODENAMES.view_asset]}
+                    protectedComponent={FormXform}
+                  />
                 }
               />
             </Route>
@@ -241,7 +247,7 @@ const AllRoutes = class AllRoutes extends React.Component {
                   }
                 />
 
-                {/* <Route path={ROUTES.FORM_DATA}>
+                <Route path={ROUTES.FORM_DATA}>
                   <Route
                     path=''
                     element={<Navigate to={'./table'} replace />}
@@ -332,9 +338,9 @@ const AllRoutes = class AllRoutes extends React.Component {
                       />
                     }
                   />
-                </Route> */}
+                </Route>
 
-                {/* <Route path={ROUTES.FORM_SETTINGS}>
+                <Route path={ROUTES.FORM_SETTINGS}>
                   <Route
                     index
                     element={
@@ -402,7 +408,7 @@ const AllRoutes = class AllRoutes extends React.Component {
                       />
                     }
                   />
-                </Route> */}
+                </Route>
 
                 <Route
                   path={ROUTES.FORM_JSON}

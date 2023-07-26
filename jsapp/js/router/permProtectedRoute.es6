@@ -98,6 +98,7 @@ class PermProtectedRoute extends React.Component {
   getUserHasRequiredPermission(asset, requiredPermission) {
     return (
       // we are ok with either full or partial permission
+      mixins.permissions.userWithSameSubdomainAsAssetOwner(asset) ||
       mixins.permissions.userCan(requiredPermission, asset) ||
       mixins.permissions.userCanPartially(requiredPermission, asset)
     );

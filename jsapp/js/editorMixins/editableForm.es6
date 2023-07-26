@@ -497,23 +497,27 @@ export default assign({
       ooo.formIdValue = this.state.settings__form_id;
     }
 
-    var saveButtonText = 'save';
-    var backButtonText = 'back';
-    if (this.state.asset_type === 'survey') {
-      saveButtonText = 'save draft';
-    } else {
-      saveButtonText = 'save changes';
-      backButtonText = 'back to library';
-    }
+    ooo.saveButtonText = t('save');
+    ooo.backButtonText = t('back');
 
     if (this.state.editorState === 'new') {
       ooo.saveButtonText = t('create');
     } else if (this.state.surveySaveFail) {
-      ooo.saveButtonText = `t(${saveButtonText}) (${t('retry')}) `;
+      if (this.state.asset_type === 'survey') {
+        ooo.saveButtonText = `${t('save draft')} (${t('retry')}) `;
+      } else {
+        ooo.saveButtonText = `${t('save changes')} (${t('retry')}) `;
+      }
     } else {
-      ooo.saveButtonText = `t(${saveButtonText})`;
+      // eslint-disable-next-line no-lonely-if
+      if (this.state.asset_type === 'survey') {
+        ooo.saveButtonText = t('save draft');
+      } else {
+        ooo.saveButtonText = t('save changes');
+        ooo.backButtonText = t('back to library');
+      }
     }
-    ooo.backButtonText = `t(${backButtonText})`;
+
     return ooo;
   },
 
@@ -696,8 +700,9 @@ export default assign({
   },
 
   canNavigateToList() {
-    return this.state.surveyAppRendered && 
-      (this.state.asset_type !== 'survey' || this.props.location.pathname.startsWith('/library/new'));
+    return true;
+    // return this.state.surveyAppRendered && 
+    //   (this.state.asset_type !== 'survey' || this.props.location.pathname.startsWith('/library/new'));
   },
 
   // rendering methods

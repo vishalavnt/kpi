@@ -56,6 +56,7 @@ class AssetSerializer(serializers.HyperlinkedModelSerializer):
     owner = RelativePrefixHyperlinkedRelatedField(
         view_name='user-detail', lookup_field='username', read_only=True)
     owner__username = serializers.ReadOnlyField(source='owner.username')
+    owner__subdomain = serializers.SerializerMethodField()
     url = HyperlinkedIdentityField(
         lookup_field='uid', view_name='asset-detail')
     asset_type = serializers.ChoiceField(choices=ASSET_TYPES)
@@ -121,6 +122,7 @@ class AssetSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('url',
                   'owner',
                   'owner__username',
+                  'owner__subdomain',
                   'parent',
                   'settings',
                   'asset_type',
@@ -454,6 +456,9 @@ class AssetSerializer(serializers.HyperlinkedModelSerializer):
             read_only=True,
             context=self.context,
         ).data
+    
+    def get_owner__subdomain(self, obj: Asset) -> str:
+        return KeycloakModel.objects.get(user=obj.owner).subdomain
     
     def get_access_types(self, obj):
         """
