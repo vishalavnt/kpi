@@ -107,8 +107,8 @@ module.exports = do ->
           </div>
           <div class="card__text">
             <div class="card__header-name js-cancel-select-row js-cancel-sort"></div>
-            <textarea rows="1" placeholder="#{_t("Enter question label (required for item to be visible)")}" class="card__header-title js-card-label js-cancel-select-row js-cancel-sort"></textarea>
-            <input type="text" placeholder="#{_t("Enter question hint (optional)")}" class="card__header-hint js-card-hint js-cancel-select-row js-cancel-sort">
+            <textarea rows="1" placeholder="#{t("Enter question label (required for item to be visible)")}" class="card__header-title js-card-label js-cancel-select-row js-cancel-sort"></textarea>
+            <input type="text" placeholder="#{t("Enter question hint (optional)")}" class="card__header-hint js-card-hint js-cancel-select-row js-cancel-sort">
           </div>
           <div class="card__buttons">
             <span class="card__buttons__button card__buttons__button--settings card__buttons__button--gray js-toggle-card-settings" data-button-name="settings"><i class="k-icon k-icon-settings"></i></span>

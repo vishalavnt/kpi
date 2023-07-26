@@ -1,5 +1,4 @@
 _ = require 'underscore'
-_t = require('utils').t
 Backbone = require 'backbone'
 $configs = require './model.configs'
 $baseView = require './view.pluggedIn.backboneView'
@@ -45,7 +44,7 @@ module.exports = do ->
       $customEl = $(customEl)
       $customEl.closest('label').addClass(fieldClass)
       if $customEl.siblings('.message').length is 0
-        $message = $('<div/>').addClass('message').text(_t(message))
+        $message = $('<div/>').addClass('message').text(t("This field is required"))
         $customEl.after($message)
     
     hideMessage: () ->

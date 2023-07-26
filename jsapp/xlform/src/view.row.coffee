@@ -332,7 +332,7 @@ module.exports = do ->
          questionType is 'hidden' or
          questionType is constants.QUESTION_TYPES['xml-external']
         @$hint.hide()
-        @$label.prop('placeholder', _t('Label not needed for Calculate questions'))
+        @$label.prop('placeholder', t('Label not needed for Calculate questions'))
 
       if 'getList' of @model and (cl = @model.getList())
         @$card.addClass('card--selectquestion card--expandedchoices')
@@ -428,11 +428,11 @@ module.exports = do ->
       if !skipConfirm
         dialog = alertify.dialog('confirm')
         opts = 
-          title: _t('Delete group')
-          message: _t('Are you sure you want to split apart this group?')
+          title: t('Delete group')
+          message: t('Are you sure you want to split apart this group?')
           labels:
-            ok: _t('Yes')
-            cancel: _t('No')
+            ok: t('Yes')
+            cancel: t('No')
           onok: =>
             @_deleteGroup()
             return

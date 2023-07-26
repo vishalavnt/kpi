@@ -590,7 +590,7 @@ export default assign({
     if (!_state.surveyLoadError) {
       _state.surveyAppRendered = true;
 
-      var skp = new SurveyScope({
+      const skp = new SurveyScope({
         survey: survey,
         rawSurvey: rawAssetContent,
         assetType: getFormBuilderAssetType(this.state.asset.asset_type, this.state.desiredAssetType),
@@ -838,7 +838,7 @@ export default assign({
           <bem.FormBuilderHeader__cell>
             <a
               class="formdesigner-support-url"
-              href={formDesignerSupportUrl}
+              href={FORM_DESIGNER_SUPPORT_URL}
               target='_blank'
               data-tip={t('Learn more about Form Designer')}
             >
