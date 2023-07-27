@@ -24,7 +24,12 @@ from kpi.views.token import TokenView
 from .router_api_v1 import router_api_v1
 from .router_api_v2 import router_api_v2, URL_NAMESPACE
 
-from oc.views import OCAuthenticationCallbackView, OCAuthenticationRequestView, OCLogoutView
+from oc.views import (
+    OCAuthenticationCallbackView,
+    OCAuthenticationRequestView,
+    OCLogoutView,
+    OCAppInfoView
+)
 
 
 # TODO: Give other apps their own `urls.py` files instead of importing their
@@ -67,7 +72,7 @@ urlpatterns = [
     re_path(r'^private-media/', include(private_storage.urls)),
     # Statistics for superusers
     re_path(r'^superuser_stats/', include(('kobo.apps.superuser_stats.urls', 'superuser_stats'))),
-    # re_path(r'^app_info/$', app_info, name='app_info'),
+    path('app_info/', OCAppInfoView.as_view(), name='app_info'),
 ]
 
 

@@ -1,10 +1,12 @@
 import time
+import os
+import json
 from urllib.parse import urlencode
 
 from django.contrib import auth
 from django.conf import settings
 from django.core.exceptions import SuspiciousOperation
-from django.http import HttpResponseRedirect, HttpResponseNotAllowed
+from django.http import HttpResponseRedirect, HttpResponseNotAllowed, JsonResponse, HttpResponseNotFound
 from django.urls import reverse
 from django.utils.crypto import get_random_string
 from django.shortcuts import resolve_url
@@ -17,12 +19,15 @@ except ImportError:
 
 from django.utils.module_loading import import_string
 from django.views.generic import View
+from django.views.decorators.csrf import csrf_exempt
 
 from mozilla_django_oidc.utils import (
     absolutify,
     add_state_and_nonce_to_session,
     import_from_settings,
 )
+
+from kobo.apps.service_health.views import get_response
 
 from oc.backend import get_client_secret, get_realm_name
 
@@ -185,14 +190,14 @@ class OCAuthenticationRequestView(View):
                 self.OIDC_OP_JWKS_ENDPOINT = '{}/auth/realms/{}/protocol/openid-connect/certs'.format(settings.KEYCLOAK_AUTH_URI, realm_name)
                 self.OIDC_RP_CLIENT_SECRET = client_secret
                 self.OIDC_OP_AUTH_ENDPOINT = self.OIDC_OP_AUTHORIZATION_ENDPOINT
-    
+
     @staticmethod
     def get_settings(attr, *args):
         return import_from_settings(attr, *args)
 
     def get(self, request):
         """OIDC client authentication initialization HTTP endpoint"""
-        
+
         if self.OIDC_OP_AUTH_ENDPOINT is None:
             self.configure(request)
 
@@ -217,7 +222,7 @@ class OCAuthenticationRequestView(View):
             params.update({"nonce": nonce})
 
         add_state_and_nonce_to_session(request, state, params)
-        
+
         request.session["oidc_login_next"] = get_next_url(request, redirect_field_name)
 
         query = urlencode(params)
@@ -265,3 +270,37 @@ class OCLogoutView(View):
         if self.get_settings("ALLOW_LOGOUT_GET_METHOD", False):
             return self.post(request)
         return HttpResponseNotAllowed(["POST"])
+
+class OCAppInfoView(View):
+
+    http_method_names = ["get"]
+
+    @csrf_exempt
+    def get(self, request):
+        package_info = {}
+        try:
+            config_file = os.path.join(settings.BASE_DIR, 'package.json')
+            with open(config_file, "r") as f:
+                package_info = json.loads(f.read())
+        except IOError:
+            return HttpResponseNotFound()
+
+        failure, kobocat_message, kobocat_content = get_response(settings.KOBOCAT_INTERNAL_URL + '/app_info/')
+
+        kobocat_data = {}
+        if not failure:
+            kobocat_data = json.loads(kobocat_content)
+            kobocat_data["status"] = "passing"
+        else:
+            kobocat_data["status"] = "failed"
+
+        kpi_data = {
+            "name": package_info["name"],
+            "description": package_info["description"],
+            "version": package_info["version"],
+            "status": "passing"
+        }
+
+        data = [kpi_data, kobocat_data]
+
+        return JsonResponse(data, safe=False)
