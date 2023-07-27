@@ -299,17 +299,18 @@ $cardIndicatorIconWidth: 21px;
     &.card__buttons__button--teal {
         color: colors.$kobo-teal;
     }
-    
+
     &.card__buttons__button--delete {
-        top: 32px;
+        top: 4px;
     }
-    
-    &.card__buttons__button--copy {
-        top: 45px;
+
+    &.card__buttons__button--copy,
+    &.card__buttons__button--clone {
+        top: 8px;
     }
-    
+
     &.card__buttons__button--add {
-       top: 68px;
+       top: 10px;
     }
 
     &.card__buttons__button--activated {

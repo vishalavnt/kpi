@@ -442,7 +442,7 @@ module.exports = do ->
       if group_rows? and group_rows.length > 0
         group_rows.each (index) =>
           $(group_rows[index]).sortable 'cancel'
-      
+
       if ui.item.hasClass('survey__row--group')
         ui.item.find('.survey__row--selected.hidden').removeClass('hidden')
 
@@ -583,8 +583,8 @@ module.exports = do ->
           receive: (evt, ui) =>
             if ui.sender.hasClass('group__rows') || ui.sender.hasClass('survey-editor__list')
               return
-            prevItem = ui.item.prev()
-            if @ngScope.handleItem
+            itemUid = ui.item.data().uid
+            if @ngScope.handleItem and itemUid
               uiItemParentWithId = $(ui.item).parents('[data-row-id]')[0]
               if uiItemParentWithId
                 groupId = uiItemParentWithId.dataset.rowId
@@ -754,7 +754,7 @@ module.exports = do ->
       evt.preventDefault()
 
       dialog = alertify.dialog('confirm')
-      opts = 
+      opts =
         title: t('Delete question')
         message: t('Are you sure you want to delete this question?') + " " + t("This action cannot be undone.")
         labels:
@@ -790,10 +790,10 @@ module.exports = do ->
 
           if !matchingRow
             throw new Error("Matching row was not found.")
-          
-          @_deleteRow matchingRow
 
+          @_deleteRow matchingRow
           return
+
         oncancel: =>
           dialog.destroy()
           return
@@ -818,7 +818,7 @@ module.exports = do ->
     deleteSelectedRows: ->
       dialog = alertify.dialog('confirm')
       rows = @selectedRows()
-      opts = 
+      opts =
         title: t('Delete selected questions')
         message: t('Are you sure you want to delete these questions?') + " " + t("This action cannot be undone.")
         labels:
@@ -854,7 +854,7 @@ module.exports = do ->
         view = @__rowViews.get(row.cid)
         viewModel = view.model
         viewParent = viewModel._parent
-        if row.constructor.kls isnt "Group"  
+        if row.constructor.kls isnt "Group"
           viewModel.getSurvey().insert_row.call viewParent._parent, viewModel, viewParent.models.indexOf(viewModel) + 1
         else # duplicate group
           $group_item = $("li[data-row-id='#{row.cid}']")

@@ -198,7 +198,7 @@ module.exports = do ->
               @processGetCurrentAndChildModels repeatGroup, repeatGroupModels
 
               if repeatGroupModels.length > 0
-                repeatGroupModels = repeatGroupModels.filter (model) => 
+                repeatGroupModels = repeatGroupModels.filter (model) =>
                   if model.cid == model.cid
                     model
                   else
@@ -214,7 +214,7 @@ module.exports = do ->
                       if itemGroupName && itemGroupName != ''
                         itemGroupVal = itemGroupName
                         break
-              
+
               if itemGroupVal is ''
                 maxIntVal = 0
                 allIntVals = _.union(@repeatGroupsIntVals, @nonRepeatGroupsIntVals, @nonGroupsIntVals)
@@ -231,7 +231,7 @@ module.exports = do ->
               itemGroupVal = itemGroupPrependVal + (maxIntVal + 1)
             else
               if @model.collection?.models?.length > 0
-                currentLevelModels = @model.collection?.models.filter (model) => 
+                currentLevelModels = @model.collection?.models.filter (model) =>
                   if model.cid == model.cid
                     model
                   else
@@ -374,6 +374,7 @@ module.exports = do ->
       if show and !@_settingsExpanded
         @_expandedRender()
         @$card.addClass('card--expanded-settings')
+        @hideMultioptions?()
         @_settingsExpanded = true
         # rerender locking (if applies to class extending BaseRowView)
         if @applyLocking
@@ -427,7 +428,7 @@ module.exports = do ->
       skipConfirm = $(evt.currentTarget).hasClass('js-force-delete-group')
       if !skipConfirm
         dialog = alertify.dialog('confirm')
-        opts = 
+        opts =
           title: t('Delete group')
           message: t('Are you sure you want to split apart this group?')
           labels:
@@ -441,11 +442,6 @@ module.exports = do ->
             return
         dialog.set(opts).show()
       else
-        @_deleteGroup()
-
-      # force delete is only used in test
-      skipConfirm = $(evt.currentTarget).hasClass('js-force-delete-group')
-      if skipConfirm
         @_deleteGroup()
         return
 
@@ -608,6 +604,16 @@ module.exports = do ->
         if key in ["name", "_isRepeat", "repeat_count", "appearance", "relevant"] or key.match(/^.+::.+/)
           new $viewRowDetail.DetailView(model: val, rowView: @).render().insertInDOM(@)
 
+      @model.on 'add', (row) =>
+        if row.constructor.key == 'group'
+          $appearanceField = @$('.xlf-dv-appearance').eq(0)
+          $appearanceField.hide()
+          $appearanceField.find('input:checkbox').prop('checked', false)
+          appearanceModel = @model.get('appearance')
+          if appearanceModel.getValue()
+            notify.warning(t("You can't display nested groups on the same screen - the setting has been removed from the parent group"))
+          appearanceModel.set('value', '')
+
       @model.on 'remove', (row) =>
         if row.constructor.key == 'group' && !@hasNestedGroups()
           @$('.xlf-dv-appearance').eq(0).show()
@@ -631,6 +637,7 @@ module.exports = do ->
         assetContent: @model.getSurvey()._initialParams,
         groupId: groupId
       })
+      return
 
   class RowView extends BaseRowView
     initialize: (opts) ->

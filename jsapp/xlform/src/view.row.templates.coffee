@@ -145,7 +145,7 @@ module.exports = do ->
           </span>
 
           <span class="card__buttons__button card__buttons__button--clone card__buttons__button--gray js-clone-group" data-button-name="duplicate">
-            <i class="k-icon k-icon-trash"></i>
+            <i class="k-icon k-icon-duplicate"></i>
           </span>
 
           <span class="card__buttons__button card__buttons__button--add card__buttons__button--green js-add-group-to-library" data-button-name="add-group-to-library">

@@ -4,6 +4,10 @@
  */
 
 require('jquery-ui/ui/widgets/sortable');
+require('jquery-ui/ui/widgets/resizable');
+
+import 'select2/dist/js/select2.full';
+
 import moment from 'moment';
 import AllRoutes from 'js/router/allRoutes';
 import RegistrationPasswordApp from './registrationPasswordApp';
