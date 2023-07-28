@@ -76,12 +76,12 @@ class LibrarySidebar extends Reflux.Component {
               m={{selected: this.isMyLibrarySelected()}}
             >
               <i className='k-icon k-icon-library'/>
-              <bem.FormSidebar__labelText>{t('My Library')}</bem.FormSidebar__labelText>
+              <bem.FormSidebar__labelText>{t('Library')}</bem.FormSidebar__labelText>
               <bem.FormSidebar__labelCount>{this.state.myLibraryCount}</bem.FormSidebar__labelCount>
             </bem.FormSidebar__label>
           </NavLink>
 
-          <NavLink
+          {/* <NavLink
             className='form-sidebar__navlink'
             to='/library/public-collections'
           >
@@ -91,7 +91,7 @@ class LibrarySidebar extends Reflux.Component {
               <i className='k-icon k-icon-library-public'/>
               <bem.FormSidebar__labelText>{t('Public Collections')}</bem.FormSidebar__labelText>
             </bem.FormSidebar__label>
-          </NavLink>
+          </NavLink> */}
         </bem.FormSidebar>
       </React.Fragment>
     );

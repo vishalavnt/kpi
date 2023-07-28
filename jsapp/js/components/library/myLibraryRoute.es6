@@ -6,7 +6,7 @@ import Reflux from 'reflux';
 import DocumentTitle from 'react-document-title';
 import Dropzone from 'react-dropzone';
 import mixins from 'js/mixins';
-import bem from 'js/bem';
+import bem, {makeBem} from 'js/bem';
 import {stores} from 'js/stores';
 import {validFileTypes} from 'utils';
 import myLibraryStore from './myLibraryStore';
@@ -14,6 +14,11 @@ import AssetsTable from 'js/components/assetsTable/assetsTable';
 import {MODAL_TYPES} from 'js/constants';
 import {ROOT_BREADCRUMBS} from 'js/components/library/libraryConstants';
 import {ASSETS_TABLE_CONTEXTS} from 'js/components/assetsTable/assetsTableConstants';
+
+bem.LibraryActionButtons = makeBem(null, 'library-action-buttons');
+bem.LibraryActionButtons__button = makeBem(bem.LibraryActionButtons, 'button', 'a');
+
+const LIBRARY_MANAGEMENT_SUPPORT_URL = 'https://docs.openclinica.com/oc4/help-index/form-designer/library-management/';
 
 class MyLibraryRoute extends React.Component {
   constructor(props) {
@@ -94,7 +99,7 @@ class MyLibraryRoute extends React.Component {
     }
 
     return (
-      <DocumentTitle title={`${t('My Library')} | OpenClinica`}>
+      <DocumentTitle title={`${t('Library')} | OpenClinica`}>
         <Dropzone
           onDrop={this.onFileDrop}
           disableClick
@@ -105,6 +110,16 @@ class MyLibraryRoute extends React.Component {
         >
           <bem.Breadcrumbs m='gray-wrapper'>
             <bem.Breadcrumbs__crumb>{ROOT_BREADCRUMBS.MY_LIBRARY.label}</bem.Breadcrumbs__crumb>
+            <bem.LibraryActionButtons>
+              <bem.LibraryActionButtons__button
+                m='library-help-link'
+                href={LIBRARY_MANAGEMENT_SUPPORT_URL}
+                target='_blank'
+                data-tip={t('Learn more about Library Management')}
+                >
+                <i className='k-icon k-icon-help'/>
+              </bem.LibraryActionButtons__button>
+            </bem.LibraryActionButtons>
           </bem.Breadcrumbs>
 
           <AssetsTable

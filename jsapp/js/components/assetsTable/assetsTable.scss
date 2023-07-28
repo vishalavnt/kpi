@@ -305,43 +305,60 @@ $assets-table-hover-bg: colors.$kobo-gray-98;
       pointer-events: none;
     }
 
-    &.assets-table-row__column--icon-status {
-      width: 70px;
-      text-align: center;
-    }
+    // &.assets-table-row__column--icon-status {
+    //   width: 70px;
+    //   text-align: center;
+    // }
 
     &.assets-table-row__column--name {
       flex: 1;
       color: colors.$kobo-gray-24;
     }
 
+    &.assets-table-row__column--item-version {
+      width: 5%;
+    }
+
+    &.assets-table-row__column--item-type {
+      width: 10%;
+    }
+
     &.assets-table-row__column--owner {
-      width: 10%;
+      width: 16%;
     }
 
-    &.assets-table-row__column--subscribers-count {
-      width: 10%;
-    }
+    // &.assets-table-row__column--subscribers-count {
+    //   width: 10%;
+    // }
 
-    &.assets-table-row__column--organization {
-      width: 10%;
-    }
+    // &.assets-table-row__column--organization {
+    //   width: 10%;
+    // }
 
-    &.assets-table-row__column--languages {
-      width: 12.5%;
-    }
+    // &.assets-table-row__column--languages {
+    //   width: 12.5%;
+    // }
 
-    &.assets-table-row__column--primary-sector {
-      width: 15%;
-    }
+    // &.assets-table-row__column--primary-sector {
+    //   width: 15%;
+    // }
 
-    &.assets-table-row__column--country {
-      width: 7.5%;
-    }
+    // &.assets-table-row__column--country {
+    //   width: 7.5%;
+    // }
 
     &.assets-table-row__column--date-modified {
-      width: 17.5%;
+      width: 13%;
+    }
+
+    &.assets-table-row__column--actions {
+      width: 17%;
       text-align: right;
+      z-index: 15;
+
+      .asset-action-buttons {
+        justify-content: flex-end;
+      }
     }
 
     .k-icon {
@@ -373,6 +390,10 @@ $assets-table-hover-bg: colors.$kobo-gray-98;
     min-width: 18px;
     border-radius: 1em;
     text-align: center;
+  }
+
+  &.assets-table-row__tag--row-count {
+    margin-right: 10px;
   }
 }
 

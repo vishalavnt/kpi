@@ -240,7 +240,7 @@ const MainHeader = class MainHeader extends Reflux.Component {
       iconClassName = getAssetIcon(this.state.asset);
     }
 
-    let librarySearchBoxPlaceholder = t('Search My Library');
+    let librarySearchBoxPlaceholder = t('Search Library');
     if (this.isPublicCollections()) {
       librarySearchBoxPlaceholder = t('Search Public Collections');
     }

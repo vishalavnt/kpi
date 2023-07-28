@@ -360,7 +360,7 @@ export default class AssetsTable extends React.Component<
 
         {this.renderPagination()}
 
-        {this.props.totalAssets !== null &&
+        {/* {this.props.totalAssets !== null &&
           <button
             className='mdl-button'
             onClick={this.toggleFullscreen.bind(this)}
@@ -368,7 +368,7 @@ export default class AssetsTable extends React.Component<
             {t('Toggle fullscreen')}
             <i className='k-icon k-icon-expand' />
           </button>
-        }
+        } */}
       </bem.AssetsTable__footer>
     );
   }
@@ -383,18 +383,12 @@ export default class AssetsTable extends React.Component<
       <bem.AssetsTable m={modifiers}>
         <bem.AssetsTable__header>
           <bem.AssetsTableRow m='header'>
-            {this.renderHeader(ASSETS_TABLE_COLUMNS['icon-status'])}
             {this.renderHeader(ASSETS_TABLE_COLUMNS.name)}
-            {this.renderHeader(ASSETS_TABLE_COLUMNS['items-count'])}
+            {this.renderHeader(ASSETS_TABLE_COLUMNS['item-version'])}
+            {this.renderHeader(ASSETS_TABLE_COLUMNS['item-type'])}
             {this.renderHeader(ASSETS_TABLE_COLUMNS.owner)}
-            {this.props.context === ASSETS_TABLE_CONTEXTS.PUBLIC_COLLECTIONS &&
-              this.renderHeader(ASSETS_TABLE_COLUMNS['subscribers-count'])
-            }
-            {this.renderHeader(ASSETS_TABLE_COLUMNS.languages)}
-            {this.props.context === ASSETS_TABLE_CONTEXTS.PUBLIC_COLLECTIONS &&
-              this.renderHeader(ASSETS_TABLE_COLUMNS['primary-sector'])
-            }
             {this.renderHeader(ASSETS_TABLE_COLUMNS['date-modified'])}
+            {this.renderHeader(ASSETS_TABLE_COLUMNS.actions)}
 
             {this.state.scrollbarWidth !== 0 && this.state.scrollbarWidth !== null &&
               <div

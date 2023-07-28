@@ -704,6 +704,7 @@ module.exports = do ->
     # nodes are created.
     ###
     applyLocking: () ->
+      return
       rowName = @getRowName()
 
       # no point of checking locking for nameless row

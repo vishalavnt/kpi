@@ -343,6 +343,7 @@ interface AssetSummary {
     };
   };
   naming_conflicts?: string[];
+  settings_version?: string;
 }
 
 interface AssetReportStylesSpecified {
