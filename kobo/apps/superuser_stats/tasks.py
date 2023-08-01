@@ -15,10 +15,21 @@ from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.files.storage import get_storage_class
-from django.db.models import Sum, CharField, Count, F, Value, DateField, Q
+from django.db.models import (
+    CharField,
+    Count,
+    DateField,
+    IntegerField,
+    F,
+    Q,
+    Sum,
+    Value,
+)
+from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast, Concat
 
 from hub.models import ExtraUserDetail
+from kobo.apps.trackers.models import MonthlyNLPUsageCounter
 from kobo.static_lists import COUNTRIES
 from kpi.constants import ASSET_TYPE_SURVEY
 from kpi.deployment_backends.kc_access.shadow_models import (
@@ -227,7 +238,10 @@ def generate_domain_report(output_filename: str, start_date: str, end_date: str)
             writer.writerow(row)
 
 
-@shared_task
+@shared_task(
+    soft_time_limit=settings.CELERY_LONG_RUNNING_TASK_SOFT_TIME_LIMIT,
+    time_limit=settings.CELERY_LONG_RUNNING_TASK_TIME_LIMIT
+)
 def generate_forms_count_by_submission_range(output_filename: str):
     # List of submissions count ranges
     ranges = [
@@ -479,8 +493,28 @@ def generate_user_statistics_report(
         ).filter(date__range=(start_date, end_date)).values(
             'user_id',
             'user__username',
+            'user__email',
             'user__date_joined',
         ).order_by('user__date_joined').annotate(count_sum=Sum('counter'))
+    )
+
+    # get NLP statistics
+    nlp_counters = (
+        MonthlyNLPUsageCounter.objects.annotate(
+            date=Cast(
+                Concat(F('year'), Value('-'), F('month'), Value('-'), 1),
+                DateField(),
+            ),
+        ).filter(date__range=(start_date, end_date)).values(
+            'user_id',
+        ).annotate(
+            total_google_asr=Sum(
+                Cast(F('counters__google_asr_seconds'), IntegerField()),
+            ),
+            total_google_mt=Sum(
+                Cast(F('counters__google_mt_characters'), IntegerField()),
+            ),
+        )
     )
 
     def _get_country_value(value: Union[dict, list]) -> str:
@@ -492,27 +526,42 @@ def generate_user_statistics_report(
         return value
 
     for record in records:
+        user_id = record['user_id']
         user_details, created = ExtraUserDetail.objects.get_or_create(
-            user_id=record['user_id']
+            user_id=user_id
         )
+        # Users will only have a counter if they have used NLP services in the
+        # specified period so a fallback is needed
+        try:
+            nlp_totals = nlp_counters.get(user_id=user_id)
+        except MonthlyNLPUsageCounter.DoesNotExist:
+            nlp_totals = {}
         data.append([
             record['user__username'],
+            user_details.data.get('name', ''),
             record['user__date_joined'],
+            record['user__email'],
             user_details.data.get('organization', ''),
             _get_country_value(user_details.data.get('country', '')),
             record['count_sum'],
-            forms_count.get(record['user_id'], 0),
-            deployment_count.get(record['user_id'], 0)
+            forms_count.get(user_id, 0),
+            deployment_count.get(user_id, 0),
+            nlp_totals.get('total_google_asr', 0),
+            nlp_totals.get('total_google_mt', 0),
         ])
 
     columns = [
         'Username',
+        'Name',
         'Date Joined',
+        'Email',
         'Organization',
         'Country',
         'Submissions Count',
         'Forms Count',
-        'Deployments Count'
+        'Deployments Count',
+        'Google ASR Seconds',
+        'Google MT Seconds',
     ]
 
     default_storage = get_storage_class()()
@@ -528,9 +577,10 @@ def generate_user_details_report(output_filename: str):
         'id',
         'username',
         'is_superuser',
-        'is_staff',
-        'date_joined_str',
-        'last_login_str',
+        'joined_date',
+        'last_login_date',
+        'removal_request_date',
+        'removed_date',
         'is_active',
         'email',
         'mfa_is_active',
@@ -552,6 +602,7 @@ def generate_user_details_report(output_filename: str):
         'linkedin',
         'instagram',
         'metadata',
+        'last_ui_language',
     ]
 
     def flatten_metadata_inplace(metadata: dict):
@@ -571,13 +622,18 @@ def generate_user_details_report(output_filename: str):
         return val
 
     values = USER_COLS + METADATA_COL
+
     data = (
         User.objects.exclude(pk=settings.ANONYMOUS_USER_ID)
         .annotate(
             mfa_is_active=F('mfa_methods__is_active'),
             metadata=F('extra_details__data'),
-            date_joined_str=Cast('date_joined', CharField()),
-            last_login_str=Cast('last_login', CharField()),
+            joined_date=Cast('date_joined', CharField()),
+            last_login_date=Cast('last_login', CharField()),
+            removal_request_date=Cast(
+                'extra_details__date_removal_requested', CharField()
+            ),
+            removed_date=Cast('extra_details__date_removed', CharField()),
             asset_count=Count('assets'),
         )
         .values(*values)

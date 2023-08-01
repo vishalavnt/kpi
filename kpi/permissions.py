@@ -265,6 +265,15 @@ class AssetPermissionAssignmentPermission(AssetNestedObjectPermission):
     perms_map['DELETE'] = perms_map['GET']
 
 
+class AssetVersionReadOnlyPermission(AssetNestedObjectPermission):
+
+    required_permissions = ['%(app_label)s.view_asset']
+
+    perms_map = {
+        'GET': ['%(app_label)s.view_asset'],
+    }
+
+
 # FIXME: Name is no longer accurate.
 class IsOwnerOrReadOnly(AssetPermission):
     """

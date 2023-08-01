@@ -362,8 +362,9 @@ module.exports = do ->
           @model.finalize()
           val.set('value', '')
         view.render().insertInDOM(@)
-      if @model.getValue('required')
-        @$card.addClass('card--required')
+
+      # Initialize the mandatory asterisk
+      @_onMandatorySettingChange(@model.getValue('required'))
 
       return @
 
@@ -650,6 +651,17 @@ module.exports = do ->
       super()
       @applyLocking()
       return @
+
+    # Updates the "mandatory" asterisk on the row card when settings change.
+    # Also called on initial card rendering.
+    # NOTE: the MandatorySettingView responds with a string (e.g. 'false') but
+    # the initial rendering method is passing a boolean.
+    _onMandatorySettingChange: (newVal) ->
+      if newVal and newVal isnt 'false' and newVal isnt ''
+        @$card.addClass('card--required')
+      else
+        @$card.removeClass('card--required')
+      return
 
     _expandedRender: ->
       @$header.after($viewTemplates.row.rowSettingsView())

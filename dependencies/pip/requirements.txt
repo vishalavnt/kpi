@@ -64,6 +64,7 @@ celery[redis]==5.2.6
     # via
     #   -r dependencies/pip/requirements.in
     #   django-celery-beat
+    #   flower
 certifi==2021.10.8
     # via
     #   msrest
@@ -112,7 +113,7 @@ dict2xml==1.7.1
     # via -r dependencies/pip/requirements.in
 dj-static==0.0.6
     # via -r dependencies/pip/requirements.in
-dj-stripe==2.6.2
+dj-stripe==2.7.3
     # via -r dependencies/pip/requirements.in
 django==3.2.15
     # via
@@ -143,7 +144,7 @@ django==3.2.15
     #   jsonfield
     #   kobo-service-account
     #   mozilla-django-oidc
-django-allauth==0.52.0
+django-allauth==0.54.0
     # via -r dependencies/pip/requirements.in
 django-amazon-ses==4.0.1
     # via -r dependencies/pip/requirements.in
@@ -183,6 +184,8 @@ django-picklefield==3.0.1
     # via django-constance
 django-private-storage==3.0
     # via -r dependencies/pip/requirements.in
+django-prometheus==2.2.0
+    # via -r dependencies/pip/requirements.in
 django-redis==5.2.0
     # via -r dependencies/pip/requirements.in
 django-redis-sessions==0.6.2
@@ -191,7 +194,7 @@ django-request-cache==1.4.0
     # via -r dependencies/pip/requirements.in
 django-reversion==5.0.0
     # via -r dependencies/pip/requirements.in
-django-storages[azure,boto3]==1.12.3
+django-storages[azure,boto3]==1.13.2
     # via -r dependencies/pip/requirements.in
 django-taggit==2.1.0
     # via -r dependencies/pip/requirements.in
@@ -223,6 +226,8 @@ et-xmlfile==1.1.0
     # via openpyxl
 filelock==3.12.2
     # via tldextract
+flower==1.2.0
+    # via -r dependencies/pip/requirements.in
 future==0.18.2
     # via
     #   -r dependencies/pip/requirements.in
@@ -278,6 +283,8 @@ httplib2==0.20.4
     # via
     #   google-api-python-client
     #   google-auth-httplib2
+humanize==4.6.0
+    # via flower
 idna==3.3
     # via
     #   requests
@@ -342,6 +349,10 @@ path-py==12.5.0
     # via formpack
 pillow==9.1.0
     # via django-markdownx
+prometheus-client==0.16.0
+    # via
+    #   django-prometheus
+    #   flower
 prompt-toolkit==3.0.29
     # via click-repl
 proto-plus==1.20.6
@@ -416,6 +427,7 @@ pytz==2022.1
     #   django
     #   django-timezone-field
     #   djangorestframework
+    #   flower
     #   twilio
 pyxform==1.9.0
     # via
@@ -502,6 +514,8 @@ tabulate==0.8.9
     # via -r dependencies/pip/requirements.in
 tldextract==3.4.4
     # via -r dependencies/pip/requirements.in
+tornado==6.2
+    # via flower
 twilio==7.8.2
     # via django-trench
 typing-extensions==4.2.0
@@ -514,7 +528,7 @@ urllib3==1.26.9
     #   requests
     #   responses
     #   sentry-sdk
-uwsgi==2.0.20
+uwsgi==2.0.21
     # via -r dependencies/pip/requirements.in
 vine==5.0.0
     # via

@@ -1,10 +1,10 @@
 import React, {Suspense} from 'react';
 import autoBind from 'react-autobind';
 import {actions} from 'js/actions';
-import mixins from 'js/mixins';
 import LoadingSpinner from 'js/components/common/loadingSpinner';
 import AccessDenied from 'js/router/accessDenied';
 import {withRouter} from './legacy';
+import {userCan, userCanPartially, userWithSameSubdomainAsAssetOwner} from 'js/components/permissions/utils';
 
 /**
  * A gateway component for rendering the route only for a user who has
@@ -98,9 +98,9 @@ class PermProtectedRoute extends React.Component {
   getUserHasRequiredPermission(asset, requiredPermission) {
     return (
       // we are ok with either full or partial permission
-      mixins.permissions.userWithSameSubdomainAsAssetOwner(asset) ||
-      mixins.permissions.userCan(requiredPermission, asset) ||
-      mixins.permissions.userCanPartially(requiredPermission, asset)
+      userWithSameSubdomainAsAssetOwner(asset) ||
+      userCan(requiredPermission, asset) ||
+      userCanPartially(requiredPermission, asset)
     );
   }
 

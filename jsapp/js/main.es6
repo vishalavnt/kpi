@@ -12,7 +12,6 @@ import moment from 'moment';
 import AllRoutes from 'js/router/allRoutes';
 import RegistrationPasswordApp from './registrationPasswordApp';
 import {AppContainer} from 'react-hot-loader';
-import '@babel/polyfill'; // required to support Array.prototypes.includes in IE11
 import React from 'react';
 import {Cookies} from 'react-cookie';
 import {render} from 'react-dom';
@@ -33,6 +32,15 @@ import Modal from 'react-modal';
 
 // Tell moment library what is the app language
 moment.locale(currentLang());
+
+// Setup Google Analytics
+const gaTokenEl = document.head.querySelector('meta[name=google-analytics-token]');
+if (gaTokenEl !== null && gaTokenEl.content) {
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function() {window.dataLayer.push(arguments);};
+  window.gtag('js', new Date());
+  window.gtag('config', gaTokenEl.content);
+}
 
 // Setup the authentication of AJAX calls
 $.ajaxSetup({
@@ -118,7 +126,7 @@ if (document.head.querySelector('meta[name=kpi-root-path]')) {
 
   if (module.hot) {
     module.hot.accept('js/app', () => {
-      let AllRoutes = require('js/app').default;
+      const AllRoutes = require('js/app').default;
       render(
         <AppContainer>
           <AllRoutes />

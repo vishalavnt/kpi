@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import reactMixin from 'react-mixin';
 import autoBind from 'react-autobind';
 import Reflux from 'reflux';
-import assetUtils from 'js/assetUtils';
 import bem from 'js/bem';
 import {dataInterface} from '../dataInterface';
 import {stores} from '../stores';
@@ -22,12 +21,13 @@ import {
 import {ROUTES} from 'js/router/routerConstants';
 import {
   formatTime,
-  notify
+  notify,
 } from 'utils';
 import {
   Link,
 } from 'react-router-dom';
 import {withRouter} from 'js/router/legacy';
+import {userCan, userCanRemoveSharedProject} from 'js/components/permissions/utils';
 
 const DVCOUNT_LIMIT_MINIMUM = 20;
 
@@ -116,7 +116,7 @@ class FormLanding extends React.Component {
     return false;
   }
   isFormRedeploymentNeeded() {
-    return !this.isCurrentVersionDeployed() && this.userCan('change_asset', this.state);
+    return !this.isCurrentVersionDeployed() && userCan('change_asset', this.state);
   }
   hasLanguagesDefined(translations) {
     return translations && (translations.length > 1 || translations[0] !== null);
@@ -469,6 +469,17 @@ class FormLanding extends React.Component {
             <i className='k-icon-clone'/>
             {t('Clone this form')}
           </bem.PopoverMenu__link>
+          {(
+            isLoggedIn &&
+            userCanRemoveSharedProject(this.state)
+          ) &&
+            <bem.PopoverMenu__link
+              onClick={this.nonOwnerSelfRemoval}
+            >
+              <i className='k-icon k-icon-trash'/>
+              {t('Remove shared project')}
+            </bem.PopoverMenu__link>
+          }
 
           {isLoggedIn &&
             <bem.PopoverMenu__link onClick={this.saveCloneAs}>
@@ -542,7 +553,7 @@ class FormLanding extends React.Component {
   }
   render () {
     var docTitle = this.state.name || t('Untitled');
-    const userCanEdit = this.userCan('change_asset', this.state);
+    const userCanEdit = userCan('change_asset', this.state);
     const isLoggedIn = sessionStore.isLoggedIn;
 
     if (this.state.uid === undefined) {
@@ -581,7 +592,6 @@ class FormLanding extends React.Component {
   }
 }
 
-reactMixin(FormLanding.prototype, mixins.permissions);
 reactMixin(FormLanding.prototype, mixins.dmix);
 reactMixin(FormLanding.prototype, Reflux.ListenerMixin);
 

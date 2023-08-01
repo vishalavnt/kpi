@@ -52,6 +52,7 @@ django-amazon-ses
 django-webpack-loader
 django-loginas
 django-markdownx
+django-prometheus
 
 django-markitup
 django-mptt
@@ -64,6 +65,7 @@ djangorestframework-xml
 django-redis-sessions
 django-request-cache
 drf-extensions
+flower
 future
 geojson-rewind
 google-api-python-client

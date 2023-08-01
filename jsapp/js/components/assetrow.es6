@@ -15,6 +15,7 @@ import {
 import TagInput from 'js/components/tagInput';
 import AssetName from 'js/components/common/assetName';
 import {formatTime} from 'utils';
+import {userCan} from 'js/components/permissions/utils';
 
 class AssetRow extends React.Component {
   constructor(props){
@@ -89,7 +90,7 @@ class AssetRow extends React.Component {
     const assetName = this.props.name || this.props.firstQuestionLabel;
 
     if (this.props.has_deployment && this.props.deployment__submission_count &&
-        this.userCan('view_submissions', this.props)) {
+        userCan('view_submissions', this.props)) {
       hrefTo = `/forms/${this.props.uid}/summary`;
     }
 
@@ -239,7 +240,7 @@ class AssetRow extends React.Component {
                 }
               </bem.AssetRow__cell>
             }
-            
+
             {/* "actions" column */}
             <bem.AssetRow__cell
               m={'actions'}
@@ -296,7 +297,7 @@ class AssetRow extends React.Component {
                       );
                 })
               }
-              
+
               { this.props.asset_type && this.props.asset_type === ASSET_TYPES.survey.id && this.props.has_deployment && !this.props.deployment__active && userCanEdit &&
                 <bem.AssetRow__actionIcon
                       m={'unarchive'}
@@ -329,8 +330,8 @@ class AssetRow extends React.Component {
               {this.props.downloads.map((dl)=>{
                 const format = dl.format.toString().toUpperCase();
                 return (
-                    <bem.AssetRow__actionIcon 
-                      m={`dl-${dl.format}`} 
+                    <bem.AssetRow__actionIcon
+                      m={`dl-${dl.format}`}
                       href={dl.url}
                       key={`dl-${dl.format}`}
                       data-tip={`${t('Download')} ${format}`}
@@ -418,14 +419,13 @@ class AssetRow extends React.Component {
               <TagInput uid={this.props.uid} tags={this.props.tags} />
             </bem.AssetRow__cell>
           }
-          
+
         </bem.AssetRow>
       );
   }
 };
 
 reactMixin(AssetRow.prototype, mixins.droppable);
-reactMixin(AssetRow.prototype, mixins.permissions);
 reactMixin(AssetRow.prototype, mixins.contextRouter);
 
 AssetRow.contextTypes = {

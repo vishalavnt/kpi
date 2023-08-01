@@ -7,13 +7,12 @@ from django.db.models import (
     Count,
     F,
     IntegerField,
-    Max,
-    OuterRef,
     Q,
     Value,
     When,
 )
 from django.db.models.query import QuerySet
+from django.utils.datastructures import MultiValueDictKeyError
 from rest_framework import filters
 from rest_framework.request import Request
 
@@ -35,7 +34,6 @@ from kpi.exceptions import (
 )
 from kpi.models import Asset, ObjectPermission
 from kpi.models.asset import UserAssetSubscription
-from kpi.models.asset_version import AssetVersion
 from kpi.utils.query_parser import get_parsed_parameters, parse, ParseError
 from kpi.utils.domain import get_subdomain
 from bossoidc2.models import Keycloak as KeycloakModel
@@ -395,6 +393,11 @@ class SearchFilter(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         try:
             q = request.query_params['q']
+        except AttributeError:
+            try:
+                q = request.GET['q']
+            except MultiValueDictKeyError:
+                return queryset
         except KeyError:
             return queryset
 

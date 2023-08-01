@@ -1,8 +1,8 @@
 import {action, makeAutoObservable} from 'mobx';
 import {ANON_USERNAME, ANON_USER_TYPE, ANON_USER_SUBDOMAIN} from 'js/constants';
 import {dataInterface} from 'js/dataInterface';
-import type {AccountResponse} from 'js/dataInterface';
-import {log} from 'js/utils';
+import type {AccountResponse, FailResponse} from 'js/dataInterface';
+import {log, currentLang} from 'js/utils';
 import type {Json} from 'js/components/common/common.interfaces';
 import type {ProjectViewsSettings} from 'js/projects/customViewStore';
 import { actions } from 'js/actions';
@@ -11,6 +11,7 @@ import {
   checkCrossStorageUser,
   updateCrossStorageTimeOut
 } from 'js/ocutils';
+import cloneDeep from 'lodash.clonedeep';
 
 class SessionStore {
   currentAccount: AccountResponse | {username: string; user_type: string; subdomain: string} = {
@@ -60,11 +61,15 @@ class SessionStore {
                 });
             }
             window.parent.postMessage('fd_loggedin', '*');
+            // Save UI language to Back-end for language usage statistics.
+            // Logging in causes the whole page to be reloaded, so we don't need
+            // to do it more than once.
+            this.saveUiLanguage();
           }
           this.isAuthStateKnown = true;
         }
       ),
-      action('verifyLoginFailure', (xhr: any) => {
+      action('verifyLoginFailure', (xhr: FailResponse) => {
         this.isPending = false;
         log('login not verified', xhr.status, xhr.statusText);
       })
@@ -89,15 +94,23 @@ class SessionStore {
   /** Updates one of the `extra_details`. */
   public setDetail(detailName: string, value: Json | ProjectViewsSettings) {
     dataInterface.patchProfile({extra_details: {[detailName]: value}}).then(
-      action(
-        'setDetailSuccess',
-        (account: AccountResponse) => {
-          if ('email' in account) {
-            this.currentAccount = account;
-          }
+      action('setDetailSuccess', (account: AccountResponse) => {
+        if ('email' in account) {
+          this.currentAccount = account;
         }
-      )
+      })
     );
+  }
+
+  private saveUiLanguage() {
+    // We want to save the language if it differs from the one we saved or if
+    // none is saved yet.
+    if (
+      'extra_details' in this.currentAccount &&
+      this.currentAccount.extra_details.last_ui_language !== currentLang()
+    ) {
+      this.setDetail('last_ui_language', currentLang());
+    }
   }
 }
 

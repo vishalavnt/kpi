@@ -8,6 +8,7 @@ import mixins from 'js/mixins';
 import type {AssetResponse, AssetDownloads} from 'js/dataInterface';
 import {ASSET_TYPES} from 'js/constants';
 import assetUtils from 'js/assetUtils';
+import {userWithSameSubdomainAsAssetOwner} from 'js/components/permissions/utils';
 import type {AssetsTableContextName} from './assetsTableConstants';
 import {ASSETS_TABLE_CONTEXTS} from './assetsTableConstants';
 import './assetActionButtons.scss';
@@ -83,7 +84,7 @@ class AssetsTableRow extends React.Component<AssetsTableRowProps> {
       downloads = this.props.asset.downloads.filter(dl => dl.format === 'xls');
     }
 
-    // const userCanEdit = mixins.permissions.userWithSameSubdomainAsAssetOwner(this.props.asset);
+    // const userCanEdit = userWithSameSubdomainAsAssetOwner(this.props.asset);
     const userCanEdit = true;
 
     return (

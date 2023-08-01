@@ -199,7 +199,8 @@ interface AssignablePermissionPartial {
   };
 }
 
-interface SelectChoice {
+export interface LabelValuePair {
+  /** Note: the labels are always localized in the current UI language */
   label: string;
   value: string;
 }
@@ -406,22 +407,13 @@ export interface AssetTableSettings {
 }
 
 export interface AssetSettings {
-  sector?: {
-    label: string;
-    value: string;
-  } | null;
-  country?: SelectChoice | SelectChoice[] | null;
+  sector?: LabelValuePair | null;
+  country?: LabelValuePair | LabelValuePair[] | null;
   description?: string;
   'data-table'?: AssetTableSettings;
   organization?: string;
-  collects_pii?: {
-    label: string;
-    value: string;
-  } | null;
-  operational_purpose?: {
-    label: string;
-    value: string;
-  } | null;
+  collects_pii?: LabelValuePair | null;
+  operational_purpose?: LabelValuePair | null;
 }
 
 /** This is the asset object Frontend uses with the endpoints. */
@@ -525,7 +517,6 @@ export interface AssetResponse extends AssetRequestObject {
     format: string;
     url: string;
   }>;
-  koboform_link?: string;
   xform_link?: string;
   hooks_link?: string;
   uid: string;
@@ -658,8 +649,10 @@ export interface AccountResponse {
     linkedin: string;
     instagram: string;
     project_views_settings: ProjectViewsSettings;
+    /** We store this for usage statistics only. */
+    last_ui_language?: string;
     // JSON values are the backend reality, but we make assumptions
-    [key: string]: Json | ProjectViewsSettings;
+    [key: string]: Json | ProjectViewsSettings | undefined;
   };
   git_rev: {
     short: string;
@@ -669,6 +662,28 @@ export interface AccountResponse {
   };
   social_accounts: SocialAccount[];
   subdomain: string;
+}
+
+export interface AccountRequest {
+  email?: string;
+  extra_details?: {
+    name?: string;
+    organization?: string;
+    organization_website?: string;
+    sector?: string;
+    gender?: string;
+    bio?: string;
+    city?: string;
+    country?: string;
+    require_auth?: boolean;
+    twitter?: string;
+    linkedin?: string;
+    instagram?: string;
+    project_views_settings?: ProjectViewsSettings;
+    last_ui_language?: string;
+  };
+  current_password?: string;
+  new_password?: string;
 }
 
 interface UserNotLoggedInResponse {
@@ -716,7 +731,6 @@ export interface EnvironmentResponse {
   mfa_enabled: boolean;
   mfa_code_length: number;
   stripe_public_key: string | null;
-  stripe_pricing_table_id: string | null;
   social_apps: SocialApp[];
 }
 
@@ -766,6 +780,7 @@ interface ExternalServiceRequestData {
 }
 
 interface DataInterface {
+  patchProfile: (data: AccountRequest) => JQuery.jqXHR<AccountResponse>;
   [key: string]: Function;
 }
 
@@ -823,7 +838,7 @@ export const dataInterface: DataInterface = {
 
   keycloakLogout: (): JQuery.Promise<any> => {
     const d = $.Deferred();
-    $ajax({ url: `${ROOT_URL}/openid/logout` }).done(d.resolve).fail(function (_resp: { status: number; }, _etype: any, _emessage: any) {
+    $ajax({ url: `${ROOT_URL}/openid/logout`}).done(d.resolve).fail(function (_resp: {status: number;}, _etype: unknown, _emessage: unknown) {
       // if (resp.status === 200) {
       //   d.resolve();
       // } else {
@@ -853,25 +868,7 @@ export const dataInterface: DataInterface = {
     return d.promise();
   },
 
-  patchProfile(data: {
-    email?: string;
-    extra_details?: {
-      name?: string;
-      organization?: string;
-      organization_website?: string;
-      sector?: string;
-      gender?: string;
-      bio?: string;
-      city?: string;
-      country?: string;
-      require_auth?: boolean;
-      twitter?: string;
-      linkedin?: string;
-      instagram?: string;
-    };
-    current_password?: string;
-    new_password?: string;
-  }): JQuery.jqXHR<AccountResponse> {
+  patchProfile(data: AccountRequest): JQuery.jqXHR<AccountResponse> {
     return $ajax({
       url: `${ROOT_URL}/me/`,
       method: 'PATCH',

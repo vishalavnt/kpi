@@ -13,7 +13,7 @@ module.exports = do ->
       'blur .js-mandatory-setting-custom-text': 'onCustomTextBlur'
     }
 
-    initialize: ({@model}) ->
+    initialize: ({@model, @onChange}) ->
       if @model
         @model.on('change', @render, @)
       return
@@ -46,14 +46,14 @@ module.exports = do ->
       if $customEl.siblings('.message').length is 0
         $message = $('<div/>').addClass('message').text(t("This field is required"))
         $customEl.after($message)
-    
+
     hideMessage: () ->
       fieldClass = 'input-error'
       customEl = @$el.find('.js-mandatory-setting-custom-text')
       $customEl = $(customEl)
       $customEl.closest('label').removeClass(fieldClass)
       $customEl.siblings('.message').remove()
-    
+
     showOrHideCondition: () ->
       customEl = @$el.find('.js-mandatory-setting-custom-text')
       $customEl = $(customEl)
@@ -61,7 +61,7 @@ module.exports = do ->
         @showMessage()
       else
         @hideMessage()
-    
+
     onRadioChange: (evt) ->
       val = evt.currentTarget.value
       if val is 'custom'
@@ -101,6 +101,10 @@ module.exports = do ->
           @model.set('value', val)
       else
         @model.set('value', val)
+
+      if typeof @onChange is 'function'
+        @onChange(val)
+
       return
 
   MandatorySettingView: MandatorySettingView
