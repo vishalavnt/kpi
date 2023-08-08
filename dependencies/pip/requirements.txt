@@ -18,6 +18,10 @@
     # via -r dependencies/pip/requirements.in
 -e git+https://github.com/gushil/python-keycloak-client.git@549c90f615fc2327bd47819290dd9c0d5c6de680#egg=python-keycloak-client
     # via -r dependencies/pip/requirements.in
+-e git+https://github.com/OpenClinica/pyxform.git#egg=pyxform
+    # via
+    #   -r dependencies/pip/requirements.in
+    #   formpack
 -e git+https://github.com/kobotoolbox/ssrf-protect@9b97d3f0fd8f737a38dd7a6b64efeffc03ab3cdd#egg=ssrf_protect
     # via -r dependencies/pip/requirements.in
 alabaster==0.7.13
@@ -429,10 +433,6 @@ pytz==2022.1
     #   djangorestframework
     #   flower
     #   twilio
-pyxform==1.9.0
-    # via
-    #   -r dependencies/pip/requirements.in
-    #   formpack
 redis==4.2.2
     # via
     #   celery

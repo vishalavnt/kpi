@@ -82,7 +82,7 @@ openpyxl
 psycopg2
 pymongo==3.12.3
 python-dateutil
-pyxform==1.9.0
+-e git+https://github.com/OpenClinica/pyxform.git#egg=pyxform
 requests
 responses
 shortuuid
