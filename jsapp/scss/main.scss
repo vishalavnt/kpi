@@ -4,13 +4,13 @@
 
 @import "./fonts/roboto";
 @import "../fonts/k-icons";
-@import "~select2/select2.css";
+@import "~select2/dist/css/select2.css";
 @import "~react-table/react-table.css";
 @import "~alertifyjs/build/css/alertify.css";
+@import "~jquery-ui/themes/base/all.css";
 
 @import "./libs/alertify.overrides";
 @import "./libs/react-select.overrides";
-@import "./libs/react-tagsinput";
 
 // Form Builder related stylesheets
 @import "stylesheets/partials/select2_override";

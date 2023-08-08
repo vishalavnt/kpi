@@ -1,3 +1,5 @@
+@use '~kobo-common/src/styles/colors';
+
 .mandatory-setting {
   .card__settings__fields__field > label {
     vertical-align: top;
@@ -11,11 +13,19 @@
         display: block;
       }
 
-      .radio__input:not(:checked) ~ .text-box {
+      input[type='radio']:not(:checked) ~ .text-box {
         visibility: hidden;
         height: 0;
         overflow: hidden;
         margin-top: 0;
+      }
+
+      .input-error {
+        color: colors.$kobo-light-red;
+    
+        input[type="text"] {
+          border-color: colors.$kobo-light-red;
+        }
       }
     }
   }

@@ -4,20 +4,43 @@
  */
 
 require('jquery-ui/ui/widgets/sortable');
+require('jquery-ui/ui/widgets/resizable');
+
+import 'select2/dist/js/select2.full';
+
 import moment from 'moment';
 import AllRoutes from 'js/router/allRoutes';
 import RegistrationPasswordApp from './registrationPasswordApp';
 import {AppContainer} from 'react-hot-loader';
-import '@babel/polyfill'; // required to support Array.prototypes.includes in IE11
 import React from 'react';
 import {Cookies} from 'react-cookie';
 import {render} from 'react-dom';
 import {csrfSafeMethod, currentLang} from 'utils';
+import {
+  initCrossStorageClient,
+  addCustomEventListener,
+  setPeriodicCrossStorageCheck,
+  checkCrossStorageTimeOut,
+  checkCrossStorageUser,
+  updateCrossStorageTimeOut
+} from './ocutils';
+import actions from './actions';
+import sessionStore from './stores/session';
+
 require('../scss/main.scss');
 import Modal from 'react-modal';
 
 // Tell moment library what is the app language
 moment.locale(currentLang());
+
+// Setup Google Analytics
+const gaTokenEl = document.head.querySelector('meta[name=google-analytics-token]');
+if (gaTokenEl !== null && gaTokenEl.content) {
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function() {window.dataLayer.push(arguments);};
+  window.gtag('js', new Date());
+  window.gtag('config', gaTokenEl.content);
+}
 
 // Setup the authentication of AJAX calls
 $.ajaxSetup({
@@ -38,6 +61,58 @@ $.ajaxSetup({
   },
 });
 
+initCrossStorageClient();
+
+function crossStorageCheck() {
+  const currentUserName = sessionStore.currentAccount.username;
+  if (currentUserName !== '') {
+    // console.log('crossStorageCheck');
+    const crossStorageUserName = currentUserName.slice(0, currentUserName.lastIndexOf('+'))
+    checkCrossStorageUser(crossStorageUserName)
+      .then(checkCrossStorageTimeOut)
+      .catch(function(err) {
+        if (err == 'logout' || err == 'user-changed') {
+          logout();
+        }
+      });
+  }
+}
+
+function crossStorageCheckAndUpdate() {
+  const currentUserName = sessionStore.currentAccount.username;
+  if (currentUserName !== '') {
+    // console.log('crossStorageCheckAndUpdate');
+    const crossStorageUserName = currentUserName.slice(0, currentUserName.lastIndexOf('+'))
+    checkCrossStorageUser(crossStorageUserName)
+      .then(checkCrossStorageTimeOut)
+      .then(updateCrossStorageTimeOut)
+      .catch(function(err) {
+        if (err == 'logout' || err == 'user-changed') {
+          logout();
+        }
+      });
+  }
+}
+
+function logout() {
+  console.log('main logout');
+  actions.auth.logout();
+}
+
+[ { element: 'button', event: 'click' },
+  { element: '.btn', event: 'click' },
+  { element: '.questiontypelist__item', event: 'click' },
+  { element: '.group__header__buttons__button', event: 'click' },
+  { element: '.card__settings', event: 'click' },
+  { element: 'body', event: 'keydown' }
+].forEach(function(elementEvent) {
+  addCustomEventListener(elementEvent.element, elementEvent.event, function() {
+    crossStorageCheckAndUpdate();
+  });
+});
+
+setPeriodicCrossStorageCheck(crossStorageCheck);
+
 if (document.head.querySelector('meta[name=kpi-root-path]')) {
   // Create the element for rendering the app into
   const el = (() => {
@@ -51,7 +126,7 @@ if (document.head.querySelector('meta[name=kpi-root-path]')) {
 
   if (module.hot) {
     module.hot.accept('js/app', () => {
-      let AllRoutes = require('js/app').default;
+      const AllRoutes = require('js/app').default;
       render(
         <AppContainer>
           <AllRoutes />

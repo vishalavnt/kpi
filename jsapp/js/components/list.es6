@@ -124,8 +124,8 @@ export class ListTagFilter extends React.Component {
           name='tags'
           isMulti
           isLoading={!this.state.tagsLoaded}
-          loadingMessage={t('Tags are loading...')}
-          placeholder={t('Search Tags')}
+          loadingMessage={t('Labels are loading...')}
+          placeholder={t('Search Labels')}
           noOptionsMessage={() => t('No results found')}
           options={this.state.availableTags}
           onChange={this.onTagsChange}
@@ -243,7 +243,7 @@ export class ListExpandToggle extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      assetNavExpanded: stores.pageState.state.assetNavExpanded,
+      assetNavExpanded: true
     };
     autoBind(this);
   }
@@ -280,15 +280,8 @@ export class ListExpandToggle extends React.Component {
     return (
       <bem.LibNav__expanded className={{hidden: this.props.hidden}}>
         <bem.LibNav__count>
-          {list.length} {t('assets found')}
+          {list.length} {t('items found')}
         </bem.LibNav__count>
-        <bem.LibNav__expandedToggle>
-          <Checkbox
-            checked={this.state.assetNavExpanded}
-            onChange={this.onExpandedToggleChange}
-            label={t('expand details')}
-          />
-        </bem.LibNav__expandedToggle>
       </bem.LibNav__expanded>
       );
   }

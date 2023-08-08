@@ -7,6 +7,7 @@ import {stores} from 'js/stores';
 const surveyCompanionStore = Reflux.createStore({
   init() {
     this.listenTo(actions.survey.addExternalItemAtPosition, this.addExternalItemAtPosition);
+    this.listenTo(actions.survey.addItemAtPosition, this.addItemAtPosition);
   },
   addExternalItemAtPosition({position, survey, uid, groupId}) {
     // `survey` is what's currently open in the form builder
@@ -20,6 +21,17 @@ const surveyCompanionStore = Reflux.createStore({
       let _s = dkobo_xlform.model.Survey.loadDict(assetCopy.content, survey);
       survey.insertSurvey(_s, position, groupId);
     });
+  },
+  addItemAtPosition ({position, survey, uid, groupId, itemDict}) {
+    if (itemDict) { // clone group
+      var _s = dkobo_xlform.model.Survey.loadDict(itemDict, survey);
+      survey.insertSurvey(_s, position, groupId);
+    } else {
+      stores.allAssets.whenLoaded(uid, function(asset){
+        var _s = dkobo_xlform.model.Survey.loadDict(asset.content, survey);
+        survey.insertSurvey(_s, position, groupId);
+      });
+    }
   },
 });
 

@@ -34,6 +34,8 @@ export const ROOT_URL = (() => {
 })();
 
 export const ANON_USERNAME = 'AnonymousUser';
+export const ANON_USER_TYPE = 'AnonymousUserType';
+export const ANON_USER_SUBDOMAIN = 'AnonymousSubdomain';
 
 export type PermissionCodename =
   | 'add_submissions'
@@ -159,12 +161,10 @@ export const update_states = {
 };
 
 export const AVAILABLE_FORM_STYLES = [
-  {value: '', label: t('Default - single page')},
-  {value: 'theme-grid no-text-transform', label: t('Grid theme')},
-  {value: 'theme-grid', label: t('Grid theme with headings in ALL CAPS')},
-  {value: 'pages', label: t('Multiple pages')},
-  {value: 'theme-grid pages no-text-transform', label: t('Grid theme + Multiple pages')},
-  {value: 'theme-grid pages', label: t('Grid theme + Multiple pages + headings in ALL CAPS')},
+  {value: '', label: t('Simple - single page')},
+  {value: 'pages', label: t('Simple - multiple pages')},
+  {value: 'theme-grid', label: t('Grid - single page')},
+  {value: 'pages theme-grid', label: t('Grid - multiple pages')},
 ];
 
 export type ValidationStatus = 'no_status' | 'validation_status_not_approved' | 'validation_status_approved' | 'validation_status_on_hold'
@@ -230,7 +230,7 @@ export const ASSET_TYPES: AssetTypes = {
   },
   survey: {
     id: AssetTypeName.survey,
-    label: t('project'),
+    label: t('form'),
   },
   collection: {
     id: AssetTypeName.collection,
@@ -338,7 +338,7 @@ export const QUESTION_TYPES: QuestionTypes = Object.freeze({
   select_multiple: {label: t('Select Many'), icon: 'qt-select-many', id: QuestionTypeName.select_multiple},
   select_multiple_from_file: {label: t('Select Many from File'), icon: 'qt-select-many-from-file', id: QuestionTypeName.select_multiple_from_file},
   select_one: {label: t('Select One'), icon: 'qt-select-one', id: QuestionTypeName.select_one},
-  select_one_from_file: {label: t('Select One from File'), icon: 'qt-select-one-from-file', id: QuestionTypeName.select_one_from_file},
+  select_one_from_file: {label: t('Select One (External List)'), icon: 'qt-select-one-from-file', id: QuestionTypeName.select_one_from_file},
   text: {label: t('Text'), icon: 'qt-text', id: QuestionTypeName.text},
   time: {label: t('Time'), icon: 'qt-time', id: QuestionTypeName.time},
   video: {label: t('Video'), icon: 'qt-video', id: QuestionTypeName.video},
@@ -411,6 +411,7 @@ export const ACCESS_TYPES = createEnum([
   'public',
   'subscribed',
   'superuser',
+  'subdomain',
 ]);
 
 /**

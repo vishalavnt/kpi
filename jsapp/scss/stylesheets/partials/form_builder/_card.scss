@@ -69,6 +69,18 @@
               font-size: 15px;
             }
         }
+
+        .ui-resizable-handle {
+            color: colors.$kobo-gray-65;
+        }
+
+        .ui-resizable-s {
+            border-top: 1px solid colors.$kobo-gray-85;
+
+            &:hover {
+                border-top: 1px solid darken(colors.$kobo-gray-85, 20%);
+            }
+        }
     }
 
     .card__header-title,
@@ -78,6 +90,15 @@
       }
     }
 
+    .card__header-name {
+        text-align: right;
+        padding-bottom: 10px;
+        color: colors.$kobo-gray-65;
+
+        &:focus {
+            color: colors.$kobo-gray-14;
+        }
+    }
     .card__header-title {
         color: colors.$kobo-gray-40;
 
@@ -277,6 +298,19 @@ $cardIndicatorIconWidth: 21px;
 
     &.card__buttons__button--teal {
         color: colors.$kobo-teal;
+    }
+
+    &.card__buttons__button--delete {
+        top: 4px;
+    }
+
+    &.card__buttons__button--copy,
+    &.card__buttons__button--clone {
+        top: 8px;
+    }
+
+    &.card__buttons__button--add {
+       top: 10px;
     }
 
     &.card__buttons__button--activated {

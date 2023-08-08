@@ -28,6 +28,7 @@ $formbuilder-group-bg: colors.$kobo-gray-96;
     position: relative;
     margin: -4px -10px 0;
     padding: 20px 12px;
+    min-height: 90px;
 
     input {
         width: 94%;
@@ -80,6 +81,11 @@ $formbuilder-group-bg: colors.$kobo-gray-96;
         }
         .group__header {
             margin:-4px 0px 0px;
+        }
+    }
+    .group__header__buttons__button--add-group-to-library {
+        .fa-plus {
+            top: 74px;
         }
     }
 

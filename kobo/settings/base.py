@@ -8,12 +8,12 @@ import subprocess
 from mimetypes import add_type
 from urllib.parse import quote_plus
 
+import environ
 import django.conf.locale
 from celery.schedules import crontab
 from django.conf.global_settings import LOGIN_URL
 from django.urls import reverse_lazy
 from django.utils.translation import get_language_info
-import environ
 from pymongo import MongoClient
 
 from ..static_lists import EXTRA_LANG_INFO, SECTOR_CHOICE_DEFAULTS
@@ -55,10 +55,26 @@ if SESSION_COOKIE_DOMAIN:
     # The trusted CSRF origins must encompass Enketo's subdomain. See
     # https://docs.djangoproject.com/en/2.2/ref/settings/#std:setting-CSRF_TRUSTED_ORIGINS
     CSRF_TRUSTED_ORIGINS = [SESSION_COOKIE_DOMAIN]
+    CSRF_COOKIE_SECURE = True
 ENKETO_CSRF_COOKIE_NAME = env.str('ENKETO_CSRF_COOKIE_NAME', '__csrf')
 
+SESSION_COOKIE_AGE = 60*60*24 # Session age is 24 hour
+SESSION_SAVE_EVERY_REQUEST = True # Renew session every request made
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_SAMESITE  = 'None'
+
+# Instances of this model will be treated as allowed origins; see
+# https://github.com/ottoyiu/django-cors-headers#cors_model
+CORS_ORIGIN_REGEX_WHITELIST = (
+    r'^(https?://)?([A-Za-z0-9-]+\.){1,4}openclinica\.io$',
+    r'^(https?://)?([A-Za-z0-9-]+\.){1,4}openclinica-dev\.io$',
+    r'^(https?://)?([A-Za-z0-9-]+\.){1,4}openclinica-dev-eks\.io$',
+    r'^(https?://)?([A-Za-z0-9-]+\.){1,4}openclinica-staging\.io$',
+    r'^(https?://)?([A-Za-z0-9-]+\.){1,4}openclinica-staging-2\.io$'
+)
+CORS_ALLOW_CREDENTIALS = True
 # Limit sessions to 1 week (the default is 2 weeks)
-SESSION_COOKIE_AGE = 604800
+SESSION_COOKIE_AGE = env.int('DJANGO_SESSION_COOKIE_AGE', 604800)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DJANGO_DEBUG", False)
@@ -66,7 +82,7 @@ DEBUG = env.bool("DJANGO_DEBUG", False)
 ALLOWED_HOSTS = env.str('DJANGO_ALLOWED_HOSTS', '*').split(' ')
 
 LOGIN_REDIRECT_URL = 'kpi-root'
-LOGOUT_REDIRECT_URL = 'kobo_login'  # Use URL pattern instead of hard-coded value
+LOGOUT_REDIRECT_URL = '/'  # Use URL pattern instead of hard-coded value
 
 # Application definition
 
@@ -76,16 +92,19 @@ LOGOUT_REDIRECT_URL = 'kobo_login'  # Use URL pattern instead of hard-coded valu
 INSTALLED_APPS = (
     # Always put `contenttypes` before `auth`; see
     # https://code.djangoproject.com/ticket/10827
+    # 'oc_hack',
+    # 'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_prometheus',
     'reversion',
     'private_storage',
     'kobo.apps.KpiConfig',
-    "kobo.apps.accounts",
+    'kobo.apps.accounts',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -121,18 +140,25 @@ INSTALLED_APPS = (
     'kobo.apps.project_views.ProjectViewAppConfig',
     'kobo.apps.audit_log.AuditLogAppConfig',
     'kobo.apps.trackers.TrackersConfig',
+    'kobo.apps.trash_bin.TrashBinAppConfig',
+    'oc',
+    'bossoidc2',
+    'mozilla_django_oidc',
 )
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    # 'oc.middleware.session.OCSessionMiddleware',
+    'django.middleware.security.SecurityMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    # 'oc.middleware.csrf.OCCsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'csp.middleware.CSPMiddleware',
     'hub.middleware.UsernameInResponseHeaderMiddleware',
     'django_userforeignkey.middleware.UserForeignKeyMiddleware',
     'django_request_cache.middleware.RequestCacheMiddleware',
@@ -186,7 +212,7 @@ CONSTANCE_CONFIG = {
     ),
     'SYNCHRONOUS_EXPORT_CACHE_MAX_AGE': (
         300,
-        'A synchronus export request will return the last export generated '
+        'A synchronous export request will return the last export generated '
         'with the same settings unless it is older than this value (seconds)'
     ),
     'ALLOW_UNSECURED_HOOK_ENDPOINTS': (
@@ -316,11 +342,44 @@ CONSTANCE_CONFIG = {
     ),
     'ASSET_SNAPSHOT_DAYS_RETENTION': (
         30,
-        "Number of days to keep asset snapshots"
+        'Number of days to keep asset snapshots',
+        'positive_int'
+    ),
+    'FREE_TIER_THRESHOLDS': (
+        json.dumps({
+            'storage': int(1 * 1024 * 1024 * 1024),  # 1 GB
+            'data': 1000,
+            'transcription_minutes': 10,
+            'translation_chars': 6000,
+        }),
+        'Free tier thresholds: storage in kilobytes, '
+        'data (number of submissions), '
+        'minutes of transcription, '
+        'number of translation characters',
+        # Use custom field for schema validation
+        'free_tier_threshold_jsonschema'
+    ),
+    'PROJECT_TRASH_GRACE_PERIOD': (
+        7,
+        'Number of days to keep projects in trash after users (soft-)deleted '
+        'them and before automatically hard-deleting them by the system',
+        'positive_int',
+    ),
+    'ACCOUNT_TRASH_GRACE_PERIOD': (
+        30 * 6,
+        'Number of days to keep deactivated accounts in trash before '
+        'automatically hard-deleting all their projects and data. '
+        'Use -1 to require a superuser to empty the trash manually instead of '
+        'having the system empty it automatically.',
+        'positive_int_minus_one',
     ),
 }
 
 CONSTANCE_ADDITIONAL_FIELDS = {
+    'free_tier_threshold_jsonschema': [
+        'kpi.fields.jsonschema_form_field.FreeTierThresholdField',
+        {'widget': 'django.forms.Textarea'},
+    ],
     'metadata_fields_jsonschema': [
         'kpi.fields.jsonschema_form_field.MetadataFieldsListField',
         {'widget': 'django.forms.Textarea'},
@@ -329,6 +388,57 @@ CONSTANCE_ADDITIONAL_FIELDS = {
         'kpi.fields.jsonschema_form_field.MfaHelpTextField',
         {'widget': 'django.forms.Textarea'},
     ],
+    'positive_int': ['django.forms.fields.IntegerField', {
+        'min_value': 0
+    }],
+    'positive_int_minus_one': ['django.forms.fields.IntegerField', {
+        'min_value': -1
+    }],
+}
+
+CONSTANCE_CONFIG_FIELDSETS = {
+    'General Options': (
+        'REGISTRATION_OPEN',
+        'REGISTRATION_ALLOWED_EMAIL_DOMAINS',
+        'REGISTRATION_DOMAIN_NOT_ALLOWED_ERROR_MESSAGE',
+        'TERMS_OF_SERVICE_URL',
+        'PRIVACY_POLICY_URL',
+        'SOURCE_CODE_URL',
+        'SUPPORT_EMAIL',
+        'SUPPORT_URL',
+        'COMMUNITY_URL',
+        'SYNCHRONOUS_EXPORT_CACHE_MAX_AGE',
+        'EXPOSE_GIT_REV',
+        'FRONTEND_MIN_RETRY_TIME',
+        'FRONTEND_MAX_RETRY_TIME',
+        'FREE_TIER_THRESHOLDS',
+    ),
+    'Rest Services': (
+        'ALLOW_UNSECURED_HOOK_ENDPOINTS',
+        'HOOK_MAX_RETRIES',
+    ),
+    'Natural language processing': (
+        'ASR_MT_INVITEE_USERNAMES',
+        'ASR_MT_GOOGLE_CREDENTIALS',
+    ),
+    'Security': (
+        'SSRF_ALLOWED_IP_ADDRESS',
+        'SSRF_DENIED_IP_ADDRESS',
+        'MFA_ISSUER_NAME',
+        'MFA_ENABLED',
+        'MFA_LOCALIZED_HELP_TEXT',
+    ),
+    'Metadata options': (
+        'USER_METADATA_FIELDS',
+        'PROJECT_METADATA_FIELDS',
+        'SECTOR_CHOICES',
+        'OPERATIONAL_PURPOSE_CHOICES',
+    ),
+    'Trash bin': (
+        'ASSET_SNAPSHOT_DAYS_RETENTION',
+        'ACCOUNT_TRASH_GRACE_PERIOD',
+        'PROJECT_TRASH_GRACE_PERIOD',
+    ),
 }
 
 # Tell django-constance to use a database model instead of Redis
@@ -356,6 +466,7 @@ MARKITUP_FILTER = ('markdown.markdown', {'safe_mode': False})
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'kpi.backends.ObjectPermissionBackend',
+    'oc.backend.OpenIdConnectBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 )
 
@@ -395,9 +506,32 @@ DATABASE_ROUTERS = ['kpi.db_routers.DefaultDatabaseRouter']
 
 django.conf.locale.LANG_INFO.update(EXTRA_LANG_INFO)
 
+DJANGO_LANGUAGE_CODES = env.str(
+    'DJANGO_LANGUAGE_CODES',
+    default=(
+        'am '  # Amharic
+        'ar '  # Arabic
+        'cs '  # Czech
+        'de '  # German
+        'en '  # English
+        'es '  # Spanish
+        'fa '  # Persian/Farsi
+        'fr '  # French
+        'hi '  # Hindi
+        'hu '  # Hungarian
+        'ja '  # Japanese
+        'ku '  # Kurdish
+        'pl '  # Polish
+        'pt '  # Portuguese
+        'ru '  # Russian
+        'tr '  # Turkish
+        'uk '  # Ukrainian
+        'zh-hans'  # Chinese Simplified
+    )
+)
 LANGUAGES = [
     (lang_code, get_language_info(lang_code)['name_local'])
-        for lang_code in env.str('DJANGO_LANGUAGE_CODES', 'en').split(' ')
+    for lang_code in DJANGO_LANGUAGE_CODES.split(' ')
 ]
 
 LANGUAGE_CODE = 'en-us'
@@ -486,7 +620,9 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         # SessionAuthentication and BasicAuthentication would be included by
         # default
+        'mozilla_django_oidc.contrib.drf.OIDCAuthentication',
         'rest_framework.authentication.SessionAuthentication',
+        'oidc_auth.authentication.BearerTokenAuthentication',
         'kpi.authentication.BasicAuthentication',
         'kpi.authentication.TokenAuthentication',
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
@@ -531,6 +667,7 @@ TEMPLATES = [
     },
 ]
 
+DEFAULT_SUBMISSIONS_COUNT_NUMBER_OF_DAYS = 31
 GOOGLE_ANALYTICS_TOKEN = os.environ.get('GOOGLE_ANALYTICS_TOKEN')
 RAVEN_JS_DSN_URL = env.url('RAVEN_JS_DSN', default=None)
 RAVEN_JS_DSN = None
@@ -556,10 +693,21 @@ STRIPE_ENABLED = False
 if env.str('STRIPE_TEST_SECRET_KEY', None) or env.str('STRIPE_LIVE_SECRET_KEY', None):
     STRIPE_ENABLED = True
 
+
+def dj_stripe_request_callback_method():
+    # This method exists because dj-stripe's documentation doesn't reflect reality.
+    # It claims that DJSTRIPE_SUBSCRIBER_MODEL no longer needs a request callback but
+    # this error occurs without it: `DJSTRIPE_SUBSCRIBER_MODEL_REQUEST_CALLBACK must
+    # be implemented if a DJSTRIPE_SUBSCRIBER_MODEL is defined`
+    # It doesn't need to do anything other than exist
+    # https://github.com/dj-stripe/dj-stripe/issues/1900
+    pass
+
+
 DJSTRIPE_SUBSCRIBER_MODEL = "organizations.Organization"
+DJSTRIPE_SUBSCRIBER_MODEL_REQUEST_CALLBACK = dj_stripe_request_callback_method
 DJSTRIPE_FOREIGN_KEY_TO_FIELD = 'id'
 DJSTRIPE_USE_NATIVE_JSONFIELD = True
-STRIPE_PRICING_TABLE_ID = env.str("STRIPE_PRICING_TABLE_ID", None)
 STRIPE_LIVE_MODE = env.bool('STRIPE_LIVE_MODE', False)
 STRIPE_TEST_PUBLIC_KEY = env.str('STRIPE_TEST_PUBLIC_KEY', "pk_test_qliDXQRyVGPWmsYR69tB1NPx00ndTrJfVM")
 STRIPE_LIVE_PUBLIC_KEY = "pk_live_7JRQ5elvhnmz4YuWdlSRNmMj00lhvqZz8P"
@@ -604,12 +752,12 @@ CSP_DEFAULT_SRC = env.list('CSP_EXTRA_DEFAULT_SRC', str, []) + ["'self'", KOBOCA
 if env.str("FRONTEND_DEV_MODE", None) == "host":
     CSP_DEFAULT_SRC += local_unsafe_allows
 CSP_CONNECT_SRC = CSP_DEFAULT_SRC
-CSP_SCRIPT_SRC = CSP_DEFAULT_SRC + ["'unsafe-inline'"]
-CSP_STYLE_SRC = CSP_DEFAULT_SRC + ["'unsafe-inline'", '*.bootstrapcdn.com']
-CSP_FONT_SRC = CSP_DEFAULT_SRC + ['*.bootstrapcdn.com']
+CSP_SCRIPT_SRC = CSP_DEFAULT_SRC
+CSP_STYLE_SRC = CSP_DEFAULT_SRC + ["'unsafe-inline'"]
 CSP_IMG_SRC = CSP_DEFAULT_SRC + [
     'data:',
     'https://*.openstreetmap.org',
+    'https://*.openstreetmap.fr',  # Humanitarian OpenStreetMap Team
     'https://*.opentopomap.org',
     'https://*.arcgisonline.com'
 ]
@@ -630,10 +778,25 @@ if STRIPE_ENABLED:
     CSP_SCRIPT_SRC.append(stripe_domain)
     CSP_FRAME_SRC.append(stripe_domain)
 
+CSP_OC_SITES = [
+    'https://*.openclinica-dev.io',
+    'https://*.openclinica-staging.io',
+    'https://*.openclinica-staging-2.io',
+    'https://*.openclinica.io',
+    'https://*.staging.openclinica.io',
+    'https://*.openclinica-dev-eks.io',
+]
+CSP_FRAME_ANCESTORS = CSP_OC_SITES
+CSP_CONNECT_SRC = CSP_CONNECT_SRC + CSP_OC_SITES
+CSP_FRAME_SRC = CSP_FRAME_SRC +  CSP_OC_SITES
+
 csp_report_uri = env.url('CSP_REPORT_URI', None)
 if csp_report_uri:  # Let environ validate uri, but set as string
     CSP_REPORT_URI = csp_report_uri.geturl()
 CSP_REPORT_ONLY = env.bool("CSP_REPORT_ONLY", False)
+
+# OC Instance URL
+ENKETO_FORM_OC_INSTANCE_URL = os.environ.get('ENKETO_FORM_OC_INSTANCE_URL', '//build.openclinica-dev.io/form-service/api/storage/artifacts/clinicaldata.xml')
 
 ''' Celery configuration '''
 # Celery 4.0 New lowercase settings.
@@ -663,9 +826,15 @@ CELERY_TASK_SOFT_TIME_LIMIT = int(
 
 CELERY_BEAT_SCHEDULE = {
     # Schedule every day at midnight UTC. Can be customized in admin section
-    "send-hooks-failures-reports": {
-        "task": "kobo.apps.hook.tasks.failures_reports",
-        "schedule": crontab(hour=0, minute=0),
+    'send-hooks-failures-reports': {
+        'task': 'kobo.apps.hook.tasks.failures_reports',
+        'schedule': crontab(hour=0, minute=0),
+        'options': {'queue': 'kpi_low_priority_queue'}
+    },
+    # Schedule every 30 minutes
+    'trash-bin-garbage-collector': {
+        'task': 'kobo.apps.trash_bin.tasks.garbage_collector',
+        'schedule': crontab(minute=30),
         'options': {'queue': 'kpi_low_priority_queue'}
     },
 }
@@ -688,8 +857,18 @@ if 'KOBOCAT_URL' in os.environ:
 CELERY_BROKER_URL = os.environ.get('KPI_BROKER_URL', 'redis://localhost:6379/1')
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 
+# Increase limits for long-running tasks
+# Notes: They are custom name, not part of `CELERY_*` namespace.
+CELERY_LONG_RUNNING_TASK_TIME_LIMIT = int(
+    os.environ.get('CELERY_LONG_RUNNING_TASK_TIME_LIMIT', 4260)  # seconds
+)
+
+CELERY_LONG_RUNNING_TASK_SOFT_TIME_LIMIT = int(
+    os.environ.get('CELERY_LONG_RUNNING_TASK_SOFT_TIME_LIMIT', 4200)  # seconds
+)
 
 ''' Django allauth configuration '''
+# User.email should continue to be used instead of the EmailAddress model
 ACCOUNT_ADAPTER = 'kobo.apps.accounts.adapter.AccountAdapter'
 ACCOUNT_USERNAME_VALIDATORS = 'kobo.apps.accounts.validators.username_validators'
 ACCOUNT_EMAIL_REQUIRED = True
@@ -707,6 +886,11 @@ SOCIALACCOUNT_AUTO_SIGNUP = False
 SOCIALACCOUNT_FORMS = {
     'signup': 'kobo.apps.accounts.forms.SocialSignupForm',
 }
+# For SSO, the signup form is prepopulated with the account email
+# If set True, the email field in the SSO signup form will be readonly
+UNSAFE_SSO_REGISTRATION_EMAIL_DISABLE = env.bool(
+    "UNSAFE_SSO_REGISTRATION_EMAIL_DISABLE", False
+)
 
 # See https://django-allauth.readthedocs.io/en/latest/configuration.html
 # Map env vars to upstream dict values, include exact case. Underscores for delimiter.
@@ -747,6 +931,10 @@ WEBPACK_LOADER = {
 
 
 ''' Email configuration '''
+# This setting sets the prefix in the subject line of the account activation email
+# The default is the URL of the server. Set to blank to fit the email requirements
+ACCOUNT_EMAIL_SUBJECT_PREFIX = ''
+
 EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND',
                                'django.core.mail.backends.filebased.EmailBackend')
 
@@ -883,8 +1071,20 @@ if sentry_dsn:
             CeleryIntegration(),
             sentry_logging
         ],
-        traces_sample_rate=env.float('SENTRY_TRACES_SAMPLE_RATE', 0.05),
+        traces_sample_rate=env.float('SENTRY_TRACES_SAMPLE_RATE', 0.01),
         send_default_pii=True
+    )
+
+
+if ENABLE_METRICS := env.bool('ENABLE_METRICS', False):
+    MIDDLEWARE.insert(0, 'django_prometheus.middleware.PrometheusBeforeMiddleware')
+    MIDDLEWARE.append('django_prometheus.middleware.PrometheusAfterMiddleware')
+# Workaround https://github.com/korfuri/django-prometheus/issues/34
+PROMETHEUS_EXPORT_MIGRATIONS = False
+# https://github.com/korfuri/django-prometheus/blob/master/documentation/exports.md#exporting-metrics-in-a-wsgi-application-with-multiple-processes-per-process
+if start_port := env.int('METRICS_START_PORT', None):
+    PROMETHEUS_METRICS_EXPORT_PORT_RANGE = range(
+        start_port, env.int('METRICS_END_PORT', start_port + 10)
     )
 
 
@@ -1068,3 +1268,32 @@ SERVICE_ACCOUNT = {
     ),
     'WHITELISTED_HOSTS': env.list('SERVICE_ACCOUNT_WHITELISTED_HOSTS', default=[]),
 }
+
+# OpenClinica Keycloak Settings
+X_OPENROSA_ACCEPT_CONTENT_LENGTH_DEFAULT = os.environ.get('X_OPENROSA_ACCEPT_CONTENT_LENGTH_DEFAULT', '100000000')
+OC_BUILD_URL = os.environ.get('OC_BUILD_URL', '')
+
+OIDC_RP_CLIENT_ID = os.environ.get('KEYCLOAK_CLIENT_ID', 'formdesigner')
+OIDC_RP_SCOPES = 'openid profile email'
+OIDC_RP_SIGN_ALGO = "RS256"
+OIDC_CALLBACK_CLASS = "oc.views.OCAuthenticationCallbackView"
+OIDC_AUTHENTICATE_CLASS = "oc.views.OCAuthenticationRequestView"
+ALLOW_LOGOUT_GET_METHOD = True
+
+PUBLIC_URI_FOR_KEYCLOAK = os.environ.get('PUBLIC_URI', 'http://cust2.kobo.local')
+KEYCLOAK_AUTH_URI = os.environ.get('KEYCLOAK_AUTH_URI', 'https://auth.openclinica-dev.io')
+KEYCLOAK_DEFAULT_REALM = os.environ.get('KEYCLOAK_DEFAULT_REALM', 'cust2-aws-dev')
+KEYCLOAK_MASTER_REALM = os.environ.get('KEYCLOAK_MASTER_REALM', 'master')
+KEYCLOAK_CLIENT_ID = os.environ.get('KEYCLOAK_CLIENT_ID', 'formdesigner')
+KEYCLOAK_CLIENT_SECRET = os.environ.get('KEYCLOAK_CLIENT_SECRET', 'client-secret')
+KEYCLOAK_ADMIN_CLIENT_ID = os.environ.get('KEYCLOAK_ADMIN_CLIENT_ID', 'admin-cli')
+KEYCLOAK_ADMIN_CLIENT_SECRET = os.environ.get('KEYCLOAK_ADMIN_CLIENT_SECRET', 'admin-client-secret')
+
+if KEYCLOAK_AUTH_URI != '' and KEYCLOAK_CLIENT_ID != '' and KEYCLOAK_CLIENT_SECRET != '' and PUBLIC_URI_FOR_KEYCLOAK != '':
+    from oc.settings import *
+    configure_oidc(
+        auth_uri='{}/auth/realms/{}'.format(KEYCLOAK_AUTH_URI, KEYCLOAK_DEFAULT_REALM),
+        client_id=KEYCLOAK_CLIENT_ID,
+        public_uri=PUBLIC_URI_FOR_KEYCLOAK,
+        client_secret=KEYCLOAK_CLIENT_SECRET
+    )

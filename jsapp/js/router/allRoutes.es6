@@ -16,6 +16,7 @@ import LoadingSpinner from 'js/components/common/loadingSpinner';
 import {PERMISSIONS_CODENAMES} from 'js/constants';
 import {isRootRoute, redirectToLogin} from 'js/router/routerUtils';
 import RequireAuth from 'js/router/requireAuth';
+import RequireAdmin from 'js/router/requireAdmin';
 import PermProtectedRoute from 'js/router/permProtectedRoute';
 import sessionStore from 'js/stores/session';
 import {Tracking} from './useTracking';
@@ -24,6 +25,7 @@ import accountRoutes from 'js/account/routes';
 import projectsRoutes from 'js/projects/routes';
 
 // Workaround https://github.com/remix-run/react-router/issues/8139
+// eslint-disable-next-line no-duplicate-imports
 import {unstable_HistoryRouter as HistoryRouter, Route} from 'react-router-dom';
 
 const Reports = React.lazy(() =>
@@ -127,7 +129,8 @@ const AllRoutes = class AllRoutes extends React.Component {
         <Tracking />
         <Routes>
           <Route path={ROUTES.ROOT} element={<App />}>
-            <Route path='' element={<Navigate to={ROUTES.FORMS} replace />} />
+            <Route path={ROUTES.ROOT} element={<Navigate to={ROUTES.LIBRARY} replace />} />
+            <Route path={ROUTES.FORMS} element={<Navigate to={ROUTES.LIBRARY} replace />} />
             <Route path={ROUTES.ACCOUNT_ROOT}>{accountRoutes()}</Route>
             <Route path={ROUTES.PROJECTS_ROOT}>{projectsRoutes()}</Route>
             <Route path={ROUTES.LIBRARY}>
@@ -138,9 +141,9 @@ const AllRoutes = class AllRoutes extends React.Component {
               <Route
                 path={ROUTES.MY_LIBRARY}
                 element={
-                  <RequireAuth>
+                  <RequireAdmin>
                     <MyLibraryRoute />
-                  </RequireAuth>
+                  </RequireAdmin>
                 }
               />
               <Route

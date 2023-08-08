@@ -13,9 +13,9 @@ interface PopoverMenuProps {
   type?: string;
   additionalModifiers?: string[];
   /** the element that will be opening the menu, menu will be placed in relation to it */
-  triggerLabel: JSX.Element;
+  triggerLabel: React.ReactNode;
   /** content of the menu, can be anything really */
-  children: JSX.Element[];
+  children?: React.ReactNode;
 }
 
 interface PopoverMenuState {
@@ -120,16 +120,7 @@ export default class PopoverMenu extends React.Component<
       const rowOffsetTop = $assetRow?.offset()?.top;
       const rowHeight = $assetRow?.outerHeight();
       const menuHeight = $popoverMenu?.outerHeight();
-      if (
-        rowOffsetTop &&
-        rowHeight &&
-        menuHeight &&
-        rowOffsetTop > menuHeight + rowHeight + 20
-      ) {
-        this.setState({placement: 'above'});
-      } else {
-        this.setState({placement: 'below'});
-      }
+      this.setState({placement: 'below'});
     }
 
     if (typeof this.props.popoverSetVisible === 'function' && !this.state.popoverVisible) {

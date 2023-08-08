@@ -61,7 +61,7 @@
   padding: 20px 30px;
   margin-left: 20%;
   border-left: $thinBorderStyle;
-  min-height: 152px;
+  min-height: 188px;
 }
 
 .card__settings__fields {
@@ -95,7 +95,29 @@
     }
   }
 
-  input[type="text"] {
+  // possibly temporary
+  &.xlf-dv-constraint_message {
+    border-top: 1px solid #d9dde1;
+    padding-top: 15px;
+  }
+
+  &.xlf-dv-appearance,
+  &.xlf-dv-oc_external,
+  &.xlf-dv-_isRepeat {
+    label {
+      vertical-align: top;
+    }
+  }
+
+  &.xlf-dv-trigger {
+    select {
+      max-width: 85%;
+      padding: 4px;
+    }
+  }
+
+  input[type="text"],
+  textarea {
     width: 85%;
     background: inherit;
     border-width: 1px;
@@ -117,6 +139,16 @@
 
     input.text {
       display: inline-block;
+    }
+  }
+
+  &.input-error {
+    color: colors.$kobo-light-red;
+
+    input.text,
+    select,
+    textarea {
+      border-color: colors.$kobo-light-red;
     }
   }
 }

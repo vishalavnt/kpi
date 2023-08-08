@@ -11,6 +11,8 @@ from django_request_cache import cache_for_request
 from rest_framework import serializers
 from rest_framework.relations import HyperlinkedIdentityField
 
+from bossoidc2.models import Keycloak as KeycloakModel
+
 from kpi.constants import ASSET_TYPE_COLLECTION, PERM_DISCOVER_ASSET
 from kpi.fields import PaginatedApiField
 from kpi.models.asset import Asset, UserAssetSubscription
@@ -22,21 +24,19 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 
     url = HyperlinkedIdentityField(
         lookup_field='username', view_name='user-detail')
-    assets = PaginatedApiField(
-        serializer_class=AssetUrlListSerializer
-    )
     date_joined = serializers.SerializerMethodField()
     public_collection_subscribers_count = serializers.SerializerMethodField()
     public_collections_count = serializers.SerializerMethodField()
+    subdomain = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ('url',
                   'username',
-                  'assets',
                   'date_joined',
                   'public_collection_subscribers_count',
                   'public_collections_count',
+                  'subdomain'
                   )
 
     def get_date_joined(self, obj):
@@ -51,6 +51,11 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     def get_public_collections_count(self, user):
         public_collection_ids = self.__get_public_collection_ids(user.pk)
         return len(public_collection_ids)
+    
+    def get_subdomain(self, user):
+        if user is not None:
+            return KeycloakModel.objects.get(user=user).subdomain
+        return None
 
     @staticmethod
     @cache_for_request

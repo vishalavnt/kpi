@@ -7,13 +7,12 @@ from django.db.models import (
     Count,
     F,
     IntegerField,
-    Max,
-    OuterRef,
     Q,
     Value,
     When,
 )
 from django.db.models.query import QuerySet
+from django.utils.datastructures import MultiValueDictKeyError
 from rest_framework import filters
 from rest_framework.request import Request
 
@@ -33,9 +32,11 @@ from kpi.exceptions import (
     QueryParserNotSupportedFieldLookup,
     SearchQueryTooShortException,
 )
+from kpi.models import Asset, ObjectPermission
 from kpi.models.asset import UserAssetSubscription
-from kpi.models.asset_version import AssetVersion
 from kpi.utils.query_parser import get_parsed_parameters, parse, ParseError
+from kpi.utils.domain import get_subdomain
+from bossoidc2.models import Keycloak as KeycloakModel
 from kpi.utils.object_permission import (
     get_objects_for_user,
     get_anonymous_user,
@@ -44,6 +45,7 @@ from kpi.utils.object_permission import (
 from kpi.utils.permissions import is_user_anonymous
 from .models import Asset, ObjectPermission
 
+from kpi.utils.log import logging
 
 class AssetOwnerFilterBackend(filters.BaseFilterBackend):
     """
@@ -107,6 +109,26 @@ class KpiObjectPermissionsFilter:
 
     def filter_queryset(self, request, queryset, view):
         user = request.user
+
+        # User can access assets/collections created by users with same subdomain
+        model_name = queryset.model._meta.model_name
+        if model_name == 'asset' or model_name == 'collection':
+            kc_user = None
+            try:
+                kc_user = KeycloakModel.objects.get(user=user)
+            except KeycloakModel.DoesNotExist:
+                pass
+
+            if kc_user is not None:
+                subdomain = kc_user.subdomain
+                subdomain_userIds = KeycloakModel.objects.filter(subdomain=subdomain).values_list('user_id', flat=True)
+                if model_name == 'asset':
+                    subdomain_assetIds = Asset.objects.filter(owner__in=subdomain_userIds).values_list('id', flat=True)
+                    return queryset.filter(pk__in=subdomain_assetIds)
+                # elif model_name == 'collection':
+                #     subdomain_collectionIds = Collection.objects.filter(owner__in=subdomain_userIds).values_list('id', flat=True)
+                #     return queryset.filter(pk__in=subdomain_collectionIds)
+
         if user.is_superuser and view.action != 'list':
             # For a list, we won't deluge the superuser with everyone else's
             # stuff. This isn't a list, though, so return it all
@@ -371,6 +393,11 @@ class SearchFilter(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         try:
             q = request.query_params['q']
+        except AttributeError:
+            try:
+                q = request.GET['q']
+            except MultiValueDictKeyError:
+                return queryset
         except KeyError:
             return queryset
 

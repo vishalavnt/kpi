@@ -1,5 +1,6 @@
 import {actions} from 'js/actions';
 import type {
+  LabelValuePair,
   TransxLanguages,
   EnvironmentResponse,
 } from 'js/dataInterface';
@@ -13,12 +14,6 @@ import {makeAutoObservable} from 'mobx';
  * constant environment variables that are set by the docker container. Thus it
  * JustWorks™ given our frontend architecture.
  */
-
-export interface EnvStoreDataItem {
-  value: string;
-  /** Note: the labels are always localized in the current UI language */
-  label: string;
-}
 
 export interface EnvStoreFieldItem {
   name: string;
@@ -42,10 +37,10 @@ class EnvStoreData {
   public max_retry_time: number = 4 * 60; // seconds
   public project_metadata_fields: EnvStoreFieldItem[] = [];
   public user_metadata_fields: EnvStoreFieldItem[] = [];
-  public sector_choices: EnvStoreDataItem[] = [];
-  public operational_purpose_choices: EnvStoreDataItem[] = [];
-  public country_choices: EnvStoreDataItem[] = [];
-  public interface_languages: EnvStoreDataItem[] = [];
+  public sector_choices: LabelValuePair[] = [];
+  public operational_purpose_choices: LabelValuePair[] = [];
+  public country_choices: LabelValuePair[] = [];
+  public interface_languages: LabelValuePair[] = [];
   public transcription_languages: TransxLanguages = {};
   public translation_languages: TransxLanguages = {};
   public submission_placeholder = '';
@@ -54,7 +49,6 @@ class EnvStoreData {
   public mfa_enabled = false;
   public mfa_code_length = 6;
   public stripe_public_key: string | null = null;
-  public stripe_pricing_table_id: string | null = null;
   public social_apps: SocialApp[] = [];
 
   getProjectMetadataField(fieldName: string): EnvStoreFieldItem | boolean {
@@ -91,7 +85,7 @@ class EnvStore {
    * A DRY utility function that turns an array of two items into an object with
    * 'value' and 'label' properties.
    */
-  private nestedArrToChoiceObjs = (i: string[]): EnvStoreDataItem => {
+  private nestedArrToChoiceObjs = (i: string[]): LabelValuePair => {
     return {
       value: i[0],
       label: i[1],
@@ -114,7 +108,6 @@ class EnvStore {
     this.data.mfa_enabled = response.mfa_enabled;
     this.data.mfa_code_length = response.mfa_code_length;
     this.data.stripe_public_key = response.stripe_public_key;
-    this.data.stripe_pricing_table_id = response.stripe_pricing_table_id;
     this.data.social_apps = response.social_apps;
 
     if (response.sector_choices) {
@@ -137,7 +130,7 @@ class EnvStore {
 
   public getSectorLabel(sectorName: string): string | undefined {
     const foundSector = this.data.sector_choices.find(
-      (item: EnvStoreDataItem) => item.value === sectorName
+      (item: LabelValuePair) => item.value === sectorName
     );
     if (foundSector) {
       return foundSector.label;
@@ -147,7 +140,7 @@ class EnvStore {
 
   public getCountryLabel(code: string): string | undefined {
     const foundCountry = this.data.country_choices.find(
-      (item: EnvStoreDataItem) => item.value === code
+      (item: LabelValuePair) => item.value === code
     );
     if (foundCountry) {
       return foundCountry.label;

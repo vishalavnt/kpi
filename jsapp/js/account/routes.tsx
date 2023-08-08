@@ -10,18 +10,18 @@ const SecurityRoute = React.lazy(
   () => import(/* webpackPrefetch: true */ './security/securityRoute.component')
 );
 const PlanRoute = React.lazy(
-  () => import(/* webpackPrefetch: true */ './planRoute')
+  () => import(/* webpackPrefetch: true */ './plan.component')
 );
 const AccountSettings = React.lazy(
   () => import(/* webpackPrefetch: true */ './accountSettingsRoute')
 );
 const DataStorage = React.lazy(
-  () => import(/* webpackPrefetch: true */ './dataStorageRoute')
+  () => import(/* webpackPrefetch: true */ './usage.component')
 );
 
 export const ACCOUNT_ROUTES: {readonly [key: string]: string} = {
   ACCOUNT_SETTINGS: ROUTES.ACCOUNT_ROOT + '/settings',
-  DATA_STORAGE: ROUTES.ACCOUNT_ROOT + '/data-storage',
+  USAGE: ROUTES.ACCOUNT_ROOT + '/usage',
   SECURITY: ROUTES.ACCOUNT_ROOT + '/security',
   PLAN: ROUTES.ACCOUNT_ROOT + '/plan',
   CHANGE_PASSWORD: ROUTES.ACCOUNT_ROOT + '/change-password',
@@ -51,7 +51,7 @@ export default function routes() {
         }
       />
       <Route
-        path={ACCOUNT_ROUTES.DATA_STORAGE}
+        path={ACCOUNT_ROUTES.USAGE}
         element={
           <RequireAuth>
             <DataStorage />

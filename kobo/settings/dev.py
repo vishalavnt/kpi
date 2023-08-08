@@ -35,3 +35,10 @@ HASH_BIG_FILE_CHUNK = 5 * 1024  # 5 kB
 # with optjon `--print-sql`
 SHELL_PLUS_PRINT_SQL_TRUNCATE = None
 RUNSERVER_PLUS_PRINT_SQL_TRUNCATE = None
+
+# local development
+if env.str('PUBLIC_REQUEST_SCHEME', '').lower() == 'http' or SECURE_PROXY_SSL_HEADER is None:
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+    SESSION_COOKIE_SAMESITE  = False
+    ALLOWED_HOSTS = '*'

@@ -22,6 +22,7 @@ import type {
   SearchAssetsPredefinedParams,
 } from 'js/dataInterface';
 import type {AssetTypeName} from 'js/constants';
+import libraryTypeFilterStore from './libraryTypeFilterStore';
 
 interface MyLibraryStoreData {
   isFetchingData: boolean;
@@ -45,6 +46,7 @@ class MyLibraryStore extends Reflux.Store {
   abortFetchData?: Function;
   previousPath = getCurrentPath();
   previousSearchPhrase = searchBoxStore.getSearchPhrase();
+  previousFilterType = libraryTypeFilterStore.getFilterType();
   PAGE_SIZE = 100;
   DEFAULT_ORDER_COLUMN = ASSETS_TABLE_COLUMNS['date-modified'];
 
@@ -78,6 +80,7 @@ class MyLibraryStore extends Reflux.Store {
 
     history.listen(this.onRouteChange.bind(this));
     searchBoxStore.listen(this.searchBoxStoreChanged, this);
+    libraryTypeFilterStore.listen(this.libraryTypeFilterStoreChanged, this);
     actions.library.moveToCollection.completed.listen(this.onMoveToCollectionCompleted.bind(this));
     actions.library.subscribeToCollection.completed.listen(this.fetchData.bind(this, true));
     actions.library.unsubscribeFromCollection.completed.listen(this.fetchData.bind(this, true));
@@ -120,6 +123,7 @@ class MyLibraryStore extends Reflux.Store {
   getSearchParams() {
     const params: SearchAssetsPredefinedParams = {
       searchPhrase: searchBoxStore.getSearchPhrase(),
+      filterType: libraryTypeFilterStore.getFilterType(),
       pageSize: this.PAGE_SIZE,
       page: this.data.currentPage,
       collectionsFirst: true,
@@ -178,6 +182,19 @@ class MyLibraryStore extends Reflux.Store {
       this.fetchData(true);
     }
     this.previousPath = data.location.pathname;
+  }
+
+  libraryTypeFilterStoreChanged() {
+    if (
+      libraryTypeFilterStore.getFilterType() !== this.previousFilterType
+    ) {
+      // reset to first page when search changes
+      this.data.currentPage = 0;
+      this.data.totalPages = null;
+      this.data.totalSearchAssets = null;
+      this.previousFilterType = libraryTypeFilterStore.getFilterType();
+      this.fetchData(true);
+    }
   }
 
   searchBoxStoreChanged() {

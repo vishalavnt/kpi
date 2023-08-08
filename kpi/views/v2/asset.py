@@ -4,13 +4,16 @@ import json
 from collections import defaultdict, OrderedDict
 from operator import itemgetter
 
-from django.db.models import Count, Q
+from django.db.models import Count
 from django.http import Http404
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import User
 from rest_framework import exceptions, renderers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from rest_framework_extensions.mixins import NestedViewSetMixin
+from bossoidc2.models import Keycloak as KeycloakModel
 
 from kpi.constants import (
     ASSET_TYPES,
@@ -20,8 +23,6 @@ from kpi.constants import (
     CLONE_ARG_NAME,
     CLONE_COMPATIBLE_TYPES,
     CLONE_FROM_VERSION_ID_ARG_NAME,
-    PERM_CHANGE_METADATA_ASSET,
-    PERM_VIEW_ASSET,
 )
 from kpi.deployment_backends.backends import DEPLOYMENT_BACKENDS
 from kpi.exceptions import (
@@ -53,6 +54,7 @@ from kpi.renderers import (
 )
 from kpi.serializers import DeploymentSerializer
 from kpi.serializers.v2.asset import (
+    AssetBulkActionsSerializer,
     AssetListSerializer,
     AssetSerializer,
 )
@@ -64,7 +66,6 @@ from kpi.utils.object_permission import (
     get_database_user,
     get_objects_for_user,
 )
-from kpi.utils.project_views import user_has_project_view_asset_perm
 
 
 class AssetViewSet(
@@ -126,6 +127,44 @@ class AssetViewSet(
     > Example
     >
     >       curl -X GET https://[kpi]/api/v2/assets/?collections_first=true&ordering=-name
+
+    <hr>
+
+    Perform bulk actions on assets
+
+    Actions available:
+
+    - `archive`
+    - `delete`
+    - `unarchive`
+    - `undelete` (superusers only)
+
+    <pre class="prettyprint">
+    <b>POST</b> /api/v2/assets/bulk/
+    </pre>
+
+    > Example
+    >
+    >       curl -X POST https://[kpi]/api/v2/assets/bulk/
+
+    > **Payload to preform bulk actions on one or more assets**
+    >
+    >        {
+    >           "payload": {
+    >               "asset_uids": [{string}, ...],
+    >               "action": {string},
+    >           }
+    >        }
+
+    > **Payload to preform bulk actions on ALL assets for authenticated user**
+    >
+    >       {
+    >           "payload": {
+    >               "confirm": true,
+    >               "action": {string}
+    >           }
+    >       }
+
 
     <hr>
 
@@ -197,6 +236,28 @@ class AssetViewSet(
     In that case, `share-metadata` is not preserved.
 
     When creating a new `block` or `question` asset, settings are not saved either.
+
+    ### Counts
+
+    Retrieves total and daily counts of submissions
+    <pre class="prettyprint">
+    <b>GET</b> /api/v2/assets/{uid}/counts/
+    </pre>
+
+    > Example
+    >
+    >       curl -X GET https://[kpi]/api/v2/assets/aSAvYreNzVEkrWg5Gdcvg/counts/
+
+    uses the `days` query to get the daily counts from the last x amount of days.
+    Default amount is 30 days
+    <pre class="prettyprint">
+    <b>GET</b> /api/v2/assets/{uid}/counts/?days=7
+    </pre>
+
+    > Example
+    >
+    >       curl -X GET https://[kpi]/api/v2/assets/aSAvYreNzVEkrWg5Gdcvg/counts/?days=7
+
 
     ### Data
 
@@ -310,7 +371,7 @@ class AssetViewSet(
 
     lookup_field = 'uid'
     pagination_class = AssetPagination
-    permission_classes = (AssetPermission,)
+    permission_classes = (IsAuthenticated,)
     ordering_fields = [
         'asset_type',
         'date_modified',
@@ -352,6 +413,14 @@ class AssetViewSet(
             return asset
 
         return super().get_object()
+
+    @action(
+        detail=False,
+        methods=['POST'],
+        renderer_classes=[renderers.JSONRenderer],
+    )
+    def bulk(self, request, *args, **kwargs):
+        return Response(self._bulk_asset_actions(request.data))
 
     @action(detail=True, renderer_classes=[renderers.JSONRenderer])
     def content(self, request, uid):
@@ -643,11 +712,6 @@ class AssetViewSet(
 
         return context_
 
-    @action(detail=True, renderer_classes=[renderers.TemplateHTMLRenderer])
-    def koboform(self, request, *args, **kwargs):
-        asset = self.get_object()
-        return Response({'asset': asset, }, template_name='koboform.html')
-
     def list(self, request, *args, **kwargs):
         # assigning global filtered query set to prevent additional,
         # unnecessary calls to `filter_queryset`
@@ -724,12 +788,12 @@ class AssetViewSet(
 
     def perform_create(self, serializer):
         user = get_database_user(self.request.user)
-        serializer.save(owner=user)
+        serializer.save(owner=User.objects.get(username=user))
 
     def perform_destroy(self, instance):
-        if hasattr(instance, 'has_deployment') and instance.has_deployment:
-            instance.deployment.delete()
-        return super().perform_destroy(instance)
+        self._bulk_asset_actions(
+            {'payload': {'asset_uids': [instance.uid], 'action': 'delete'}}
+        )
 
     @action(
         detail=True,
@@ -779,6 +843,18 @@ class AssetViewSet(
     def xls(self, request, *args, **kwargs):
         return self.table_view(self, request, *args, **kwargs)
 
+    def _bulk_asset_actions(self, data: dict) -> dict:
+        params = {
+            'data': data,
+            'context': self.get_serializer_context(),
+        }
+
+        bulk_actions_validator = AssetBulkActionsSerializer(**params)
+        bulk_actions_validator.is_valid(raise_exception=True)
+        bulk_actions_validator.save()
+
+        return bulk_actions_validator.data
+
     def _get_clone_serializer(self, current_asset=None):
         """
         Gets the serializer from cloned object
@@ -794,10 +870,18 @@ class AssetViewSet(
         else:
             source_version = original_asset.asset_versions.first()
 
-        view_perm = get_perm_name('view', original_asset)
-        if not self.request.user.has_perm(view_perm, original_asset):
+        kc_user = None
+        try:
+            kc_user = KeycloakModel.objects.get(user=self.request.user)
+        except KeycloakModel.DoesNotExist:
             raise Http404
 
+        if kc_user is not None:
+            subdomain = kc_user.subdomain
+            subdomain_userIds = KeycloakModel.objects.filter(subdomain=subdomain).values_list('user_id', flat=True)
+            if original_asset.owner.id not in subdomain_userIds:
+                raise Http404
+        
         partial_update = isinstance(current_asset, Asset)
         cloned_data = self._prepare_cloned_data(original_asset, source_version, partial_update)
         if partial_update:

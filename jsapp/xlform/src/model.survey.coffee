@@ -60,6 +60,8 @@ module.exports = do ->
           r.linkUp(@context)
       @linkUpChoiceLists()
 
+      @rowItemNameMaxLength = 36
+
     @create: (options={}, addlOpts) ->
       return new Survey(options, addlOpts)
 
@@ -86,7 +88,7 @@ module.exports = do ->
         survey.choices.add(options: rowlist.options.toJSON())
         new_row.get('type').set('list', rowlist)
       name_detail = new_row.get('name')
-      name_detail.set 'value', name_detail.deduplicate(survey)
+      name_detail.set 'value', name_detail.deduplicate(survey, @rowItemNameMaxLength)
 
     _ensure_row_list_is_copied: (row)->
       if !row.rows && rowlist = row.getList()
@@ -130,7 +132,7 @@ module.exports = do ->
         else
           @_ensure_row_list_is_copied(row)
           name_detail = row.get('name')
-          name_detail.set 'value', name_detail.deduplicate(@)
+          name_detail.set 'value', name_detail.deduplicate(@, @rowItemNameMaxLength)
           target.rows.add(
             row.toJSON(),
             at: index_incr

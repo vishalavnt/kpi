@@ -5,15 +5,26 @@ import autoBind from 'react-autobind';
 import Reflux from 'reflux';
 import DocumentTitle from 'react-document-title';
 import Dropzone from 'react-dropzone';
+import Select from 'react-select';
 import mixins from 'js/mixins';
-import bem from 'js/bem';
+import bem, {makeBem} from 'js/bem';
 import {stores} from 'js/stores';
 import {validFileTypes} from 'utils';
 import myLibraryStore from './myLibraryStore';
+import libraryTypeFilterStore from './libraryTypeFilterStore';
 import AssetsTable from 'js/components/assetsTable/assetsTable';
 import {MODAL_TYPES} from 'js/constants';
 import {ROOT_BREADCRUMBS} from 'js/components/library/libraryConstants';
 import {ASSETS_TABLE_CONTEXTS} from 'js/components/assetsTable/assetsTableConstants';
+import { AssetTypeName } from '../../constants';
+import './myLibrary.scss';
+
+bem.LibraryActions = makeBem(null, 'library-actions');
+bem.LibraryActionsButtons = makeBem(null, 'library-actions-buttons');
+bem.LibraryActionsButtons__button = makeBem(bem.LibraryActionsButtons, 'button', 'a');
+bem.LibraryTypeFilter = makeBem(null, 'library-type-filter');
+
+const LIBRARY_MANAGEMENT_SUPPORT_URL = 'https://docs.openclinica.com/oc4/help-index/form-designer/library-management/';
 
 class MyLibraryRoute extends React.Component {
   constructor(props) {
@@ -35,6 +46,8 @@ class MyLibraryRoute extends React.Component {
       filterValue: myLibraryStore.data.filterValue,
       currentPage: myLibraryStore.data.currentPage,
       totalPages: myLibraryStore.data.totalPages,
+      showAllTags: false,
+      typeFilterVal: libraryTypeFilterStore.getFilterType(),
     };
   }
 
@@ -62,6 +75,23 @@ class MyLibraryRoute extends React.Component {
 
   onAssetsTableSwitchPage(pageNumber) {
     myLibraryStore.setCurrentPage(pageNumber);
+  }
+
+  clickShowAllTagsToggle () {
+    this.setState((prevState) => {
+      return {
+        showAllTags: !prevState.showAllTags,
+      };
+    });
+  }
+
+  onTypeFilterChange(evt) {
+    if (evt.value !== this.state.typeFilterVal) {
+      this.setState({
+        typeFilterVal: evt,
+      });
+      libraryTypeFilterStore.setFilterType(evt);
+    }
   }
 
   /**
@@ -93,8 +123,15 @@ class MyLibraryRoute extends React.Component {
       );
     }
 
+    const typeFilterOptions = [
+      {value: 'all', label: t('Show All')},
+      {value: AssetTypeName.question, label: t('Question')},
+      {value: AssetTypeName.block, label: t('Block')},
+      {value: AssetTypeName.template, label: t('Template')},
+    ];
+
     return (
-      <DocumentTitle title={`${t('My Library')} | KoboToolbox`}>
+      <DocumentTitle title={`${t('Library')} | OpenClinica`}>
         <Dropzone
           onDrop={this.onFileDrop}
           disableClick
@@ -103,6 +140,42 @@ class MyLibraryRoute extends React.Component {
           activeClassName='dropzone--active'
           accept={validFileTypes()}
         >
+          <bem.LibraryActions>
+            <bem.LibraryActionsButtons
+              m={{
+                'display-all-tags': this.state.showAllTags,
+              }}
+            >
+              <bem.LibraryActionsButtons__button
+                m='library-help-link'
+                href={LIBRARY_MANAGEMENT_SUPPORT_URL}
+                target='_blank'
+                data-tip={t('Learn more about Library Management')}
+                >
+                <i className='k-icon k-icon-help'/>
+              </bem.LibraryActionsButtons__button>
+              <bem.LibraryActionsButtons__button
+                m='all-tags-toggle'
+                onClick={this.clickShowAllTagsToggle}
+                data-tip= {this.state.showAllTags ? t('Hide all labels') : t('Show all labels')}
+                >
+                <i className='k--icon k-icon-tag'/>
+              </bem.LibraryActionsButtons__button>
+            </bem.LibraryActionsButtons>
+            <bem.LibraryTypeFilter>
+              {t('Filter by type:')}
+              &nbsp;
+              <Select
+                className='kobo-select'
+                classNamePrefix='kobo-select'
+                value={this.state.typeFilterVal}
+                isClearable={false}
+                isSearchable={false}
+                options={typeFilterOptions}
+                onChange={this.onTypeFilterChange}
+              />
+            </bem.LibraryTypeFilter>
+          </bem.LibraryActions>
           <bem.Breadcrumbs m='gray-wrapper'>
             <bem.Breadcrumbs__crumb>{ROOT_BREADCRUMBS.MY_LIBRARY.label}</bem.Breadcrumbs__crumb>
           </bem.Breadcrumbs>
@@ -123,6 +196,7 @@ class MyLibraryRoute extends React.Component {
             totalPages={this.state.totalPages}
             onSwitchPage={this.onAssetsTableSwitchPage.bind(this)}
             emptyMessage={contextualEmptyMessage}
+            showAllTags={this.state.showAllTags}
           />
 
           <div className='dropzone-active-overlay'>

@@ -2,6 +2,7 @@
 from rest_framework import exceptions, serializers
 from rest_framework.relations import HyperlinkedIdentityField
 from rest_framework.reverse import reverse
+from bossoidc2.models import Keycloak as KeycloakModel
 
 from kpi.constants import PERM_VIEW_ASSET
 from kpi.fields import RelativePrefixHyperlinkedRelatedField, WritableJSONField
@@ -48,6 +49,23 @@ class AssetSnapshotSerializer(serializers.HyperlinkedModelSerializer):
                   'source',
                   )
 
+    def check_subdomain_permission(self, asset):
+        # Check if asset owner id in subdomain userIds
+        user = self.context['request'].user
+        kc_user = None
+        try:
+            kc_user = KeycloakModel.objects.get(user=user)
+        except KeycloakModel.DoesNotExist:
+            raise serializers.ValidationError('User not found')
+
+        if kc_user is None:
+            raise serializers.ValidationError('User not found')
+        else:
+            subdomain_userIds = KeycloakModel.objects.filter(subdomain=kc_user.subdomain).values_list('user_id', flat=True)
+            if not asset.owner.id in subdomain_userIds:
+                # The client is not allowed to snapshot this asset
+                raise exceptions.PermissionDenied
+    
     def create(self, validated_data):
         """
         Create a snapshot of an asset, either by copying an existing
@@ -65,8 +83,10 @@ class AssetSnapshotSerializer(serializers.HyperlinkedModelSerializer):
         validated_data['owner'] = self.context['request'].user
 
         if source:
+            self.check_subdomain_permission(validated_data)
             snapshot = AssetSnapshot.objects.create(**validated_data)
         else:
+            self.check_subdomain_permission(asset)
             # asset.snapshot pulls, by default, a snapshot for the latest
             # version.
             snapshot = asset.snapshot()

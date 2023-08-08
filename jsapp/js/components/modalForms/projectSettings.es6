@@ -2,13 +2,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import reactMixin from 'react-mixin';
 import autoBind from 'react-autobind';
-import { observer } from 'mobx-react';
+import {when} from 'mobx';
 import Reflux from 'reflux';
 import Dropzone from 'react-dropzone';
 import Button from 'js/components/common/button';
 import clonedeep from 'lodash.clonedeep';
 import TextBox from 'js/components/common/textBox';
-import Checkbox from 'js/components/common/checkbox';
 import WrappedSelect from 'js/components/common/wrappedSelect';
 import bem from 'js/bem';
 import LoadingSpinner from 'js/components/common/loadingSpinner';
@@ -37,6 +36,7 @@ import {hasAssetRestriction} from 'js/components/locking/lockingUtils';
 import envStore from 'js/envStore';
 import {history} from 'js/router/historyRouter';
 import {withRouter} from 'js/router/legacy';
+import {userCan} from 'js/components/permissions/utils';
 
 const VIA_URL_SUPPORT_URL = 'xls_url.html';
 
@@ -106,10 +106,8 @@ class ProjectSettings extends React.Component {
 
   componentDidMount() {
     this.setInitialStep();
-    observer(sessionStore, () => {
-      this.setState({
-        isSessionLoaded: true,
-      });
+    when(() => sessionStore.isInitialLoadComplete, () => {
+      this.setState({isSessionLoaded: true});
     });
     this.unlisteners.push(
       actions.resources.loadAsset.completed.listen(this.onLoadAssetCompleted.bind(this)),
@@ -169,7 +167,7 @@ class ProjectSettings extends React.Component {
   getBaseTitle() {
     switch (this.props.context) {
       case PROJECT_SETTINGS_CONTEXTS.NEW:
-        return t('Create project');
+        return t('Create form');
       case PROJECT_SETTINGS_CONTEXTS.REPLACE:
         return t('Replace form');
       case PROJECT_SETTINGS_CONTEXTS.EXISTING:
@@ -185,7 +183,7 @@ class ProjectSettings extends React.Component {
       case this.STEPS.CHOOSE_TEMPLATE: return t('Choose template');
       case this.STEPS.UPLOAD_FILE: return t('Upload XLSForm');
       case this.STEPS.IMPORT_URL: return t('Import XLSForm');
-      case this.STEPS.PROJECT_DETAILS: return t('Project details');
+      case this.STEPS.PROJECT_DETAILS: return t('Form details');
       default: return '';
     }
   }
@@ -510,6 +508,11 @@ class ProjectSettings extends React.Component {
       name: this.state.fields.name,
       settings: this.getSettingsForEndpoint(),
       asset_type: 'survey',
+      content: JSON.stringify({
+        settings: {
+          style: 'pages theme-grid'
+        }
+      })
     }).done((asset) => {
       this.goToFormBuilder(asset.uid);
     }).fail((r) => {
@@ -906,9 +909,9 @@ class ProjectSettings extends React.Component {
                 customModifiers='on-white'
                 value={this.state.fields.name}
                 onChange={this.onNameChange.bind(this)}
-                errors={this.hasFieldError('name') ? t('Please enter a title for your project!') : false}
+                errors={this.hasFieldError('name') ? t('Please enter a title for your form!') : false}
                 label={addRequiredToLabel(this.getNameInputLabel(this.state.fields.name))}
-                placeholder={t('Enter title of project here')}
+                placeholder={t('Enter title of form here')}
                 data-cy='title'
               />
             </bem.FormModal__item>
@@ -926,69 +929,6 @@ class ProjectSettings extends React.Component {
             />
           </bem.FormModal__item>
 
-          {sectorField &&
-            <bem.FormModal__item m={bothCountryAndSector ? 'sector' : null}>
-              <WrappedSelect
-                label={addRequiredToLabel(t('Sector'), sectorField.required)}
-                value={this.state.fields.sector}
-                onChange={this.onAnyFieldChange.bind(this, 'sector')}
-                options={sectors}
-                isLimitedHeight
-                menuPlacement='top'
-                isClearable
-                error={this.hasFieldError('sector') ? t('Please choose a sector') : false}
-                data-cy='sector'
-              />
-            </bem.FormModal__item>
-          }
-
-          {countryField &&
-            <bem.FormModal__item m={bothCountryAndSector ? 'country' : null}>
-              <WrappedSelect
-                label={addRequiredToLabel(t('Country'), countryField.required)}
-                isMulti
-                value={this.state.fields.country}
-                onChange={this.onAnyFieldChange.bind(this, 'country')}
-                options={countries}
-                isLimitedHeight
-                menuPlacement='top'
-                isClearable
-                error={this.hasFieldError('country') ? t('Please select at least one country') : false}
-                data-cy='country'
-              />
-            </bem.FormModal__item>
-          }
-
-          {operationalPurposeField &&
-            <bem.FormModal__item>
-              <WrappedSelect
-                label={addRequiredToLabel(t('Operational Purpose of Data'), operationalPurposeField.required)}
-                value={this.state.fields.operational_purpose}
-                onChange={this.onAnyFieldChange.bind(this, 'operational_purpose')}
-                options={operationalPurposes}
-                isLimitedHeight
-                isClearable
-                error={this.hasFieldError('operational_purpose') ? t('Please specify the operational purpose of your project') : false}
-              />
-            </bem.FormModal__item>
-          }
-
-          {collectsPiiField &&
-            <bem.FormModal__item>
-              <WrappedSelect
-                label={addRequiredToLabel(t('Does this project collect personally identifiable information?'), collectsPiiField.required)}
-                value={this.state.fields.collects_pii}
-                onChange={this.onAnyFieldChange.bind(this, 'collects_pii')}
-                options={[
-                  {value: 'Yes', label: t('Yes')},
-                  {value: 'No', label: t('No')},
-                ]}
-                isClearable
-                error={this.hasFieldError('collects_pii') ? t('Please indicate whether or not your project collects personally identifiable information') : false}
-              />
-            </bem.FormModal__item>
-          }
-
           {(this.props.context === PROJECT_SETTINGS_CONTEXTS.NEW || this.props.context === PROJECT_SETTINGS_CONTEXTS.REPLACE) &&
             <bem.Modal__footer>
               {/* Don't allow going back if asset already exist */}
@@ -1003,13 +943,13 @@ class ProjectSettings extends React.Component {
                 disabled={this.state.isSubmitPending}
               >
                 {this.state.isSubmitPending && t('Please wait…')}
-                {!this.state.isSubmitPending && this.props.context === PROJECT_SETTINGS_CONTEXTS.NEW && t('Create project')}
+                {!this.state.isSubmitPending && this.props.context === PROJECT_SETTINGS_CONTEXTS.NEW && t('Create form')}
                 {!this.state.isSubmitPending && this.props.context === PROJECT_SETTINGS_CONTEXTS.REPLACE && t('Save')}
               </bem.KoboButton>
             </bem.Modal__footer>
           }
 
-          {this.userCan('manage_asset', this.state.formAsset) && this.props.context === PROJECT_SETTINGS_CONTEXTS.EXISTING &&
+          {userCan('manage_asset', this.state.formAsset) && this.props.context === PROJECT_SETTINGS_CONTEXTS.EXISTING &&
             <bem.FormModal__item>
               <bem.FormModal__item m='inline'>
                 {this.isArchived() &&
@@ -1053,7 +993,7 @@ class ProjectSettings extends React.Component {
                 type='full'
                 color='red'
                 size='l'
-                label={t('Delete Project and Data')}
+                label={t('Delete Form')}
                 onClick={this.deleteProject}
               />
             </bem.FormModal__item>
@@ -1115,7 +1055,6 @@ class ProjectSettings extends React.Component {
 }
 
 reactMixin(ProjectSettings.prototype, Reflux.ListenerMixin);
-reactMixin(ProjectSettings.prototype, mixins.permissions);
 reactMixin(ProjectSettings.prototype, mixins.droppable);
 // NOTE: dmix mixin is causing a full asset load after component mounts
 reactMixin(ProjectSettings.prototype, mixins.dmix);

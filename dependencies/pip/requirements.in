@@ -15,12 +15,20 @@
 # ssrf protect
 -e git+https://github.com/kobotoolbox/ssrf-protect@9b97d3f0fd8f737a38dd7a6b64efeffc03ab3cdd#egg=ssrf_protect
 
+# OC - Keycloak authentication integration
+mozilla-django-oidc # requirement of boss-oidc2
+drf-oidc-auth # requirement of boss-oidc2
+-e git+https://github.com/gushil/boss-oidc2.git@6b7fd20a0ea72444b79e128f1dcadd90932ed90c#egg=boss-oidc2
+-e git+https://github.com/gushil/django-oidc.git@1fbbe169e785bab04cd9da5410245c97a18f3e38#egg=django-oidc
+-e git+https://github.com/gushil/python-keycloak-client.git@549c90f615fc2327bd47819290dd9c0d5c6de680#egg=python-keycloak-client
+
 # Regular PyPI packages
 Django>=3.2,<3.3
 Markdown
 Pygments
 amqp
 billiard
+beautifulsoup4
 celery
 celery[redis]
 dict2xml
@@ -44,6 +52,7 @@ django-amazon-ses
 django-webpack-loader
 django-loginas
 django-markdownx
+django-prometheus
 
 django-markitup
 django-mptt
@@ -56,6 +65,7 @@ djangorestframework-xml
 django-redis-sessions
 django-request-cache
 drf-extensions
+flower
 future
 geojson-rewind
 google-api-python-client
@@ -72,13 +82,14 @@ openpyxl
 psycopg2
 pymongo==3.12.3
 python-dateutil
-pyxform==1.9.0
+-e git+https://github.com/OpenClinica/pyxform.git#egg=pyxform
 requests
 responses
 shortuuid
 sqlparse
 static3
 tabulate
+tldextract
 uWSGI
 Werkzeug<=2.0.3
 xlrd

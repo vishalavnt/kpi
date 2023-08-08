@@ -54,6 +54,7 @@ export interface SearchAssetsPredefinedParams {
   metadata?: boolean;
   collectionsFirst?: boolean;
   status?: string;
+  filterType?: any;
 }
 
 interface BulkSubmissionsRequest {
@@ -199,7 +200,8 @@ interface AssignablePermissionPartial {
   };
 }
 
-interface SelectChoice {
+export interface LabelValuePair {
+  /** Note: the labels are always localized in the current UI language */
   label: string;
   value: string;
 }
@@ -343,6 +345,7 @@ interface AssetSummary {
     };
   };
   naming_conflicts?: string[];
+  settings_version?: string;
 }
 
 interface AssetReportStylesSpecified {
@@ -405,22 +408,13 @@ export interface AssetTableSettings {
 }
 
 export interface AssetSettings {
-  sector?: {
-    label: string;
-    value: string;
-  } | null;
-  country?: SelectChoice | SelectChoice[] | null;
+  sector?: LabelValuePair | null;
+  country?: LabelValuePair | LabelValuePair[] | null;
   description?: string;
   'data-table'?: AssetTableSettings;
   organization?: string;
-  collects_pii?: {
-    label: string;
-    value: string;
-  } | null;
-  operational_purpose?: {
-    label: string;
-    value: string;
-  } | null;
+  collects_pii?: LabelValuePair | null;
+  operational_purpose?: LabelValuePair | null;
 }
 
 /** This is the asset object Frontend uses with the endpoints. */
@@ -476,6 +470,7 @@ export interface AssetResponse extends AssetRequestObject {
   url: string;
   owner: string;
   owner__username: string;
+  owner__subdomain: string;
   date_created: string;
   summary: AssetSummary;
   date_modified: string;
@@ -523,7 +518,6 @@ export interface AssetResponse extends AssetRequestObject {
     format: string;
     url: string;
   }>;
-  koboform_link?: string;
   xform_link?: string;
   hooks_link?: string;
   uid: string;
@@ -636,6 +630,7 @@ export interface AccountResponse {
   email: string;
   server_time: string;
   date_joined: string;
+  user_type: string;
   projects_url: string;
   is_superuser: boolean;
   gravatar: string;
@@ -655,8 +650,10 @@ export interface AccountResponse {
     linkedin: string;
     instagram: string;
     project_views_settings: ProjectViewsSettings;
+    /** We store this for usage statistics only. */
+    last_ui_language?: string;
     // JSON values are the backend reality, but we make assumptions
-    [key: string]: Json | ProjectViewsSettings;
+    [key: string]: Json | ProjectViewsSettings | undefined;
   };
   git_rev: {
     short: string;
@@ -665,6 +662,29 @@ export interface AccountResponse {
     tag: boolean;
   };
   social_accounts: SocialAccount[];
+  subdomain: string;
+}
+
+export interface AccountRequest {
+  email?: string;
+  extra_details?: {
+    name?: string;
+    organization?: string;
+    organization_website?: string;
+    sector?: string;
+    gender?: string;
+    bio?: string;
+    city?: string;
+    country?: string;
+    require_auth?: boolean;
+    twitter?: string;
+    linkedin?: string;
+    instagram?: string;
+    project_views_settings?: ProjectViewsSettings;
+    last_ui_language?: string;
+  };
+  current_password?: string;
+  new_password?: string;
 }
 
 interface UserNotLoggedInResponse {
@@ -712,7 +732,6 @@ export interface EnvironmentResponse {
   mfa_enabled: boolean;
   mfa_code_length: number;
   stripe_public_key: string | null;
-  stripe_pricing_table_id: string | null;
   social_apps: SocialApp[];
 }
 
@@ -762,10 +781,25 @@ interface ExternalServiceRequestData {
 }
 
 interface DataInterface {
+  patchProfile: (data: AccountRequest) => JQuery.jqXHR<AccountResponse>;
   [key: string]: Function;
 }
 
 const $ajax = (o: {}) => $.ajax(assign({}, {dataType: 'json', method: 'GET'}, o));
+
+// JQuery.ajaxError((_event: any, request: any, settings: any) => {
+//   if (request.status === 403 || request.status === 401 || request.status === 404) {
+//     dataInterface.selfProfile().done((data: any) => {
+//       if (data.message === 'user is not logged in') {
+//         dataInterface.checkKeycloakStatus().done(() => {
+//           console.log('retry ajax request');
+//           $.ajax(settings);
+//           return;
+//         });
+//       }
+//     });
+//   }
+// });
 
 export const dataInterface: DataInterface = {
   getProfile: () => fetch(`${ROOT_URL}/me/`).then((response) => response.json()),  // TODO replace selfProfile
@@ -803,25 +837,39 @@ export const dataInterface: DataInterface = {
     return d.promise();
   },
 
-  patchProfile(data: {
-    email?: string;
-    extra_details?: {
-      name?: string;
-      organization?: string;
-      organization_website?: string;
-      sector?: string;
-      gender?: string;
-      bio?: string;
-      city?: string;
-      country?: string;
-      require_auth?: boolean;
-      twitter?: string;
-      linkedin?: string;
-      instagram?: string;
-    };
-    current_password?: string;
-    new_password?: string;
-  }): JQuery.jqXHR<AccountResponse> {
+  keycloakLogout: (): JQuery.Promise<any> => {
+    const d = $.Deferred();
+    $ajax({ url: `${ROOT_URL}/openid/logout`}).done(d.resolve).fail(function (_resp: {status: number;}, _etype: unknown, _emessage: unknown) {
+      // if (resp.status === 200) {
+      //   d.resolve();
+      // } else {
+      //   d.fail('keycloak logout failed');
+      // }
+      d.resolve();
+    });
+    return d.promise();
+  },
+
+  checkKeycloakStatus: (): JQuery.Promise<any> => {
+    var d = $.Deferred();
+    $ajax({ url: `${ROOT_URL}` }).done(function(resp: any) {
+      console.log('checkKeycloakStatus resp', resp);
+      d.resolve();
+    }).fail(function (resp: { status: number; }, etype: any, emessage: any) {
+      console.log('checkKeycloakStatus resp', resp);
+      console.log('checkKeycloakStatus etype', etype);
+      console.log('checkKeycloakStatus emessage', emessage);
+      // if (resp.status === 200) {
+      //   d.resolve();
+      // } else {
+      //   d.fail('checkKeycloakStatus failed');
+      // }
+      d.resolve();
+    });
+    return d.promise();
+  },
+
+  patchProfile(data: AccountRequest): JQuery.jqXHR<AccountResponse> {
     return $ajax({
       url: `${ROOT_URL}/me/`,
       method: 'PATCH',
@@ -1365,7 +1413,16 @@ export const dataInterface: DataInterface = {
   searchMyLibraryAssets(params: SearchAssetsPredefinedParams = {}): JQuery.jqXHR<any> {
     // we only want orphans (assets not inside collection)
     // unless it's a search
-    let query = COMMON_QUERIES.qbtc;
+    let query: any = null;
+    if (params.filterType?.value === 'question') {
+      query = COMMON_QUERIES.q;
+    } else if (params.filterType?.value === 'block') {
+      query = COMMON_QUERIES.b;
+    } else if (params.filterType?.value === 'template') {
+      query = COMMON_QUERIES.t;
+    } else {
+      query = COMMON_QUERIES.qbt;
+    }
     if (!params.searchPhrase) {
       query += ' AND parent:null';
     }

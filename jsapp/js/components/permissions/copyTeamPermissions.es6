@@ -120,7 +120,7 @@ class CopyTeamPermissions extends React.Component {
           className='copy-team-permissions-opener'
           onClick={this.toggleCopyForm}
         >
-          {t('Copy team from another project')}
+          {t('Copy team from another form')}
 
           <i className='k-icon k-icon-angle-right'/>
         </button>

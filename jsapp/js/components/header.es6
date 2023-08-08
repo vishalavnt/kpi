@@ -7,7 +7,7 @@ import PopoverMenu from 'js/popoverMenu';
 import {stores} from '../stores';
 import sessionStore from 'js/stores/session';
 import assetStore from 'js/assetStore';
-import { withRouter } from "js/router/legacy";
+import {withRouter} from 'js/router/legacy';
 import Reflux from 'reflux';
 import bem from 'js/bem';
 import {actions} from '../actions';
@@ -28,6 +28,7 @@ import HeaderTitleEditor from 'js/components/header/headerTitleEditor';
 import SearchBox from 'js/components/header/searchBox';
 import myLibraryStore from 'js/components/library/myLibraryStore';
 import envStore from 'js/envStore';
+import {userCan} from 'js/components/permissions/utils';
 
 const MainHeader = class MainHeader extends Reflux.Component {
   constructor(props){
@@ -125,7 +126,7 @@ const MainHeader = class MainHeader extends Reflux.Component {
         if ('reload' in window.location) {
           window.location.reload();
         } else {
-          window.alert(t('Please refresh the page'));
+          alertify.alert(t('Change language'), t('Please refresh the page'));
         }
       });
     }
@@ -189,60 +190,7 @@ const MainHeader = class MainHeader extends Reflux.Component {
       var accountMenuLabel = <bem.AccountBox__initials style={initialsStyle}>{accountName.charAt(0)}</bem.AccountBox__initials>;
 
       return (
-        <bem.AccountBox>
-          <PopoverMenu type='account-menu'
-                          triggerLabel={accountMenuLabel}
-                          buttonType='text'>
-              <bem.AccountBox__menu>
-                <bem.AccountBox__menuLI key='1'>
-                  <bem.AccountBox__menuItem m={'avatar'}>
-                    {accountMenuLabel}
-                  </bem.AccountBox__menuItem>
-                  <bem.AccountBox__menuItem m={'mini-profile'}>
-                    <span className='account-username'>{accountName}</span>
-                    <span className='account-email'>{accountEmail}</span>
-                  </bem.AccountBox__menuItem>
-                  <bem.AccountBox__menuItem m={'settings'}>
-                    <bem.KoboButton onClick={this.accountSettings} m={['blue', 'fullwidth']}>
-                      {t('Account Settings')}
-                    </bem.KoboButton>
-                  </bem.AccountBox__menuItem>
-                </bem.AccountBox__menuLI>
-                {shouldDisplayUrls &&
-                  <bem.AccountBox__menuLI key='2' className='environment-links'>
-                    {envStore.data.terms_of_service_url &&
-                      <a href={envStore.data.terms_of_service_url} target='_blank'>
-                        {t('Terms of Service')}
-                      </a>
-                    }
-                    {envStore.data.privacy_policy_url &&
-                      <a href={envStore.data.privacy_policy_url} target='_blank'>
-                        {t('Privacy Policy')}
-                      </a>
-                    }
-                  </bem.AccountBox__menuLI>
-                }
-                <bem.AccountBox__menuLI m={'lang'} key='3'>
-                  <bem.AccountBox__menuLink onClick={this.toggleLanguageSelector} data-popover-menu-stop-blur tabIndex='0'>
-                    <i className='k-icon k-icon-language' />
-                    {t('Language')}
-                  </bem.AccountBox__menuLink>
-
-                  {this.state.isLanguageSelectorVisible &&
-                    <ul>
-                      {langs.map(this.renderLangItem)}
-                    </ul>
-                  }
-                </bem.AccountBox__menuLI>
-                <bem.AccountBox__menuLI m={'logout'} key='4'>
-                  <bem.AccountBox__menuLink onClick={this.logout}>
-                    <i className='k-icon k-icon-logout' />
-                    {t('Logout')}
-                  </bem.AccountBox__menuLink>
-                </bem.AccountBox__menuLI>
-              </bem.AccountBox__menu>
-          </PopoverMenu>
-        </bem.AccountBox>
+        <bem.AccountBox />
       );
     }
 
@@ -254,12 +202,21 @@ const MainHeader = class MainHeader extends Reflux.Component {
       var gitRev = sessionStore.currentAccount.git_rev;
       return (
         <bem.GitRev>
+          { !!gitRev.branch &&
           <bem.GitRev__item>
             branch: {gitRev.branch}
           </bem.GitRev__item>
+          }
+          { !!gitRev.short &&
           <bem.GitRev__item>
             commit: {gitRev.short}
           </bem.GitRev__item>
+          }
+          { !!gitRev.tag &&
+          <bem.GitRev__item>
+            tag: {gitRev.tag}
+          </bem.GitRev__item>
+          }
         </bem.GitRev>
       );
     }
@@ -276,7 +233,7 @@ const MainHeader = class MainHeader extends Reflux.Component {
 
     let userCanEditAsset = false;
     if (this.state.asset) {
-      userCanEditAsset = this.userCan('change_asset', this.state.asset);
+      userCanEditAsset = userCan('change_asset', this.state.asset);
     }
 
     let iconClassName = '';
@@ -284,7 +241,7 @@ const MainHeader = class MainHeader extends Reflux.Component {
       iconClassName = getAssetIcon(this.state.asset);
     }
 
-    let librarySearchBoxPlaceholder = t('Search My Library');
+    let librarySearchBoxPlaceholder = t('Search Library');
     if (this.isPublicCollections()) {
       librarySearchBoxPlaceholder = t('Search Public Collections');
     }
@@ -304,7 +261,7 @@ const MainHeader = class MainHeader extends Reflux.Component {
             </span>
             { isLoggedIn && this.isFormList() &&
               <div className='mdl-layout__header-searchers'>
-                <ListSearch searchContext={this.state.formFiltersContext} placeholderText={t('Search Projects')} />
+                <ListSearch searchContext={this.state.formFiltersContext} placeholderText={t('Search Forms')} />
               </div>
             }
             { isLoggedIn && (this.isMyLibrary() || this.isPublicCollections()) &&
@@ -342,7 +299,6 @@ const MainHeader = class MainHeader extends Reflux.Component {
 
 reactMixin(MainHeader.prototype, Reflux.ListenerMixin);
 reactMixin(MainHeader.prototype, mixins.contextRouter);
-reactMixin(MainHeader.prototype, mixins.permissions);
 
 MainHeader.contextTypes = {router: PropTypes.object};
 

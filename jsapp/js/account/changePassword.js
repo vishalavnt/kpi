@@ -92,7 +92,7 @@ const ChangePassword = class ChangePassword extends React.Component {
     };
 
     return (
-      <DocumentTitle title={`${accountName} | KoboToolbox`}>
+      <DocumentTitle title={`${accountName} | OpenClinica`}>
         <bem.AccountSettings>
           <bem.AccountSettings__actions>
             <bem.KoboButton
