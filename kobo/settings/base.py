@@ -68,6 +68,7 @@ SESSION_COOKIE_SAMESITE  = 'None'
 CORS_ORIGIN_REGEX_WHITELIST = (
     r'^(https?://)?([A-Za-z0-9-]+\.){1,4}openclinica\.io$',
     r'^(https?://)?([A-Za-z0-9-]+\.){1,4}openclinica-dev\.io$',
+    r'^(https?://)?([A-Za-z0-9-]+\.){1,4}openclinica-dev-eks\.io$',
     r'^(https?://)?([A-Za-z0-9-]+\.){1,4}openclinica-staging\.io$',
     r'^(https?://)?([A-Za-z0-9-]+\.){1,4}openclinica-staging-2\.io$'
 )
@@ -162,11 +163,6 @@ MIDDLEWARE = [
     'django_userforeignkey.middleware.UserForeignKeyMiddleware',
     'django_request_cache.middleware.RequestCacheMiddleware',
 ]
-
-CSP_FRAME_ANCESTORS = "https://*.openclinica-dev.io https://*.openclinica-staging.io https://*.openclinica-staging-2.io https://*.openclinica.io https://*.staging.openclinica.io"
-CSP_STYLE_SRC = "'self' 'unsafe-inline'"
-CSP_CONNECT_SRC = "'self' https://*.openclinica-dev.io https://*.openclinica-staging.io https://*.openclinica-staging-2.io https://*.openclinica.io https://*.staging.openclinica.io"
-CSP_FRAME_SRC = "'self' https://*.openclinica-dev.io https://*.openclinica-staging.io https://*.openclinica-staging-2.io https://*.openclinica.io https://*.staging.openclinica.io"
 
 if os.environ.get('DEFAULT_FROM_EMAIL'):
     DEFAULT_FROM_EMAIL = env.str('DEFAULT_FROM_EMAIL')
@@ -781,6 +777,18 @@ if STRIPE_ENABLED:
     stripe_domain = "https://js.stripe.com"
     CSP_SCRIPT_SRC.append(stripe_domain)
     CSP_FRAME_SRC.append(stripe_domain)
+
+CSP_OC_SITES = [
+    'https://*.openclinica-dev.io',
+    'https://*.openclinica-staging.io',
+    'https://*.openclinica-staging-2.io',
+    'https://*.openclinica.io',
+    'https://*.staging.openclinica.io',
+    'https://*.openclinica-dev-eks.io',
+]
+CSP_FRAME_ANCESTORS = CSP_OC_SITES
+CSP_CONNECT_SRC = CSP_CONNECT_SRC + CSP_OC_SITES
+CSP_FRAME_SRC = CSP_FRAME_SRC +  CSP_OC_SITES
 
 csp_report_uri = env.url('CSP_REPORT_URI', None)
 if csp_report_uri:  # Let environ validate uri, but set as string
