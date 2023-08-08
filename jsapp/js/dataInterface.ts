@@ -54,6 +54,7 @@ export interface SearchAssetsPredefinedParams {
   metadata?: boolean;
   collectionsFirst?: boolean;
   status?: string;
+  filterType?: any;
 }
 
 interface BulkSubmissionsRequest {
@@ -1412,7 +1413,16 @@ export const dataInterface: DataInterface = {
   searchMyLibraryAssets(params: SearchAssetsPredefinedParams = {}): JQuery.jqXHR<any> {
     // we only want orphans (assets not inside collection)
     // unless it's a search
-    let query = COMMON_QUERIES.qbtc;
+    let query: any = null;
+    if (params.filterType?.value === 'question') {
+      query = COMMON_QUERIES.q;
+    } else if (params.filterType?.value === 'block') {
+      query = COMMON_QUERIES.b;
+    } else if (params.filterType?.value === 'template') {
+      query = COMMON_QUERIES.t;
+    } else {
+      query = COMMON_QUERIES.qbt;
+    }
     if (!params.searchPhrase) {
       query += ' AND parent:null';
     }

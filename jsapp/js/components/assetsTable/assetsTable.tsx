@@ -75,6 +75,8 @@ interface AssetsTableProps {
  totalPages?: number;
  /** Called when user clicks page change. */
  onSwitchPage?: SwitchPageCallback;
+ /** Show or Hide Tags */
+ showAllTags?: boolean;
 }
 
 interface AssetsTableState {
@@ -415,6 +417,7 @@ export default class AssetsTable extends React.Component<
               asset={asset}
               key={asset.uid}
               context={this.props.context}
+              showTag={this.props.showAllTags}
             />
           )}
         </bem.AssetsTable__body>

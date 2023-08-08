@@ -26,6 +26,7 @@ const assetActions = mixins.clickAssets.click.asset;
 interface AssetsTableRowProps {
   asset: AssetResponse;
   context: AssetsTableContextName;
+  showTag?: boolean;
 }
 
 class AssetsTableRow extends React.Component<AssetsTableRowProps> {
@@ -103,7 +104,7 @@ class AssetsTableRow extends React.Component<AssetsTableRowProps> {
 
           <AssetName asset={this.props.asset}/>
 
-          {this.props.asset.settings && this.props.asset.tag_string && this.props.asset.tag_string.length > 0 &&
+          {this.props.asset.settings && this.props.asset.tag_string && this.props.asset.tag_string.length > 0 && this.props.showTag &&
             <bem.AssetsTableRow__tags>
               {this.props.asset.tag_string.split(',').map((tag) =>
                 ([' ', <bem.AssetsTableRow__tag key={tag}>{tag}</bem.AssetsTableRow__tag>])

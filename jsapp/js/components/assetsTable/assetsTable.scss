@@ -354,7 +354,6 @@ $assets-table-hover-bg: colors.$kobo-gray-98;
     &.assets-table-row__column--actions {
       width: 17%;
       text-align: right;
-      z-index: 15;
 
       .asset-action-buttons {
         justify-content: flex-end;
