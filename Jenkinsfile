@@ -39,8 +39,8 @@ pipeline {
                         if docker buildx inspect multiarchbuilder > /dev/null 2>&1; then
                         docker buildx rm multiarchbuilder
                         fi
-                        docker buildx create --name multiarchbuilder --node amd64 --platform linux/amd64 --driver docker-container --driver-opt env.BUILDKIT_STEP_LOG_MAX_SIZE=10000000 --driver-opt env.BUILDKIT_STEP_LOG_MAX_SPEED=10000000
-                        docker buildx create --name multiarchbuilder --append --node aarch64 --platform linux/arm64,linux/aarch64 tcp://127.0.0.1:1337 --driver docker-container --driver-opt env.BUILDKIT_STEP_LOG_MAX_SIZE=10000000 --driver-opt env.BUILDKIT_STEP_LOG_MAX_SPEED=10000000
+                        docker buildx create --name multiarchbuilder --node amd64 --platform linux/amd64 --driver-opt env.BUILDKIT_STEP_LOG_MAX_SIZE=10000000 --driver-opt env.BUILDKIT_STEP_LOG_MAX_SPEED=10000000
+                        docker buildx create --name multiarchbuilder --append --node aarch64 --platform linux/arm64,linux/aarch64 tcp://127.0.0.1:1337 --driver-opt env.BUILDKIT_STEP_LOG_MAX_SIZE=10000000 --driver-opt env.BUILDKIT_STEP_LOG_MAX_SPEED=10000000
                         docker buildx inspect --bootstrap --builder multiarchbuilder
                        """
                     sh "docker buildx build --builder multiarchbuilder --platform linux/amd64,linux/aarch64 -t ${registry}:$BUILD_NUMBER --push ."
